@@ -34,7 +34,7 @@ impl User {
     pub fn create(
         id: i64,
         username: String,
-        password: String,
+        password_hash: String,
         global_name: String,
         email: String,
     ) -> Self {
@@ -44,7 +44,7 @@ impl User {
             id: id,
             username: username,
             username_updated_timestamp: timestamp,
-            password_hash: password,
+            password_hash,
             password_updated_timestamp: timestamp,
             avatar: None,
             sessions_lifetime: SessionLifetime::MONTH6,

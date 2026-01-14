@@ -20,3 +20,48 @@ pub fn validate_email(value: &str) -> Result<(), ValidationError> {
 
     Ok(())
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn validate_email_success() {
+        let valid_emails = [
+            "test@example.com",
+            "user.name+tag@gmail.com",
+            "user_name@test-domain.org",
+            "a@b.co",
+        ];
+
+        for email in valid_emails {
+            assert!(validate_email(email).is_ok(), "email failed: {}", email);
+        }
+    }
+
+    #[test]
+    fn validate_email_empty() {
+        let err = validate_email("").unwrap_err();
+        assert_eq!(err.code, "field_is_required");
+
+        let err = validate_email("   ").unwrap_err();
+        assert_eq!(err.code, "field_is_required");
+    }
+
+    #[test]
+    fn validate_email_invalid_format() {
+        let invalid_emails = [
+            "plainaddress",
+            "@no-local-part.com",
+            "user@",
+            "user@.com",
+            "user@com",
+            "user@@example.com",
+        ];
+
+        for email in invalid_emails {
+            let err = validate_email(email).unwrap_err();
+            assert_eq!(err.code, "invalid_format", "email: {}", email);
+        }
+    }
+}

@@ -21,3 +21,4 @@ socketioxide = { version = "0.18.0", features = ["extensions", "msgpack", "state
 uuid = { version = "1.19.0", features = ["v4"] }
 rs-snowflake = "0.6.0"
 async-trait = "0.1.89"
+bitflags = "2.10.0"

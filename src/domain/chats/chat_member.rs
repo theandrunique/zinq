@@ -1,0 +1,25 @@
+use crate::domain::{auth::User, chats::chat::ChatPermissions};
+
+pub struct ChatMember {
+    pub user_id: i64,
+    pub last_read_message_id: Option<i64>,
+    pub username: String,
+    pub global_name: String,
+    pub avatar: Option<String>,
+    pub is_leave: bool,
+    pub permissions: Option<ChatPermissions>,
+}
+
+impl From<User> for ChatMember {
+    fn from(value: User) -> Self {
+        Self {
+            user_id: value.id,
+            last_read_message_id: None,
+            username: value.username,
+            global_name: value.global_name,
+            avatar: value.avatar,
+            is_leave: false,
+            permissions: None,
+        }
+    }
+}
