@@ -12,6 +12,8 @@ enum ErrorCode {
     AuthTotpRequired,
     InvalidJson,
     InvalidRequestBody,
+    UsernameAlreadyInUse,
+    EmailAlreadyInUse,
     InternalServerError,
 }
 
@@ -76,7 +78,17 @@ impl IntoResponse for Error {
                     ("global_name".to_string(), global_name),
                 ]),
             ),
-            Self::InvalidRequestBody(e) => ApiError::validation(e),
+            Error::UsernameAlreadyInUse => {
+                ApiError::new(ErrorCode::UsernameAlreadyInUse, "Username already in use")
+            }
+            Error::EmailAlreadyInUse => {
+                ApiError::new(ErrorCode::EmailAlreadyInUse, "Email already in use")
+            }
+            Error::InternalServerError(e) => {
+                tracing::error!("Internal server error: {:?}", e);
+                ApiError::new(ErrorCode::InternalServerError, "Internal server error")
+            }
+            Error::InvalidRequestBody(e) => ApiError::validation(e),
         };
 
         return e.into_response();

@@ -9,7 +9,7 @@ use crate::{
     state::init_state,
 };
 
-mod app;
+mod application;
 mod config;
 mod core;
 mod domain;
@@ -25,7 +25,7 @@ async fn main() {
 
     let app_config = config::config().await;
 
-    let app_state = init_state();
+    let app_state = init_state().await;
 
     let app = Router::new()
         .nest("/users", user_router())

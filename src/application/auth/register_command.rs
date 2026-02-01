@@ -5,6 +5,7 @@ use crate::{
     domain::{
         auth::{
             User,
+            data::user_repository::{AddUserError, UserRepository},
             validation::{
                 validate_email, validate_global_name, validate_password, validate_username,
             },
@@ -16,7 +17,7 @@ use crate::{
     state::AppState,
 };
 
-#[derive(Debug, validator::Validate)]
+#[derive(Debug, validator::Validate, Clone)]
 pub struct RegisterCommand {
     #[validate(custom(function = validate_username))]
     pub username: String,
@@ -34,6 +35,7 @@ pub struct RegisterCommand {
 pub struct RegisterComandHandler {
     event_bus: Arc<EventBus>,
     id_gen: Arc<dyn IdGenerator>,
+    user_repository: Arc<dyn UserRepository>,
 }
 
 impl RegisterComandHandler {
@@ -41,6 +43,7 @@ impl RegisterComandHandler {
         Self {
             event_bus: state.event_bus.clone(),
             id_gen: state.id_gen.clone(),
+            user_repository: state.user_repository.clone(),
         }
     }
 
@@ -54,6 +57,15 @@ impl RegisterComandHandler {
             command.global_name,
             command.email,
         );
+
+        self.user_repository
+            .save(new_user.clone())
+            .await
+            .map_err(|e| match e {
+                AddUserError::UsernameTaken => Error::UsernameAlreadyInUse,
+                AddUserError::EmailTaken => Error::EmailAlreadyInUse,
+                AddUserError::InternalError(e) => Error::InternalServerError(e),
+            })?;
 
         self.event_bus.publish(DomainEvent::UserCreate {
             user: new_user.clone(),

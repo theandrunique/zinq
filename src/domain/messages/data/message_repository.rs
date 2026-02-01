@@ -4,11 +4,24 @@ use crate::domain::messages::message::Message;
 
 #[async_trait]
 pub trait MessageRepository: Send + Sync {
-    async fn upsert(message: Message);
-    async fn bulk_upsert(messages: Vec<Message>);
-    async fn get_by_id(chat_id: i64, message_id: i64) -> Option<Message>;
-    async fn get_by_ids(chat_id: i64, message_ids: Vec<i64>) -> Vec<Message>;
-    async fn get_last_from(chat_ids: Vec<i64>) -> Vec<Message>;
-    async fn get_messages(chat_id: i64, before: i64, limit: i32) -> Vec<Message>;
-    async fn delete_by_id(chat_id: i64, message_id: i64);
+    async fn upsert(&self, message: Message) -> Result<(), anyhow::Error>;
+    async fn bulk_upsert(&self, messages: Vec<Message>) -> Result<(), anyhow::Error>;
+    async fn get_by_id(
+        &self,
+        chat_id: i64,
+        message_id: i64,
+    ) -> Result<Option<Message>, anyhow::Error>;
+    async fn get_by_ids(
+        &self,
+        chat_id: i64,
+        message_ids: Vec<i64>,
+    ) -> Result<Vec<Message>, anyhow::Error>;
+    async fn get_lasts_from(&self, chat_ids: Vec<i64>) -> Result<Vec<Message>, anyhow::Error>;
+    async fn get_messages(
+        &self,
+        chat_id: i64,
+        before: i64,
+        limit: i32,
+    ) -> Result<Vec<Message>, anyhow::Error>;
+    async fn delete_by_id(&self, chat_id: i64, message_id: i64) -> Result<(), anyhow::Error>;
 }

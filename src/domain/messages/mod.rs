@@ -1,4 +1,4 @@
-mod attachment;
-mod data;
-mod message;
-mod message_ack;
+pub mod attachment;
+pub mod data;
+pub mod message;
+pub mod message_ack;

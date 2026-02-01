@@ -1,9 +1,37 @@
+use std::str::FromStr;
+
 use crate::domain::{auth::User, chats::chat_member::ChatMember};
 use bitflags::bitflags;
+use chrono::{DateTime, Utc};
+use serde::Serialize;
 
+#[derive(Serialize, Clone, Debug, PartialEq)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum ChatType {
     DM,
     GroupDM,
+}
+
+impl std::fmt::Display for ChatType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let str = match self {
+            ChatType::DM => "DM",
+            ChatType::GroupDM => "GROUP_DM",
+        };
+        write!(f, "{}", str)
+    }
+}
+
+impl FromStr for ChatType {
+    type Err = String;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "DM" => Ok(ChatType::DM),
+            "GROUP_DM" => Ok(ChatType::GroupDM),
+            _ => Err(format!("Unknown ChatType: {}", s)),
+        }
+    }
 }
 
 bitflags! {
@@ -33,6 +61,15 @@ bitflags! {
     }
 }
 
+impl TryFrom<i64> for ChatPermissions {
+    type Error = anyhow::Error;
+
+    fn try_from(value: i64) -> Result<Self, Self::Error> {
+        ChatPermissions::from_bits(value)
+            .ok_or_else(|| anyhow::anyhow!("Invalid ChatPermissions bits: {}", value))
+    }
+}
+
 pub struct Chat {
     pub id: i64,
     pub owner_id: Option<i64>,
@@ -41,8 +78,9 @@ pub struct Chat {
     pub chat_type: ChatType,
     pub last_message_id: Option<i64>,
     pub permissions: ChatPermissions,
+    pub timestamp: DateTime<Utc>,
 
-    members: Vec<super::chat_member::ChatMember>,
+    pub members: Vec<super::chat_member::ChatMember>,
 }
 
 impl Chat {
@@ -55,6 +93,7 @@ impl Chat {
             chat_type: ChatType::DM,
             last_message_id: None,
             permissions: ChatPermissions::DM_CHAT,
+            timestamp: Utc::now(),
             members: Vec::from([ChatMember::from(user_1), ChatMember::from(user_2)]),
         }
     }
@@ -68,6 +107,7 @@ impl Chat {
             chat_type: ChatType::GroupDM,
             last_message_id: None,
             permissions: ChatPermissions::DEFAULT_DM_GROUP_MEMBER,
+            timestamp: Utc::now(),
             members: members,
         }
     }
@@ -136,6 +176,7 @@ mod tests {
             chat_type: ChatType::GroupDM,
             last_message_id: None,
             permissions: ChatPermissions::empty(),
+            timestamp: Utc::now(),
             members: vec![],
         };
 
@@ -159,6 +200,7 @@ mod tests {
             chat_type: ChatType::GroupDM,
             last_message_id: None,
             permissions: ChatPermissions::SEND_MESSAGES | ChatPermissions::SEND_FILES,
+            timestamp: Utc::now(),
             members: vec![member],
         };
 
@@ -182,6 +224,7 @@ mod tests {
             chat_type: ChatType::GroupDM,
             last_message_id: None,
             permissions: ChatPermissions::SEND_MESSAGES | ChatPermissions::SEND_FILES,
+            timestamp: Utc::now(),
             members: vec![member],
         };
 
@@ -199,6 +242,7 @@ mod tests {
             chat_type: ChatType::GroupDM,
             last_message_id: None,
             permissions: ChatPermissions::SEND_MESSAGES,
+            timestamp: Utc::now(),
             members: vec![],
         };
 
@@ -220,6 +264,7 @@ mod tests {
             chat_type: ChatType::GroupDM,
             last_message_id: None,
             permissions: ChatPermissions::SEND_MESSAGES,
+            timestamp: Utc::now(),
             members: vec![member],
         };
 
