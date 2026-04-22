@@ -35,6 +35,7 @@ impl FromStr for ChatType {
 }
 
 bitflags! {
+    #[derive(Clone)]
     pub struct ChatPermissions: i64 {
         const SEND_MESSAGES = 1 << 0;
         const ADD_MEMBERS = 1 << 1;

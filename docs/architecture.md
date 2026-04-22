@@ -23,7 +23,8 @@ CREATE TABLE chat_event_log (
     event_data blob,
     server_timestamp timestamp,
     message_id bigint,
-    PRIMARY KEY ((user_id), event_id)
+    user_id bigint,
+    PRIMARY KEY ((chat_id), event_id)
 ) WITH CLUSTERING ORDER BY (event_id ASC)
     AND compaction = {
         'class': 'TimeWindowCompactionStrategy',
@@ -72,3 +73,29 @@ INSERT INTO user_event_log (
 ## Client fast sync
 
 ## Client full sync
+
+
+# Reactions
+
+```cql
+CREATE TABLE reactions_by_message_id (
+    chat_id: bigint,
+    message_id: bigint,
+    user_id: biging,
+    pack_id: string,
+    emoji: string,
+    timestamp: timestamp
+
+    PRIMARY KEY ((chat_id, message_id), user_id, pack_id, emoji)
+);
+
+CREATE TABLE reaction_counts_by_message_id (
+    chat_id: bigint,
+    message_id: bigint,
+    pack_id: string,
+    emoji: string,
+    count: counter
+
+    PRIMARY KEY ((chat_id, message_id), pack_id, emoji)
+);
+```

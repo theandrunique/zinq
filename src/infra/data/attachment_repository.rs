@@ -2,13 +2,13 @@ use std::sync::Arc;
 
 use async_trait::async_trait;
 use chrono::{DateTime, Utc};
-use scylla::client::session::Session;
+use scylla::{client::session::Session, DeserializeRow};
 
 use crate::{
-    domain::messages::{attachment::Attachment, data::AttachmentRepository},
-    infra::data::common::ScyllaCommon,
+    domain::attachments::{Attachment, data::AttachmentRepository}, infra::data::common::ScyllaCommon
 };
 
+#[derive(Debug, DeserializeRow)]
 struct AttachmentDb {
     chat_id: i64,
     attachment_id: i64,
@@ -18,8 +18,8 @@ struct AttachmentDb {
     filename: String,
     is_spoiler: bool,
     placeholder: Option<String>,
-    presigned_url: String,
-    presigned_url_expired_timestamp: DateTime<Utc>,
+    signed_url: String,
+    signed_url_expires: DateTime<Utc>,
     size: i64,
     waveform: Option<String>,
     timestamp: DateTime<Utc>,
@@ -31,13 +31,13 @@ impl TryFrom<AttachmentDb> for Attachment {
     fn try_from(value: AttachmentDb) -> Result<Self, Self::Error> {
         Ok(Attachment {
             id: value.attachment_id,
-            message_id: Some(value.message_id),
+            message_id: value.message_id,
             chat_id: value.chat_id,
             filename: value.filename,
             content_type: value.content_type,
             size: value.size,
-            pre_signed_url: value.presigned_url,
-            pre_signed_url_expires_timestamp: value.presigned_url_expired_timestamp,
+            signed_url: value.signed_url,
+            signed_url_expires: value.signed_url_expires,
             placeholder: value.placeholder,
             duration_secs: value.duration_secs,
             waveform: value.waveform,
@@ -68,7 +68,16 @@ impl AttachmentRepository for ScyllaAttachmentRepository {
         chat_id: i64,
         attachment_id: i64,
     ) -> Result<Option<Attachment>, anyhow::Error> {
-        todo!()
+        let query = "
+            SELECT *
+            FROM attachments_by_id
+            WHERE chat_id = ? AND attachment_id = ?
+            LIMIT 1
+        ";
+
+        let row: Option<AttachmentDb> =
+            self.common.exec_first(query, (chat_id, attachment_id)).await?;
+        row.map(Attachment::try_from).transpose()
     }
 
     async fn get_channel_attachments(
@@ -77,14 +86,44 @@ impl AttachmentRepository for ScyllaAttachmentRepository {
         before_message_id: i64,
         limit: i32,
     ) -> Result<Vec<Attachment>, anyhow::Error> {
-        todo!()
+        let query = "
+            SELECT *
+            FROM attachments_by_message_id
+            WHERE chat_id = ? AND message_id < ?
+            LIMIT ?
+        ";
+
+        let rows: Vec<AttachmentDb> =
+            self.common.exec_all(query, (chat_id, before_message_id, limit)).await?;
+
+        rows.into_iter().map(Attachment::try_from).collect()
     }
 
-    async fn update_pre_signed_urls(
+    async fn update_signed_urls(
         &self,
-        chat_id: i64,
         attachments: Vec<Attachment>,
     ) -> Result<(), anyhow::Error> {
-        todo!()
+        let query = "
+            UPDATE attachments_by_message_id
+            SET signed_url = ?, signed_url_expires = ?
+            WHERE chat_id = ? AND message_id = ? AND attachment_id = ?
+        ";
+
+        for attachment in attachments {
+            self.common
+                .exec(
+                    query,
+                    (
+                        attachment.signed_url.clone(),
+                        attachment.signed_url_expires,
+                        attachment.chat_id,
+                        attachment.message_id,
+                        attachment.id,
+                    ),
+                )
+                .await?;
+        }
+
+        Ok(())
     }
 }

@@ -7,7 +7,6 @@ pub enum DomainEvent {
     UserCreate { user: User },
 }
 
-#[derive(Clone)]
 pub struct EventBus {
     sender: broadcast::Sender<DomainEvent>,
 }

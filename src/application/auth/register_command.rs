@@ -41,9 +41,9 @@ pub struct RegisterComandHandler {
 impl RegisterComandHandler {
     pub fn new(state: &AppState) -> Self {
         Self {
-            event_bus: state.event_bus.clone(),
-            id_gen: state.id_gen.clone(),
-            user_repository: state.user_repository.clone(),
+            event_bus: Arc::clone(&state.event_bus),
+            id_gen: Arc::clone(&state.id_gen),
+            user_repository: Arc::clone(&state.user_repository),
         }
     }
 

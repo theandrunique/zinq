@@ -85,7 +85,7 @@ impl IntoResponse for Error {
                 ApiError::new(ErrorCode::EmailAlreadyInUse, "Email already in use")
             }
             Error::InternalServerError(e) => {
-                tracing::error!("Internal server error: {:?}", e);
+                tracing::error!(error = ?e, "Unhandled domain error");
                 ApiError::new(ErrorCode::InternalServerError, "Internal server error")
             }
             Error::InvalidRequestBody(e) => ApiError::validation(e),

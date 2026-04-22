@@ -2,6 +2,7 @@ use std::net::SocketAddr;
 
 use axum::Router;
 use tracing::info;
+use tracing_subscriber::{EnvFilter, layer::SubscriberExt, util::SubscriberInitExt};
 
 use crate::{
     gateway::gateway,
@@ -21,7 +22,12 @@ mod state;
 
 #[tokio::main]
 async fn main() {
-    tracing_subscriber::fmt().init();
+    tracing_subscriber::registry()
+        .with(tracing_subscriber::fmt::layer())
+        .witn(EnvFilter::from_default_env())
+        .init();
+
+    info!("Initializing server");
 
     let app_config = config::config().await;
 

@@ -1,6 +1,6 @@
 use async_trait::async_trait;
 
-use crate::domain::messages::message::Message;
+use crate::domain::messages::Message;
 
 #[async_trait]
 pub trait MessageRepository: Send + Sync {

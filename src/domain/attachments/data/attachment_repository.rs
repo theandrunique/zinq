@@ -1,6 +1,6 @@
 use async_trait::async_trait;
 
-use crate::domain::messages::attachment::Attachment;
+use crate::domain::attachments::Attachment;
 
 #[async_trait]
 pub trait AttachmentRepository: Send + Sync {
@@ -9,15 +9,16 @@ pub trait AttachmentRepository: Send + Sync {
         chat_id: i64,
         attachment_id: i64,
     ) -> Result<Option<Attachment>, anyhow::Error>;
+
     async fn get_channel_attachments(
         &self,
         chat_id: i64,
         before_message_id: i64,
         limit: i32,
     ) -> Result<Vec<Attachment>, anyhow::Error>;
-    async fn update_pre_signed_urls(
+
+    async fn update_signed_urls(
         &self,
-        chat_id: i64,
         attachments: Vec<Attachment>,
     ) -> Result<(), anyhow::Error>;
 }

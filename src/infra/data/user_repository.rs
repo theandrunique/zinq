@@ -307,7 +307,7 @@ impl UserRepository for ScyllaUserRepository {
             .exec(query, (username.clone(), ts, user_id))
             .await
             .map_err(UpdateUsernameError::InternalError)?;
-        self.delete_index("users_by_username", "email", &old_username)
+        self.delete_index("users_by_username", "username", &old_username)
             .await
             .map_err(UpdateUsernameError::InternalError)?;
 

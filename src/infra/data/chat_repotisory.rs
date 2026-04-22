@@ -2,7 +2,7 @@ use std::{collections::HashMap, str::FromStr, sync::Arc};
 
 use async_trait::async_trait;
 use chrono::{DateTime, Utc};
-use scylla::{DeserializeRow, client::session::Session, serialize::batch::BatchValues, statement::batch::{Batch, BatchType}};
+use scylla::{DeserializeRow, client::session::Session};
 
 use crate::{
     domain::chats::{Chat, ChatMember, ChatPermissions, ChatType, data::ChatRepository},
@@ -110,30 +110,59 @@ impl ScyllaChatRepository {
 #[async_trait]
 impl ChatRepository for ScyllaChatRepository {
     async fn upsert(&self, chat: Chat) -> Result<(), anyhow::Error> {
-        let mut batch = Batch::new(BatchType::Logged);
-        batch.append_statement("
+        // Insert chat row
+        let query_chat = "
             INSERT INTO chats_by_id (
                 chat_id,
                 type,
                 name,
                 owner_id,
                 image,
+                last_message_id,
                 permissions,
                 timestamp
-            ) VALUES (?, ?, ?, ?, ?, ?, ?)
-        ");
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        ";
 
-        if chat.chat_type == ChatType::DM {
-            batch.append_statement("
+        self.common
+            .exec(
+                query_chat,
+                (
+                    chat.id,
+                    chat.chat_type.to_string(),
+                    chat.name.clone(),
+                    chat.owner_id,
+                    chat.image.clone(),
+                    chat.last_message_id,
+                    chat.permissions.bits(),
+                    chat.timestamp,
+                ),
+            )
+            .await?;
+
+        // For DM chats also maintain mapping in private_chats
+        if chat.chat_type == ChatType::DM && chat.members.len() == 2 {
+            let user_id1 = chat.members[0].user_id;
+            let user_id2 = chat.members[1].user_id;
+            let (u1, u2) = if user_id1 < user_id2 {
+                (user_id1, user_id2)
+            } else {
+                (user_id2, user_id1)
+            };
+
+            let query_private = "
                 INSERT INTO private_chats (
                     user_id1,
                     user_id2,
                     chat_id
                 ) VALUES (?, ?, ?)
-            ");
+            ";
+
+            self.common.exec(query_private, (u1, u2, chat.id)).await?;
         }
 
-        let query = "
+        // Insert members into chat_users_by_user_id
+        let query_member = "
             INSERT INTO chat_users_by_user_id (
                 user_id,
                 chat_id,
@@ -146,33 +175,23 @@ impl ChatRepository for ScyllaChatRepository {
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         ";
 
-        self.common
-            .exec(
-                query,
-                (
-                    chat.id,
-                    chat.chat_type.to_string(),
-                    chat.name,
-                    chat.owner_id,
-                    chat.image,
-                    chat.permissions.bits(),
-                    chat.timestamp,
-                ),
-            )
-            .await?;
-
-
-        // chats_by_id
-        batch.append_statement(q_chat.clone());
-        values.add((chat.id,));
-
-        // members
         for member in &chat.members {
-            batch.append_statement(q_member.clone());
-            values.add((member.user_id, chat.id));
+            self.common
+                .exec(
+                    query_member,
+                    (
+                        member.user_id,
+                        chat.id,
+                        member.last_read_message_id,
+                        member.username.clone(),
+                        member.global_name.clone(),
+                        member.avatar.clone(),
+                        member.permissions.map(|p| p.bits()),
+                        member.is_leave,
+                    ),
+                )
+                .await?;
         }
-
-        self.common.session.batch(&batch, values).await?;
 
         Ok(())
     }
@@ -213,7 +232,7 @@ impl ChatRepository for ScyllaChatRepository {
 
     async fn get_member_ids(&self, chat_id: i64) -> Result<Vec<(i64, bool)>, anyhow::Error> {
         let query =
-            "SELECT user_id, is_leave FROM channel_users_by_channel_id WHERE channel_id = ?";
+            "SELECT user_id, is_leave FROM chat_users_by_chat_id WHERE chat_id = ?";
 
         let result: Vec<(i64, bool)> = self.common.exec_all(query, (chat_id,)).await?;
 
@@ -305,11 +324,16 @@ impl ChatRepository for ScyllaChatRepository {
     }
 
     async fn update_channel_info(&self, chat_id: i64) -> Result<(), anyhow::Error> {
-        todo!()
+        // There is no additional data passed here, so for now this is a no-op.
+        // This can be extended later to update denormalized channel information.
+        let _ = chat_id;
+        Ok(())
     }
 
     async fn update_owner_id(&self, chat_id: i64, owner_id: i64) -> Result<(), anyhow::Error> {
-        todo!()
+        let query = "UPDATE chats_by_id SET owner_id = ? WHERE chat_id = ?";
+        self.common.exec(query, (owner_id, chat_id)).await?;
+        Ok(())
     }
 
     async fn update_last_message_id(
