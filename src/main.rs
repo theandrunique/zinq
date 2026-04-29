@@ -24,7 +24,7 @@ mod state;
 async fn main() {
     tracing_subscriber::registry()
         .with(tracing_subscriber::fmt::layer())
-        .witn(EnvFilter::from_default_env())
+        .with(EnvFilter::from_default_env())
         .init();
 
     info!("Initializing server");

@@ -1,2 +1,2 @@
 mod emoji;
-mod emoji_pack;
+mod default_emoji;
