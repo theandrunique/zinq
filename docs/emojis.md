@@ -21,22 +21,33 @@
 ```cql
 CREATE TABLE emoji_packs (
     pack_id: bigint,
+    pack_name: text,
     display_name: text,
     owner_id: bigint,
-    is_published: text,
+    is_published: boolean,
     timestamp: timestamp,
-    preview_asset_url: text,
+    updated_timestamp: timestamp,
+    preview_asset: text,
+
     PRIMARY KEY (pack_id)
+);
+
+CREATE TABLE emoji_pack_names (
+    pack_name text,
+    pack_id bigint,
+
+    PRIMARY KEY (pack_name)
 );
 
 CREATE TABLE emojis (
     pack_id bigint,
     emoji_id text,
     shortcode text,
-    asset_url text,
-    order int,
-    PRIMARY KEY (pack_id, order)
-) WITH CLUSTERING ORDER BY (order ASC);
+    asset text,
+    order_index int,
+
+    PRIMARY KEY (pack_id, emoji_id)
+);
 ```
 
 ## REST API
@@ -45,7 +56,7 @@ CREATE TABLE emojis (
 
 ```json
 {
-  "display_name": "Cute Cats"
+    "display_name": "Cute Cats"
 }
 ```
 *Or multipart for preview upload
@@ -83,8 +94,8 @@ multipart/form-data
 - unicode_hint
 
 ```cql
-SELECT order FROM emojis
-WHERE pack_id = ? ORDER BY order DESC LIMIT 1;
+SELECT order_index FROM emojis
+WHERE pack_id = ? ORDER BY order_index DESC LIMIT 1;
 
 INSERT INTO emojis (pack_id, emoji_id, unicode_hint, asset_url, order_index)
 VALUES (?, ?, ?, ?, ?);
@@ -98,9 +109,18 @@ DELETE FROM emojis WHERE pack_id = ? AND emoji_id = ?;
 
 ### PUT /emoji-packs/{pack_id}/emojis/order
 
+```json
+{
+    "emoji_ids": ["em_1", "em_5", "em_3"]
+}
+```
+
 ```cql
-UPDATE pack_emojis SET order_index = ?
-WHERE pack_id = ? AND emoji_id = ?;
+BEGIN UNLOGGED BATCH
+    UPDATE emoji SET order_index 1 WHERE pack_id = ? AND emoji_id = ?;
+    UPDATE emoji SET order_index 2 WHERE pack_id = ? AND emoji_id = ?;
+    UPDATE emoji SET order_index 3 WHERE pack_id = ? AND emoji_id = ?;
+APPLY BATCH;
 ```
 
 ### POST /emoji-packs/{pack_id}/publish
@@ -108,14 +128,22 @@ WHERE pack_id = ? AND emoji_id = ?;
 ```cql
 SELECT pack_id FROM emoji_pack_names WHERE pack_name = ?;
 
-INSERT INTO emoji_pack_names (pack_name, pack_id) VALUES (?, ?);
+INSERT INTO emoji_pack_names (pack_name, pack_id) VALUES (?, ?) IF NOT EXISTS;
 
 UPDATE emoji_packs
-SET is_published = true,
+SET
+    is_published = true,
     pack_name = ?,
-    display_name = ?,
-    timestamp = now(),
+    display_name = ?
 WHERE pack_id = ?;
 ```
 
 ### DELETE /emoji-packs/{pack_id}
+
+```cql
+UPDATE emoji_packs
+SET
+    is_published = false,
+    pack_name = null
+WHERE pack_id = ?;
+```
