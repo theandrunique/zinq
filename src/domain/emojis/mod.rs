@@ -1,2 +1,2 @@
-mod emoji;
-mod default_emoji;
+pub mod emoji;
+pub mod default_emoji;

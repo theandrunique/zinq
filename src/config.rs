@@ -5,6 +5,7 @@ use tokio::sync::OnceCell;
 
 pub struct Config {
     pub port: u16,
+    pub scylla_nodes: String,
 }
 
 pub static CONFIG: OnceCell<Config> = OnceCell::const_new();
@@ -17,6 +18,7 @@ async fn init_config() -> Config {
             .unwrap_or("3000".to_string())
             .parse()
             .expect("Failed to parse port"),
+        scylla_nodes: env::var("SCYLLA_NODES").unwrap_or("127.0.0.1:9042".to_string()),
     }
 }
 

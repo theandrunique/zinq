@@ -3,6 +3,7 @@ use std::sync::Arc;
 use scylla::client::session_builder::SessionBuilder;
 
 use crate::{
+    config,
     domain::{
         attachments::data::AttachmentRepository, auth::data::{
             user_repository::UserRepository, user_session_repository::UserSessionRepository,
@@ -31,9 +32,11 @@ pub struct AppState {
 }
 
 pub async fn init_state() -> AppState {
+    let app_config = config::config().await;
+
     let session = Arc::new(
         SessionBuilder::new()
-            .known_node("scylla:9042")
+            .known_node(&app_config.scylla_nodes)
             .build()
             .await
             .expect("Error creating scylla session"),

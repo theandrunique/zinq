@@ -186,7 +186,7 @@ impl ChatRepository for ScyllaChatRepository {
                         member.username.clone(),
                         member.global_name.clone(),
                         member.avatar.clone(),
-                        member.permissions.map(|p| p.bits()),
+                        member.permissions.as_ref().map(|p| p.bits()),
                         member.is_leave,
                     ),
                 )
