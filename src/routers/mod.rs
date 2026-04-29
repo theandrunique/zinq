@@ -4,5 +4,5 @@ mod schemas;
 mod user_router;
 
 pub use auth_router::auth_router;
-pub use emoji_router::emoji_router as emoji_router;
+pub use emoji_router::emoji_router;
 pub use user_router::user_router;

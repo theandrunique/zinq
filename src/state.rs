@@ -5,9 +5,13 @@ use scylla::client::session_builder::SessionBuilder;
 use crate::{
     config,
     domain::{
-        attachments::data::AttachmentRepository, auth::data::{
+        attachments::data::AttachmentRepository,
+        auth::data::{
             user_repository::UserRepository, user_session_repository::UserSessionRepository,
-        }, chats::data::ChatRepository, events::EventBus, messages::data::MessageRepository
+        },
+        chats::data::ChatRepository,
+        events::EventBus,
+        messages::data::MessageRepository,
     },
     infra::{
         data::{

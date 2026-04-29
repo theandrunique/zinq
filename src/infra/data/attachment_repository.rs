@@ -2,10 +2,11 @@ use std::sync::Arc;
 
 use async_trait::async_trait;
 use chrono::{DateTime, Utc};
-use scylla::{client::session::Session, DeserializeRow};
+use scylla::{DeserializeRow, client::session::Session};
 
 use crate::{
-    domain::attachments::{Attachment, data::AttachmentRepository}, infra::data::common::ScyllaCommon
+    domain::attachments::{Attachment, data::AttachmentRepository},
+    infra::data::common::ScyllaCommon,
 };
 
 #[derive(Debug, DeserializeRow)]
@@ -75,8 +76,10 @@ impl AttachmentRepository for ScyllaAttachmentRepository {
             LIMIT 1
         ";
 
-        let row: Option<AttachmentDb> =
-            self.common.exec_first(query, (chat_id, attachment_id)).await?;
+        let row: Option<AttachmentDb> = self
+            .common
+            .exec_first(query, (chat_id, attachment_id))
+            .await?;
         row.map(Attachment::try_from).transpose()
     }
 
@@ -93,16 +96,15 @@ impl AttachmentRepository for ScyllaAttachmentRepository {
             LIMIT ?
         ";
 
-        let rows: Vec<AttachmentDb> =
-            self.common.exec_all(query, (chat_id, before_message_id, limit)).await?;
+        let rows: Vec<AttachmentDb> = self
+            .common
+            .exec_all(query, (chat_id, before_message_id, limit))
+            .await?;
 
         rows.into_iter().map(Attachment::try_from).collect()
     }
 
-    async fn update_signed_urls(
-        &self,
-        attachments: Vec<Attachment>,
-    ) -> Result<(), anyhow::Error> {
+    async fn update_signed_urls(&self, attachments: Vec<Attachment>) -> Result<(), anyhow::Error> {
         let query = "
             UPDATE attachments_by_message_id
             SET signed_url = ?, signed_url_expires = ?

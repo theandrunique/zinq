@@ -5,5 +5,5 @@ pub struct Reaction {
     pub user_id: i64,
     pub reaction_type: String,
     pub emoji: String,
-    pub timestamp: DateTime<Utc>
+    pub timestamp: DateTime<Utc>,
 }

@@ -2,12 +2,10 @@ use std::sync::Arc;
 
 use async_trait::async_trait;
 use chrono::{DateTime, Utc};
-use scylla::{client::session::Session, DeserializeRow};
+use scylla::{DeserializeRow, client::session::Session};
 
 use crate::{
-    domain::messages::{
-        Message, MessageMetadata, MessageType, data::MessageRepository
-    },
+    domain::messages::{Message, MessageMetadata, MessageType, data::MessageRepository},
     infra::data::common::ScyllaCommon,
 };
 
@@ -149,8 +147,7 @@ impl MessageRepository for ScyllaMessageRepository {
             WHERE chat_id = ? AND message_id = ?
         ";
 
-        let row: Option<MessageDb> =
-            self.common.exec_first(query, (chat_id, message_id)).await?;
+        let row: Option<MessageDb> = self.common.exec_first(query, (chat_id, message_id)).await?;
 
         row.map(Message::try_from).transpose()
     }

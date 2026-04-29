@@ -1,4 +1,4 @@
-pub mod data;
 mod attachment;
+pub mod data;
 
 pub use attachment::Attachment;

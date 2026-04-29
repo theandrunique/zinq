@@ -231,8 +231,7 @@ impl ChatRepository for ScyllaChatRepository {
     }
 
     async fn get_member_ids(&self, chat_id: i64) -> Result<Vec<(i64, bool)>, anyhow::Error> {
-        let query =
-            "SELECT user_id, is_leave FROM chat_users_by_chat_id WHERE chat_id = ?";
+        let query = "SELECT user_id, is_leave FROM chat_users_by_chat_id WHERE chat_id = ?";
 
         let result: Vec<(i64, bool)> = self.common.exec_all(query, (chat_id,)).await?;
 

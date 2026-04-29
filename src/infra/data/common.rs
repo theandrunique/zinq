@@ -1,10 +1,8 @@
 use std::{collections::HashMap, sync::Arc};
 
 use scylla::{
-    client::session::Session,
-    deserialize::row::DeserializeRow,
-    response::query_result::QueryResult,
-    serialize::row::SerializeRow,
+    client::session::Session, deserialize::row::DeserializeRow,
+    response::query_result::QueryResult, serialize::row::SerializeRow,
     statement::prepared::PreparedStatement,
 };
 use tokio::sync::RwLock;
@@ -22,10 +20,7 @@ impl ScyllaCommon {
         }
     }
 
-    async fn get_or_prepare(
-        &self,
-        query: &str,
-    ) -> Result<Arc<PreparedStatement>, anyhow::Error> {
+    async fn get_or_prepare(&self, query: &str) -> Result<Arc<PreparedStatement>, anyhow::Error> {
         {
             let guard = self.prepared.read().await;
             if let Some(stmt) = guard.get(query) {

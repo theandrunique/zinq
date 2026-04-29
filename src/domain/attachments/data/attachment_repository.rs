@@ -17,8 +17,5 @@ pub trait AttachmentRepository: Send + Sync {
         limit: i32,
     ) -> Result<Vec<Attachment>, anyhow::Error>;
 
-    async fn update_signed_urls(
-        &self,
-        attachments: Vec<Attachment>,
-    ) -> Result<(), anyhow::Error>;
+    async fn update_signed_urls(&self, attachments: Vec<Attachment>) -> Result<(), anyhow::Error>;
 }
