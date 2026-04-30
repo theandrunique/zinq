@@ -60,10 +60,10 @@ INSERT INTO messages (
 INSERT INTO user_event_log (
     user_id,
     event_id,
-    event_type int,
-    event_data blob,
-    server_timestamp timestamp,
-    chat_id bigint,
+    event_type,
+    event_data,
+    server_timestamp,
+    chat_id,
     message_id bigint,
 ) VALUES (?, ?, ?, ?, ?, ?, ?)
 ```
