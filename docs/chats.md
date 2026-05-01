@@ -22,9 +22,9 @@ CREATE TABLE chat_users_by_user_id (
     chat_id bigint,
     last_read_message_id bigint,
     username text,
-    global_name text,
+    display_name text,
     image text,
-    permission_overwrites bigint,
+    permission_overrides bigint,
     is_leave boolean,
 
     PRIMARY KEY (user_id, chat_id)
@@ -36,9 +36,9 @@ CREATE MATERIALIZED VIEW chat_users_by_chat_id AS
         chat_id,
         last_read_message_id,
         username,
-        global_name,
+        display_name,
         image,
-        permission_overwrites,
+        permission_overrides,
         is_leave
     FROM chat_users_by_user_id
     WHERE
@@ -85,9 +85,9 @@ BEGIN UNLOGGED BATCH
         chat_id,
         last_read_message_id,
         username,
-        global_name,
+        display_name,
         image,
-        permission_overwrites,
+        permission_overrides,
         is_leave
     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?);
     -- and so on
@@ -114,6 +114,8 @@ WHERE chat_id = ?;
 
 ```cql
 SELECT * FROM chat_users_by_user_id WHERE user_id = ?;
+
+SELECT * FROM chats_by_id WHERE chat_id IN (?);
 ```
 
 ### GET /users/@me/dms/me
@@ -144,9 +146,9 @@ INSERT INTO chat_users_by_user_id (
     chat_id,
     last_read_message_id,
     username,
-    global_name,
+    display_name,
     image,
-    permission_overwrites,
+    permission_overrides,
     is_leave
 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?);
 ```

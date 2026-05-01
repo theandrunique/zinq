@@ -1,4 +1,3 @@
-
 # Emojis and Stickers
 
 ## Stickers
@@ -59,11 +58,16 @@ CREATE TABLE emojis (
     "display_name": "Cute Cats"
 }
 ```
-*Or multipart for preview upload
 
 ```cql
-INSERT INTO emoji_packs (pack_id, display_name, owner_id, is_published, timestamp, preview_asset)
-VALUES (?, ?, ?, ?, ?, ?)
+INSERT INTO emoji_packs (
+    pack_id,
+    display_name,
+    owner_id,
+    is_published,
+    timestamp,
+    preview_asset
+) VALUES (?, ?, ?, ?, ?, ?);
 ```
 
 ### GET /emoji-packs/{pack_id}
@@ -76,36 +80,31 @@ SELECT * FROM emojis WHERE pack_id = ?;
 
 ### PATCH /emoji-packs/{pack_id}
 
-multipart/form-data
-- display_name
-- preview_asset
-
 ```cql
 UPDATE emoji_packs
-SET display_name = ?
-  AND preview_asset_url = ?
+SET display_name = ?,
+    preview_asset = ?
 WHERE pack_id = ?
 ```
 
 ### POST /emoji-packs/{pack_id}/emojis
 
-multipart/form-data
-- emoji
-- unicode_hint
-
 ```cql
 SELECT order_index FROM emojis
-WHERE pack_id = ? ORDER BY order_index DESC LIMIT 1;
+WHERE pack_id = ?
+ORDER BY order_index DESC
+LIMIT 1;
 
-INSERT INTO emojis (pack_id, emoji_id, unicode_hint, asset_url, order_index)
-VALUES (?, ?, ?, ?, ?);
+INSERT INTO emojis (
+    pack_id,
+    emoji_id,
+    shortcode,
+    asset,
+    order_index
+) VALUES (?, ?, ?, ?, ?);
 ```
 
 ### DELETE /emoji-packs/{pack_id}/emojis/{emoji_id}
-
-```cql
-DELETE FROM emojis WHERE pack_id = ? AND emoji_id = ?;
-```
 
 ### PUT /emoji-packs/{pack_id}/emojis/order
 
@@ -128,11 +127,11 @@ APPLY BATCH;
 ```cql
 SELECT pack_id FROM emoji_pack_names WHERE pack_name = ?;
 
-INSERT INTO emoji_pack_names (pack_name, pack_id) VALUES (?, ?) IF NOT EXISTS;
+INSERT INTO emoji_pack_names (pack_name, pack_id)
+VALUES (?, ?) IF NOT EXISTS;
 
 UPDATE emoji_packs
-SET
-    is_published = true,
+SET is_published = true,
     pack_name = ?,
     display_name = ?
 WHERE pack_id = ?;
@@ -142,8 +141,7 @@ WHERE pack_id = ?;
 
 ```cql
 UPDATE emoji_packs
-SET
-    is_published = false,
+SET is_published = false,
     pack_name = null
 WHERE pack_id = ?;
 ```
