@@ -51,7 +51,7 @@ CREATE TABLE emojis (
 
 ## REST API
 
-### POST /emoji-packs
+### POST `/emoji-packs`
 
 ```json
 {
@@ -70,7 +70,7 @@ INSERT INTO emoji_packs (
 ) VALUES (?, ?, ?, ?, ?, ?);
 ```
 
-### GET /emoji-packs/{pack_id}
+### GET `/emoji-packs/{pack_id}`
 
 ```cql
 SELECT * FROM emoji_packs WHERE pack_id = ?;
@@ -78,7 +78,7 @@ SELECT * FROM emoji_packs WHERE pack_id = ?;
 SELECT * FROM emojis WHERE pack_id = ?;
 ```
 
-### PATCH /emoji-packs/{pack_id}
+### PATCH `/emoji-packs/{pack_id}`
 
 ```cql
 UPDATE emoji_packs
@@ -87,7 +87,7 @@ SET display_name = ?,
 WHERE pack_id = ?
 ```
 
-### POST /emoji-packs/{pack_id}/emojis
+### POST `/emoji-packs/{pack_id}/emojis`
 
 ```cql
 SELECT order_index FROM emojis
@@ -104,9 +104,9 @@ INSERT INTO emojis (
 ) VALUES (?, ?, ?, ?, ?);
 ```
 
-### DELETE /emoji-packs/{pack_id}/emojis/{emoji_id}
+### DELETE `/emoji-packs/{pack_id}/emojis/{emoji_id}`
 
-### PUT /emoji-packs/{pack_id}/emojis/order
+### PUT `/emoji-packs/{pack_id}/emojis/order`
 
 ```json
 {
@@ -122,7 +122,7 @@ BEGIN UNLOGGED BATCH
 APPLY BATCH;
 ```
 
-### POST /emoji-packs/{pack_id}/publish
+### POST `/emoji-packs/{pack_id}/publish`
 
 ```cql
 SELECT pack_id FROM emoji_pack_names WHERE pack_name = ?;
@@ -137,7 +137,7 @@ SET is_published = true,
 WHERE pack_id = ?;
 ```
 
-### DELETE /emoji-packs/{pack_id}
+### DELETE `/emoji-packs/{pack_id}`
 
 ```cql
 UPDATE emoji_packs

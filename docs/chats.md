@@ -57,7 +57,7 @@ CREATE TABLE private_chats (
 
 ## REST API
 
-### POST /chats
+### POST `/chats`
 
 ```json
 {
@@ -94,13 +94,13 @@ BEGIN UNLOGGED BATCH
 APPLY BATCH;
 ```
 
-### GET /chats/{chat_id}
+### GET `/chats/{chat_id}`
 
 ```cql
 SELECT * FROM chats_by_id WHERE chat_id = ?;
 ```
 
-### PATCH /chats/{chat_id}
+### PATCH `/chats/{chat_id}`
 
 ```cql
 UPDATE chats_by_id
@@ -110,7 +110,7 @@ SET name = ?,
 WHERE chat_id = ?;
 ```
 
-### GET /users/@me/chats
+### GET `/users/@me/chats`
 
 ```cql
 SELECT * FROM chat_users_by_user_id WHERE user_id = ?;
@@ -118,7 +118,7 @@ SELECT * FROM chat_users_by_user_id WHERE user_id = ?;
 SELECT * FROM chats_by_id WHERE chat_id IN (?);
 ```
 
-### GET /users/@me/dms/me
+### GET `/users/@me/dms/me`
 
 ```cql
 SELECT chat_id FROM private_chats
@@ -127,7 +127,7 @@ WHERE user_id1 = ? AND user_id2 = ?;
 SELECT * FROM chats_by_id WHERE chat_id = ?;
 ```
 
-### GET /users/@me/dms/{user_id}
+### GET `/users/@me/dms/{user_id}`
 
 ```cql
 SELECT chat_id FROM private_chats
@@ -136,7 +136,7 @@ WHERE user_id1 = ? AND user_id2 = ?;
 SELECT * FROM chats_by_id WHERE chat_id = ?;
 ```
 
-### PUT /chats/{chat_id}/members/{user_id}
+### PUT `/chats/{chat_id}/members/{user_id}`
 
 ```cql
 SELECT * FROM chats_by_id WHERE chat_id = ?;
@@ -153,7 +153,7 @@ INSERT INTO chat_users_by_user_id (
 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?);
 ```
 
-### DELETE /chats/{chat_id}/members/{user_id}
+### DELETE `/chats/{chat_id}/members/{user_id}`
 
 ```cql
 SELECT * FROM chats_by_id WHERE chat_id = ?;
@@ -162,3 +162,5 @@ UPDATE chat_users_by_user_id
 SET is_leave = true
 WHERE user_id = ?;
 ```
+
+### GET `/chats/{chat_id}/attachments`

@@ -81,7 +81,7 @@ CREATE TABLE chats_by_id (
     PRIMARY KEY ((chat_id))
 );
 
-CREATE TABLE messages (
+CREATE TABLE messages_by_chat_id (
     chat_id bigint,
     message_id bigint,
     author_id bigint,
