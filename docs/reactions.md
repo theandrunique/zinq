@@ -88,16 +88,35 @@ WHERE chat_id = ?
 
 ### GET `/chats/{chat_id}/messages/{message_id}/reactions`
 
-For small simple chats
+- desc: Detailed view of user reactions
 
 ```cql
 SELECT * FROM reactions_by_chat_id
 WHERE chat_id = ? AND message_id = ?;
 ```
 
-For bigger groups (auto polling)
+Response
 
-```cql
-SELECT * ROM reaction_counts_by_chat_id
-WHERE chat_id = ? AND message_id = ?;
+```json
+[
+    {
+        "pack_id": 0,
+        "emoji_id": "fire",
+        "total_count": 4,
+        "users": [
+            {"user_id": 1001, "timestamp": "2025-03-15T10:30:00Z"}
+            {"user_id": 1002, "timestamp": "2025-03-15T10:31:00Z"}
+            // ...
+        ]
+    },
+    {
+        "pack_id": 0,
+        "emoji_id": "smile",
+        "total_count": 7,
+        "users": [
+            {"user_id": 1003, "timestamp": "..."}
+            // ...
+        ]
+    }
+]
 ```
