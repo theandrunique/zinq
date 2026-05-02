@@ -73,29 +73,3 @@ INSERT INTO user_event_log (
 ## Client fast sync
 
 ## Client full sync
-
-
-# Reactions
-
-```cql
-CREATE TABLE reactions_by_message_id (
-    chat_id: bigint,
-    message_id: bigint,
-    user_id: biging,
-    pack_id: string,
-    emoji: string,
-    timestamp: timestamp
-
-    PRIMARY KEY ((chat_id, message_id), user_id, pack_id, emoji)
-);
-
-CREATE TABLE reaction_counts_by_message_id (
-    chat_id: bigint,
-    message_id: bigint,
-    pack_id: string,
-    emoji: string,
-    count: counter
-
-    PRIMARY KEY ((chat_id, message_id), pack_id, emoji)
-);
-```

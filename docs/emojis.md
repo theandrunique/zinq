@@ -84,7 +84,7 @@ SELECT * FROM emojis WHERE pack_id = ?;
 UPDATE emoji_packs
 SET display_name = ?,
     preview_asset = ?
-WHERE pack_id = ?
+WHERE pack_id = ?;
 ```
 
 ### POST `/emoji-packs/{pack_id}/emojis`

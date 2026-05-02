@@ -98,6 +98,8 @@ APPLY BATCH;
 
 ```cql
 SELECT * FROM chats_by_id WHERE chat_id = ?;
+
+SELECT * FROM chat_users_by_chat_id WHERE chat_id = ?;
 ```
 
 ### PATCH `/chats/{chat_id}`
