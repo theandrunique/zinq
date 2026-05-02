@@ -68,7 +68,7 @@ Response:
     "errors": [
         {
             "id": "your id if you provided any",
-            "errors": ["File is too large."],
+            "errors": ["File is too large."]
         }
     ]
 }
@@ -87,7 +87,7 @@ Response:
 {
     "content": "Some cool message here",
     "referenced_message_id": "342342",
-    attachments: [
+    "attachments": [
         {
             "uploaded_filename": "attachments/{chat_id}/{attachment_id}/{filename}",
             "filename": "some_music.mp3"
@@ -135,7 +135,7 @@ APPLY BATCH;
 {
     "content": "Some cool updated message here",
     "referenced_message_id": "342342",
-    attachments: [
+    "attachments": [
         {
             "uploaded_filename": "attachments/{chat_id}/{attachment_id}/{filename}",
             "filename": "some_music.mp3"

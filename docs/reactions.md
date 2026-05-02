@@ -53,7 +53,6 @@ UPDATE reaction_counts_by_chat_id
 SET count = count + 1
 WHERE chat_id = ?
     AND message_id = ?
-    AND user_id = ?
     AND pack_id = ?
     AND emoji_id = ?;
 ```
@@ -81,7 +80,6 @@ UPDATE reaction_counts_by_chat_id
 SET count = count - 1
 WHERE chat_id = ?
     AND message_id = ?
-    AND user_id = ?
     AND pack_id = ?
     AND emoji_id = ?;
 ```
