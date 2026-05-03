@@ -16,7 +16,7 @@ impl From<User> for ChatMember {
             user_id: value.id,
             last_read_message_id: None,
             username: value.username,
-            global_name: value.global_name,
+            global_name: value.display_name,
             avatar: value.avatar,
             is_leave: false,
             permissions: None,

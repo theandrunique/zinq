@@ -8,8 +8,8 @@ pub struct UserSession {
     pub device_name: String,
     pub client_name: String,
     pub location: String,
-    pub last_refresh_timestamp: DateTime<Utc>,
-    pub timestamp: DateTime<Utc>,
+    pub last_refresh_at: DateTime<Utc>,
+    pub created_at: DateTime<Utc>,
 }
 
 impl UserSession {
@@ -20,7 +20,8 @@ impl UserSession {
         client_name: String,
         location: String,
     ) -> Self {
-        let timestamp = Utc::now();
+        let current_time = Utc::now();
+
         Self {
             id: id,
             user_id: user_id,
@@ -28,8 +29,8 @@ impl UserSession {
             device_name: device_name,
             client_name: client_name,
             location: location,
-            last_refresh_timestamp: timestamp,
-            timestamp: timestamp,
+            last_refresh_at: current_time,
+            created_at: current_time,
         }
     }
 }

@@ -24,7 +24,7 @@ mod integration_tests {
 
         assert_eq!(user.username, "testuser");
         assert_eq!(user.email, "test@example.com");
-        assert_eq!(user.global_name, "Test User");
+        assert_eq!(user.display_name, "Test User");
         assert!(user.is_active);
         assert!(!user.is_email_verified);
     }

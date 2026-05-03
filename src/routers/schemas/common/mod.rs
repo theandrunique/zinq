@@ -23,10 +23,10 @@ impl From<User> for UserPrivateSchema {
         Self {
             id: value.id.to_string(),
             username: value.username,
-            global_name: value.global_name,
+            global_name: value.display_name,
             bio: value.bio,
             avatar: value.avatar,
-            timestamp: value.timestamp,
+            timestamp: value.created_at,
             sessions_lifetime: value.sessions_lifetime,
             mfa: value.mfa,
             email: value.email,
@@ -50,10 +50,10 @@ impl From<User> for UserPublicSchema {
         Self {
             id: value.id.to_string(),
             username: value.username,
-            global_name: value.global_name,
+            global_name: value.display_name,
             bio: value.bio,
             avatar: value.avatar,
-            timestamp: value.timestamp,
+            timestamp: value.created_at,
         }
     }
 }

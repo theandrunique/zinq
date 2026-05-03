@@ -45,49 +45,51 @@ impl FromStr for SessionLifetime {
 pub struct User {
     pub id: i64,
     pub username: String,
-    pub username_updated_timestamp: DateTime<Utc>,
+    pub username_updated_at: DateTime<Utc>,
     pub password_hash: String,
-    pub password_updated_timestamp: DateTime<Utc>,
+    pub password_updated_at: DateTime<Utc>,
     pub avatar: Option<String>,
     pub sessions_lifetime: SessionLifetime,
     pub bio: Option<String>,
-    pub global_name: String,
+    pub display_name: String,
     pub is_active: bool,
-    pub timestamp: DateTime<Utc>,
+    pub created_at: DateTime<Utc>,
     pub totp_key: Option<Vec<u8>>,
     pub mfa: bool,
     pub email: String,
     pub is_email_verified: bool,
-    pub email_updated_timestamp: DateTime<Utc>,
+    pub email_updated_at: DateTime<Utc>,
+}
+
+pub struct UserCreateRequest {
+    pub id: i64,
+    pub username: String,
+    pub password_hash: String,
+    pub display_name: String,
+    pub email: String,
 }
 
 impl User {
-    pub fn create(
-        id: i64,
-        username: String,
-        password_hash: String,
-        global_name: String,
-        email: String,
-    ) -> Self {
-        let timestamp = Utc::now();
+    pub fn create(request: UserCreateRequest) -> Self {
+        let current_time = Utc::now();
 
         Self {
-            id: id,
-            username: username,
-            username_updated_timestamp: timestamp,
-            password_hash,
-            password_updated_timestamp: timestamp,
+            id: request.id,
+            username: request.username,
+            username_updated_at: current_time,
+            password_hash: request.password_hash,
+            password_updated_at: current_time,
             avatar: None,
             sessions_lifetime: SessionLifetime::MONTH3,
             bio: None,
-            global_name: global_name,
+            display_name: request.display_name,
             is_active: true,
-            timestamp: timestamp,
+            created_at: current_time,
             totp_key: None,
             mfa: false,
-            email: email,
+            email: request.email,
             is_email_verified: false,
-            email_updated_timestamp: timestamp,
+            email_updated_at: current_time,
         }
     }
 }

@@ -32,8 +32,8 @@ impl TryFrom<UserSessionDb> for UserSession {
             device_name: value.device_name,
             client_name: value.client_name,
             location: value.location,
-            last_refresh_timestamp: value.last_used_timestamp,
-            timestamp: value.timestamp,
+            last_refresh_at: value.last_used_timestamp,
+            created_at: value.timestamp,
         })
     }
 }
@@ -75,9 +75,9 @@ impl UserSessionRepository for ScyllaUserSessionRepository {
                     session.user_id,
                     session.id,
                     session.client_name,
-                    session.timestamp,
+                    session.created_at,
                     session.device_name,
-                    session.last_refresh_timestamp,
+                    session.last_refresh_at,
                     session.location,
                     session.token_id,
                 ),
@@ -118,7 +118,7 @@ impl UserSessionRepository for ScyllaUserSessionRepository {
         self.common
             .exec(
                 "UPDATE sessions SET last_used_timestamp = ?, token_id = ? WHERE user_id = ? AND session_id = ?",
-                (session.last_refresh_timestamp, session.token_id, session.user_id, session.id),
+                (session.last_refresh_at, session.token_id, session.user_id, session.id),
             )
             .await?;
         Ok(())

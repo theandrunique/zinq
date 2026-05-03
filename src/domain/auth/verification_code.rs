@@ -8,8 +8,8 @@ pub struct VerificationCode {
     pub id: String,
     pub scenario: VerificationCodeScenario,
     pub code_hash: String,
-    pub timestamp: DateTime<Utc>,
-    pub expires_timestamp: DateTime<Utc>,
+    pub created_at: DateTime<Utc>,
+    pub expires_at: DateTime<Utc>,
     pub attempts: i32,
 }
 
@@ -18,14 +18,15 @@ impl VerificationCode {
         id: String,
         scenario: VerificationCodeScenario,
         code_hash: String,
-        expires_timpestamp: DateTime<Utc>,
+        expires_at: DateTime<Utc>,
     ) -> Self {
+
         Self {
             id: id,
             scenario: scenario,
             code_hash: code_hash,
-            timestamp: Utc::now(),
-            expires_timestamp: expires_timpestamp,
+            created_at: Utc::now(),
+            expires_at,
             attempts: 0,
         }
     }

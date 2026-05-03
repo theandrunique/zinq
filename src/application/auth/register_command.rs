@@ -4,11 +4,9 @@ use crate::{
     core::ValidateExt,
     domain::{
         auth::{
-            User,
-            data::user_repository::{AddUserError, UserRepository},
-            validation::{
+            User, UserCreateRequest, data::user_repository::{AddUserError, UserRepository}, validation::{
                 validate_email, validate_global_name, validate_password, validate_username,
-            },
+            }
         },
         events::{DomainEvent, EventBus},
     },
@@ -50,13 +48,13 @@ impl RegisterComandHandler {
     pub async fn handle(&self, command: RegisterCommand) -> Result<User, Error> {
         command.validate()?;
 
-        let new_user = User::create(
-            self.id_gen.gen_id().await,
-            command.username,
-            command.password,
-            command.global_name,
-            command.email,
-        );
+        let new_user = User::create(UserCreateRequest {
+            id: self.id_gen.gen_id().await,
+            username: command.username,
+            password_hash: command.password,
+            display_name: command.global_name,
+            email: command.email,
+        });
 
         self.user_repository
             .save(new_user.clone())

@@ -40,7 +40,7 @@ pub async fn init_state() -> AppState {
 
     let session = Arc::new(
         SessionBuilder::new()
-            .known_node(&app_config.scylla_nodes)
+            .known_node(&app_config.scylla_node)
             .build()
             .await
             .expect("Error creating scylla session"),

@@ -38,9 +38,9 @@ impl TryFrom<UserDb> for User {
         Ok(User {
             id: value.user_id,
             username: value.username,
-            username_updated_timestamp: value.username_updated_timestamp,
+            username_updated_at: value.username_updated_timestamp,
             password_hash: value.password_hash,
-            password_updated_timestamp: value.password_updated_timestamp,
+            password_updated_at: value.password_updated_timestamp,
             avatar: value.avatar,
             sessions_lifetime: SessionLifetime::from_str(&value.sessions_lifetime).map_err(
                 |e| {
@@ -52,14 +52,14 @@ impl TryFrom<UserDb> for User {
                 },
             )?,
             bio: value.bio,
-            global_name: value.global_name,
+            display_name: value.global_name,
             is_active: value.is_active,
-            timestamp: value.timestamp,
+            created_at: value.timestamp,
             totp_key: value.totp_key,
             mfa: value.mfa,
             email: value.email,
             is_email_verified: value.is_email_verified,
-            email_updated_timestamp: value.email_updated_timestamp,
+            email_updated_at: value.email_updated_timestamp,
         })
     }
 }
@@ -125,20 +125,20 @@ impl ScyllaUserRepository {
                 (
                     u.id,
                     u.username.clone(),
-                    u.username_updated_timestamp,
+                    u.username_updated_at,
                     u.password_hash.clone(),
-                    u.password_updated_timestamp,
+                    u.password_updated_at,
                     u.avatar.clone(),
                     u.sessions_lifetime.to_string(),
                     u.bio.clone(),
-                    u.global_name.clone(),
+                    u.display_name.clone(),
                     u.is_active,
-                    u.timestamp,
+                    u.created_at,
                     u.totp_key.clone(),
                     u.mfa,
                     u.email.clone(),
                     u.is_email_verified,
-                    u.email_updated_timestamp,
+                    u.email_updated_at,
                 ),
             )
             .await?;

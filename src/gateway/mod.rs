@@ -33,10 +33,10 @@ impl UserPublicSchema {
         Self {
             id: user.id.to_string(),
             username: user.username,
-            global_name: user.global_name,
+            global_name: user.display_name,
             bio: user.bio,
             avatar: user.avatar,
-            timestamp: user.timestamp,
+            timestamp: user.created_at,
         }
     }
 }
