@@ -20,7 +20,11 @@ use crate::{
             user_repository::ScyllaUserRepository,
             user_session_repository::ScyllaUserSessionRepository,
         },
+        hash_handler::{HashHandler, BcryptHandler},
         id_generator::{IdGenerator, SnowflakeIdGenerator},
+        jwt_handler::{JwtHandler, JwtService},
+        smtp_client::{SmtpClient, SmtpService},
+        totp_handler::{TotpHandler, TotpService},
     },
 };
 
@@ -33,6 +37,10 @@ pub struct AppState {
     pub chat_repotisory: Arc<dyn ChatRepository>,
     pub message_repository: Arc<dyn MessageRepository>,
     pub attachment_repository: Arc<dyn AttachmentRepository>,
+    pub hash_handler: Arc<dyn HashHandler>,
+    pub jwt_handler: Arc<dyn JwtHandler>,
+    pub smtp_client: Arc<dyn SmtpClient>,
+    pub totp_handler: Arc<dyn TotpHandler>,
 }
 
 pub async fn init_state() -> AppState {
@@ -54,5 +62,18 @@ pub async fn init_state() -> AppState {
         chat_repotisory: Arc::new(ScyllaChatRepository::new(session.clone())),
         message_repository: Arc::new(ScyllaMessageRepository::new(session.clone())),
         attachment_repository: Arc::new(ScyllaAttachmentRepository::new(session.clone())),
+        hash_handler: Arc::new(BcryptHandler::new()),
+        jwt_handler: Arc::new(JwtService::new(
+            app_config.auth.jwt_secret.clone(),
+            app_config.auth.jwt_expiration_seconds,
+        )),
+        smtp_client: Arc::new(SmtpService::new(
+            app_config.smtp.from.clone(),
+            app_config.smtp.host.clone(),
+            app_config.smtp.port,
+            app_config.smtp.username.clone(),
+            app_config.smtp.password.clone(),
+        )),
+        totp_handler: Arc::new(TotpService::new()),
     }
 }

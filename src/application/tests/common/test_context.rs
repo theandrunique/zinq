@@ -13,7 +13,11 @@ pub mod integration_tests {
                 user_repository::ScyllaUserRepository,
                 user_session_repository::ScyllaUserSessionRepository,
             },
+            hash_handler::BcryptHandler,
             id_generator::SnowflakeIdGenerator,
+            jwt_handler::JwtService,
+            smtp_client::SmtpService,
+            totp_handler::TotpService,
         },
         state::AppState,
     };
@@ -52,6 +56,16 @@ pub mod integration_tests {
                 chat_repotisory: Arc::new(ScyllaChatRepository::new(session.clone())),
                 message_repository: Arc::new(ScyllaMessageRepository::new(session.clone())),
                 attachment_repository: Arc::new(ScyllaAttachmentRepository::new(session.clone())),
+                hash_handler: Arc::new(BcryptHandler::new()),
+                jwt_handler: Arc::new(JwtService::new("test_secret".to_string(), 3600)),
+                smtp_client: Arc::new(SmtpService::new(
+                    "test@test.com".to_string(),
+                    "smtp.test.com".to_string(),
+                    587,
+                    "test".to_string(),
+                    "test".to_string(),
+                )),
+                totp_handler: Arc::new(TotpService::new()),
             };
 
             Self { app_state: state }
