@@ -20,7 +20,6 @@ impl VerificationCode {
         code_hash: String,
         expires_at: DateTime<Utc>,
     ) -> Self {
-
         Self {
             id: id,
             scenario: scenario,

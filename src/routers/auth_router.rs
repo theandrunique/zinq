@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 
 use super::schemas::common::UserPrivateSchema;
 use crate::{
-    application::{RegisterComandHandler, RegisterCommand},
+    application::{LoginCommand, LoginCommandHandler, RegisterComandHandler, RegisterCommand},
     error::Error,
     state::AppState,
 };
@@ -35,8 +35,44 @@ async fn register(
     return Ok(Json(UserPrivateSchema::from(user)));
 }
 
+#[derive(Deserialize, Serialize)]
+struct LoginRequestSchema {
+    pub username: String,
+    pub password: String,
+    pub totp: Option<String>,
+}
+
+#[derive(Deserialize, Serialize)]
+struct LoginResponseSchema {
+    pub access_token: String,
+    pub refresh_token: String,
+    pub expires_in: u64,
+}
+
+async fn login(
+    State(state): State<AppState>,
+    Json(payload): Json<LoginRequestSchema>,
+) -> Result<Json<LoginResponseSchema>, Error> {
+    let handler = LoginCommandHandler::new(&state);
+
+    let command = LoginCommand {
+        username: payload.username,
+        password: payload.password,
+        totp: payload.totp,
+    };
+
+    let result = handler.handle(command).await?;
+
+    return Ok(Json(LoginResponseSchema {
+        access_token: result.access_token,
+        refresh_token: result.refresh_token,
+        expires_in: result.expires_in,
+    }));
+}
+
 pub fn auth_router(state: AppState) -> Router {
     Router::new()
         .route("/sign-up", post(register))
+        .route("/sign-in", post(login))
         .with_state(state)
 }

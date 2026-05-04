@@ -1,9 +1,9 @@
-use async_trait::async_trait;
 use anyhow::Result;
+use async_trait::async_trait;
+use lettre::AsyncTransport;
+use lettre::Tokio1Executor;
 use lettre::message::{Mailbox, MessageBuilder};
 use lettre::transport::smtp::AsyncSmtpTransport;
-use lettre::Tokio1Executor;
-use lettre::AsyncTransport;
 
 pub struct SmtpService {
     from: String,
@@ -14,7 +14,13 @@ pub struct SmtpService {
 }
 
 impl SmtpService {
-    pub fn new(from: String, smtp_host: String, smtp_port: u16, smtp_username: String, smtp_password: String) -> Self {
+    pub fn new(
+        from: String,
+        smtp_host: String,
+        smtp_port: u16,
+        smtp_username: String,
+        smtp_password: String,
+    ) -> Self {
         Self {
             from,
             smtp_host,

@@ -6,7 +6,7 @@ use tracing_subscriber::{EnvFilter, layer::SubscriberExt, util::SubscriberInitEx
 
 use crate::{
     gateway::gateway,
-    routers::{auth_router, emoji_router, user_router},
+    routers::{auth_router, emoji_router, user_router, well_known_router},
     state::init_state,
 };
 
@@ -22,8 +22,7 @@ mod state;
 
 #[tokio::main]
 async fn main() {
-    let env_filter = EnvFilter::try_from_default_env()
-        .unwrap_or_else(|_| EnvFilter::new("info"));
+    let env_filter = EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new("info"));
 
     tracing_subscriber::registry()
         .with(tracing_subscriber::fmt::layer())
@@ -37,6 +36,7 @@ async fn main() {
     let app_state = init_state().await;
 
     let app = Router::new()
+        .nest("/.well-known", well_known_router(app_state.clone()))
         .nest("/users", user_router())
         .nest("/auth", auth_router(app_state.clone()))
         .nest("/emoji-packs", emoji_router(app_state.clone()))

@@ -1,3 +1,7 @@
+CREATE KEYSPACE IF NOT EXISTS zinq WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 1};
+
+use zinq;
+
 CREATE TABLE attachments_by_message_id (
     chat_id bigint,
     attachment_id bigint,

@@ -15,6 +15,7 @@ pub mod integration_tests {
             },
             hash_handler::BcryptHandler,
             id_generator::SnowflakeIdGenerator,
+            jwks_service::JwksServiceImpl,
             jwt_handler::JwtService,
             smtp_client::SmtpService,
             totp_handler::TotpService,
@@ -46,6 +47,9 @@ pub mod integration_tests {
 
             session.use_keyspace(keyspace, true).await.unwrap();
 
+            let jwks_service = JwksServiceImpl::new("keys").unwrap();
+            let jwks_service_clone = JwksServiceImpl::new("keys").unwrap();
+
             let state = AppState {
                 event_bus: Arc::new(EventBus::new()),
                 id_gen: Arc::new(SnowflakeIdGenerator::new()),
@@ -57,7 +61,8 @@ pub mod integration_tests {
                 message_repository: Arc::new(ScyllaMessageRepository::new(session.clone())),
                 attachment_repository: Arc::new(ScyllaAttachmentRepository::new(session.clone())),
                 hash_handler: Arc::new(BcryptHandler::new()),
-                jwt_handler: Arc::new(JwtService::new("test_secret".to_string(), 3600)),
+                jwks_service: Arc::new(jwks_service),
+                jwt_handler: Arc::new(JwtService::new(Box::new(jwks_service_clone), 3600)),
                 smtp_client: Arc::new(SmtpService::new(
                     "test@test.com".to_string(),
                     "smtp.test.com".to_string(),

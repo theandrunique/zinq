@@ -4,14 +4,16 @@ use crate::{
     core::ValidateExt,
     domain::{
         auth::{
-            User, UserCreateRequest, data::user_repository::{AddUserError, UserRepository}, validation::{
+            User, UserCreateRequest,
+            data::user_repository::{AddUserError, UserRepository},
+            validation::{
                 validate_email, validate_global_name, validate_password, validate_username,
-            }
+            },
         },
         events::{DomainEvent, EventBus},
     },
     error::Error,
-    infra::id_generator::IdGenerator,
+    infra::{hash_handler::HashHandler, id_generator::IdGenerator},
     state::AppState,
 };
 
@@ -34,6 +36,7 @@ pub struct RegisterComandHandler {
     event_bus: Arc<EventBus>,
     id_gen: Arc<dyn IdGenerator>,
     user_repository: Arc<dyn UserRepository>,
+    hash_handler: Arc<dyn HashHandler>,
 }
 
 impl RegisterComandHandler {
@@ -42,6 +45,7 @@ impl RegisterComandHandler {
             event_bus: Arc::clone(&state.event_bus),
             id_gen: Arc::clone(&state.id_gen),
             user_repository: Arc::clone(&state.user_repository),
+            hash_handler: Arc::clone(&state.hash_handler),
         }
     }
 
@@ -51,7 +55,7 @@ impl RegisterComandHandler {
         let new_user = User::create(UserCreateRequest {
             id: self.id_gen.gen_id().await,
             username: command.username,
-            password_hash: command.password,
+            password_hash: self.hash_handler.hash(&command.password).await?,
             display_name: command.global_name,
             email: command.email,
         });

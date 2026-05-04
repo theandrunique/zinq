@@ -20,8 +20,9 @@ use crate::{
             user_repository::ScyllaUserRepository,
             user_session_repository::ScyllaUserSessionRepository,
         },
-        hash_handler::{HashHandler, BcryptHandler},
+        hash_handler::{BcryptHandler, HashHandler},
         id_generator::{IdGenerator, SnowflakeIdGenerator},
+        jwks_service::{JwksService, JwksServiceImpl},
         jwt_handler::{JwtHandler, JwtService},
         smtp_client::{SmtpClient, SmtpService},
         totp_handler::{TotpHandler, TotpService},
@@ -38,6 +39,7 @@ pub struct AppState {
     pub message_repository: Arc<dyn MessageRepository>,
     pub attachment_repository: Arc<dyn AttachmentRepository>,
     pub hash_handler: Arc<dyn HashHandler>,
+    pub jwks_service: Arc<dyn JwksService>,
     pub jwt_handler: Arc<dyn JwtHandler>,
     pub smtp_client: Arc<dyn SmtpClient>,
     pub totp_handler: Arc<dyn TotpHandler>,
@@ -54,6 +56,8 @@ pub async fn init_state() -> AppState {
             .expect("Error creating scylla session"),
     );
 
+    session.use_keyspace("zinq", true).await;
+
     AppState {
         event_bus: Arc::new(EventBus::new()),
         id_gen: Arc::new(SnowflakeIdGenerator::new()),
@@ -63,9 +67,16 @@ pub async fn init_state() -> AppState {
         message_repository: Arc::new(ScyllaMessageRepository::new(session.clone())),
         attachment_repository: Arc::new(ScyllaAttachmentRepository::new(session.clone())),
         hash_handler: Arc::new(BcryptHandler::new()),
+        jwks_service: Arc::new(
+            JwksServiceImpl::new(&app_config.auth.keys_directory)
+                .expect("Failed to init JwksService"),
+        ),
         jwt_handler: Arc::new(JwtService::new(
-            app_config.auth.jwt_secret.clone(),
-            app_config.auth.jwt_expiration_seconds,
+            Box::new(
+                JwksServiceImpl::new(&app_config.auth.keys_directory)
+                    .expect("Failed to init JwksService for JWT"),
+            ),
+            app_config.auth.access_token_expiration_seconds,
         )),
         smtp_client: Arc::new(SmtpService::new(
             app_config.smtp.from.clone(),

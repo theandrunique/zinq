@@ -14,8 +14,8 @@ pub struct SmtpConfig {
 
 #[derive(Clone)]
 pub struct AuthConfig {
-    pub jwt_secret: String,
-    pub jwt_expiration_seconds: usize,
+    pub access_token_expiration_seconds: usize,
+    pub keys_directory: String,
 }
 
 pub struct Config {
@@ -47,11 +47,11 @@ async fn init_config() -> Config {
             from: env::var("SMTP_FROM").unwrap_or("noreply@example.com".to_string()),
         },
         auth: AuthConfig {
-            jwt_secret: env::var("JWT_SECRET").unwrap_or("default_secret_change_me".to_string()),
-            jwt_expiration_seconds: env::var("JWT_EXPIRATION_SECONDS")
+            access_token_expiration_seconds: env::var("ACCESS_TOKEN_EXPIRATION_SECONDS")
                 .unwrap_or("3600".to_string())
                 .parse()
-                .expect("Failed to parse jwt expiration"),
+                .expect("Failed to parse access token expiration"),
+            keys_directory: env::var("KEYS_DIRECTORY").unwrap_or("keys".to_string()),
         },
     }
 }

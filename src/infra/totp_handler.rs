@@ -1,5 +1,5 @@
-use async_trait::async_trait;
 use anyhow::Result;
+use async_trait::async_trait;
 use base32::Alphabet;
 use totp_rs::{Algorithm, Secret, TOTP};
 
