@@ -1,8 +1,4 @@
-CREATE KEYSPACE IF NOT EXISTS zinq WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 1};
-
-use zinq;
-
-CREATE TABLE attachments_by_message_id (
+CREATE TABLE IF NOT EXISTS attachments_by_message_id (
     chat_id bigint,
     attachment_id bigint,
     message_id bigint,
@@ -20,7 +16,7 @@ CREATE TABLE attachments_by_message_id (
     PRIMARY KEY ((chat_id), message_id, attachment_id)
 );
 
-CREATE MATERIALIZED VIEW attachments_by_id AS
+CREATE MATERIALIZED VIEW IF NOT EXISTS attachments_by_id AS
     SELECT
         chat_id,
         attachment_id,
@@ -43,7 +39,7 @@ CREATE MATERIALIZED VIEW attachments_by_id AS
     PRIMARY KEY ((chat_id), attachment_id, message_id)
     WITH CLUSTERING ORDER BY (attachment_id DESC);
 
-CREATE TABLE chat_users_by_user_id (
+CREATE TABLE IF NOT EXISTS chat_users_by_user_id (
     user_id bigint,
     chat_id bigint,
     last_read_message_id bigint,
@@ -56,7 +52,7 @@ CREATE TABLE chat_users_by_user_id (
     PRIMARY KEY ((user_id), chat_id)
 );
 
-CREATE MATERIALIZED VIEW chat_users_by_chat_id AS
+CREATE MATERIALIZED VIEW IF NOT EXISTS chat_users_by_chat_id AS
     SELECT
         user_id,
         chat_id,
@@ -72,7 +68,7 @@ CREATE MATERIALIZED VIEW chat_users_by_chat_id AS
         AND user_id IS NOT NULL
     PRIMARY KEY ((chat_id), user_id);
 
-CREATE TABLE chats_by_id (
+CREATE TABLE IF NOT EXISTS chats_by_id (
     chat_id bigint,
     type int,
     name text,
@@ -85,7 +81,7 @@ CREATE TABLE chats_by_id (
     PRIMARY KEY ((chat_id))
 );
 
-CREATE TABLE messages_by_chat_id (
+CREATE TABLE IF NOT EXISTS messages_by_chat_id (
     chat_id bigint,
     message_id bigint,
     author_id bigint,
@@ -101,7 +97,7 @@ CREATE TABLE messages_by_chat_id (
     PRIMARY KEY ((chat_id), message_id)
 ) WITH CLUSTERING ORDER BY (message_id DESC);
 
-CREATE TABLE message_acks (
+CREATE TABLE IF NOT EXISTS message_acks (
     chat_id bigint,
     user_id bigint,
     to_message_id bigint,
@@ -111,7 +107,7 @@ CREATE TABLE message_acks (
     PRIMARY KEY ((chat_id), to_message_id)
 ) WITH CLUSTERING ORDER BY (to_message_id DESC);
 
-CREATE TABLE private_chats (
+CREATE TABLE IF NOT EXISTS private_chats (
     user_id1 bigint,
     user_id2 bigint,
     chat_id bigint,
@@ -119,7 +115,7 @@ CREATE TABLE private_chats (
     PRIMARY KEY ((user_id1, user_id2))
 );
 
-CREATE TABLE user_event_log (
+CREATE TABLE IF NOT EXISTS user_event_log (
     user_id bigint,
     event_id bigint,
     event_type int,
@@ -136,7 +132,7 @@ CREATE TABLE user_event_log (
     }
     AND default_time_to_live = 2592000; -- 30 days
 
-CREATE TABLE chat_event_log (
+CREATE TABLE IF NOT EXISTS chat_event_log (
     chat_id bigint,
     event_id bigint,
     event_type int,
@@ -152,7 +148,7 @@ CREATE TABLE chat_event_log (
     }
     AND default_time_to_live = 2592000; -- 30 days
 
-CREATE TABLE sessions (
+CREATE TABLE IF NOT EXISTS sessions (
     user_id bigint,
     session_id bigint,
     client_name text,
@@ -165,10 +161,10 @@ CREATE TABLE sessions (
     PRIMARY KEY ((user_id), session_id)
 );
 
-CREATE INDEX sessions_token_id_idx ON sessions(token_id);
+CREATE INDEX IF NOT EXISTS sessions_token_id_idx ON sessions(token_id);
 
 
-CREATE TABLE users (
+CREATE TABLE IF NOT EXISTS users (
     user_id bigint,
     bio text,
     timestamp timestamp,
@@ -190,14 +186,14 @@ CREATE TABLE users (
 );
 
 
-CREATE TABLE users_by_username (
+CREATE TABLE IF NOT EXISTS users_by_username (
     username text,
     user_id bigint,
 
     PRIMARY KEY ((username))
 );
 
-CREATE TABLE users_by_email (
+CREATE TABLE IF NOT EXISTS users_by_email (
     email text,
     user_id bigint,
 
@@ -205,7 +201,7 @@ CREATE TABLE users_by_email (
 );
 
 
-CREATE TABLE verification_codes (
+CREATE TABLE IF NOT EXISTS verification_codes (
     identifier text, -- email, phone, etc
     scenario int,   -- (enum) reset_password, verify_email, etc
     code_hash text,
