@@ -153,16 +153,16 @@ impl Chat {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::domain::auth::User;
+    use crate::domain::auth::{User, UserCreateRequest};
 
     fn user(id: i64) -> User {
-        User::create(
-            id,
-            format!("user{}", id),
-            "Some password hash".to_ascii_lowercase(),
-            format!("User {}", id),
-            "test@test.com".to_string(),
-        )
+        User::create(UserCreateRequest {
+            id: id,
+            username: format!("user{}", id),
+            password_hash: "kek".to_string(),
+            display_name: format!("User {}", id),
+            email: "test@test.com".to_string(),
+        })
     }
 
     #[test]
