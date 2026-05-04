@@ -4,6 +4,7 @@ use rsa::RsaPrivateKey;
 use rsa::pkcs8::DecodePrivateKey;
 use rsa::traits::PublicKeyParts;
 use serde::{Deserialize, Serialize};
+use sha2::{Digest, Sha256};
 use std::fs;
 use std::path::Path;
 
@@ -17,6 +18,10 @@ pub struct KeyPair {
 impl KeyPair {
     pub fn private_key_pem(&self) -> &[u8] {
         self.private_key_pem.as_bytes()
+    }
+
+    pub fn id(&self) -> &str {
+        &self.id
     }
 }
 
@@ -40,6 +45,24 @@ pub struct Jwk {
     pub e: String,
 }
 
+fn compute_jwk_thumbprint(n: &[u8], e: &[u8]) -> String {
+    let n_b64 = base64::Engine::encode(&base64::engine::general_purpose::URL_SAFE_NO_PAD, n);
+    let e_b64 = base64::Engine::encode(&base64::engine::general_purpose::URL_SAFE_NO_PAD, e);
+
+    let jwk_json = serde_json::json!({
+        "e": e_b64,
+        "kty": "RSA",
+        "n": n_b64
+    });
+
+    let canonical = serde_json::to_string(&jwk_json).unwrap();
+    let mut hasher = Sha256::new();
+    hasher.update(canonical.as_bytes());
+    let result = hasher.finalize();
+
+    base64::Engine::encode(&base64::engine::general_purpose::URL_SAFE_NO_PAD, &result)
+}
+
 impl JwksServiceImpl {
     pub fn new(keys_directory: &str) -> Result<Self> {
         let key_path = Path::new(keys_directory).join("key.pem");
@@ -51,12 +74,17 @@ impl JwksServiceImpl {
         let private_key = RsaPrivateKey::from_pkcs8_der(pem_block.contents())
             .with_context(|| "Failed to decode PKCS8 private key")?;
 
+        let public_key = private_key.to_public_key();
+        let n_bytes = public_key.n().to_bytes_be();
+        let e_bytes = public_key.e().to_bytes_be();
+
+        let kid = compute_jwk_thumbprint(&n_bytes, &e_bytes);
+
         let key_pem = String::from_utf8_lossy(&key_data).to_string();
-        let key_id = "1".to_string();
 
         Ok(Self {
             active_key: KeyPair {
-                id: key_id,
+                id: kid,
                 private_key,
                 private_key_pem: key_pem,
             },

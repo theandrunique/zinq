@@ -60,10 +60,8 @@ impl JwtService {
         claims: &(impl Serialize + serde::de::DeserializeOwned),
         expiration_seconds: usize,
     ) -> Result<String> {
-        let now = chrono::Utc::now().timestamp() as usize;
-        let exp = now + expiration_seconds;
-
-        let header = Header::new(Algorithm::RS256);
+        let mut header = Header::new(Algorithm::RS256);
+        header.kid = Some(key_pair.id().to_string());
         let encoding_key = EncodingKey::from_rsa_pem(key_pair.private_key_pem())?;
 
         encode(&header, claims, &encoding_key).map_err(anyhow::Error::from)

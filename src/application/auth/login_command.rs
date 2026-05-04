@@ -1,7 +1,10 @@
 use std::sync::Arc;
 
 use crate::{
-    domain::auth::data::user_repository::UserRepository,
+    domain::auth::{
+        UserSession, UserSessionCreateRequest,
+        data::{user_repository::UserRepository, user_session_repository::UserSessionRepository},
+    },
     error::Error,
     infra::{hash_handler::HashHandler, id_generator::IdGenerator, jwt_handler::JwtHandler},
     state::AppState,
@@ -23,6 +26,7 @@ pub struct LoginCommandResult {
 pub struct LoginCommandHandler {
     id_gen: Arc<dyn IdGenerator>,
     user_repository: Arc<dyn UserRepository>,
+    session_repository: Arc<dyn UserSessionRepository>,
     jwt_handler: Arc<dyn JwtHandler>,
     hash_handler: Arc<dyn HashHandler>,
 }
@@ -32,6 +36,7 @@ impl LoginCommandHandler {
         Self {
             id_gen: Arc::clone(&state.id_gen),
             user_repository: Arc::clone(&state.user_repository),
+            session_repository: Arc::clone(&state.user_session_repository),
             jwt_handler: Arc::clone(&state.jwt_handler),
             hash_handler: Arc::clone(&state.hash_handler),
         }
@@ -45,17 +50,31 @@ impl LoginCommandHandler {
             .map_err(|e| Error::InternalServerError(e))?
             .ok_or(Error::AuthInvalidCredentials)?;
 
-        if !self.hash_handler.verify(&command.password, &user.password_hash).await? {
+        if !self
+            .hash_handler
+            .verify(&command.password, &user.password_hash)
+            .await?
+        {
             return Err(Error::AuthInvalidCredentials);
         }
 
+        let session = UserSession::create(UserSessionCreateRequest {
+            id: self.id_gen.gen_id().await,
+            user_id: user.id,
+            device_name: "".to_string(),
+            client_name: "".to_string(),
+            location: "".to_string(),
+        });
+
+        self.session_repository.save(session.clone()).await?;
+
         let access_token = self
             .jwt_handler
-            .generate_access_token(&user.id.to_string(), "kek")
+            .generate_access_token(&user.id.to_string(), &session.token_id.to_string())
             .await?;
         let refresh_token = self
             .jwt_handler
-            .generate_refresh_token(&user.id.to_string(), "kek", 123)
+            .generate_refresh_token(&user.id.to_string(), &session.token_id.to_string(), 604800)
             .await?;
 
         return Ok(LoginCommandResult {

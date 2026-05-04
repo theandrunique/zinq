@@ -25,9 +25,7 @@ struct Cli {
 enum Command {
     Init,
     Reset,
-    RecreateTable {
-        table_name: String,
-    },
+    RecreateTable { table_name: String },
 }
 
 async fn create_session(uri: &str) -> Result<Session> {
@@ -39,8 +37,7 @@ async fn create_session(uri: &str) -> Result<Session> {
 }
 
 fn read_schema(path: &str) -> Result<String> {
-    std::fs::read_to_string(path)
-        .map_err(|e| anyhow::anyhow!("Failed to read schema file: {}", e))
+    std::fs::read_to_string(path).map_err(|e| anyhow::anyhow!("Failed to read schema file: {}", e))
 }
 
 fn split_statements(cql: &str) -> Vec<String> {
@@ -55,9 +52,10 @@ async fn execute_statements(session: &Session, stmts: &[String]) -> Result<()> {
         if stmt.is_empty() {
             continue;
         }
-        session.query_unpaged(stmt.as_str(), &[]).await.map_err(|e| {
-            anyhow::anyhow!("Failed to execute: {}\nStatement: {}", e, stmt)
-        })?;
+        session
+            .query_unpaged(stmt.as_str(), &[])
+            .await
+            .map_err(|e| anyhow::anyhow!("Failed to execute: {}\nStatement: {}", e, stmt))?;
     }
     Ok(())
 }
@@ -97,19 +95,31 @@ fn extract_mv_name(stmt: &str) -> String {
 
     let name_part = &rest[name_start..];
     let trimmed = name_part.trim();
-    let name_end = trimmed.find(|c: char| c.is_whitespace() || c == ';').unwrap_or(trimmed.len());
+    let name_end = trimmed
+        .find(|c: char| c.is_whitespace() || c == ';')
+        .unwrap_or(trimmed.len());
     trimmed[..name_end].to_string()
 }
 
-fn find_materialized_views_for_table(schema: &str, table_name: &str, _keyspace: &str) -> Vec<String> {
+fn find_materialized_views_for_table(
+    schema: &str,
+    table_name: &str,
+    _keyspace: &str,
+) -> Vec<String> {
     let mut results = Vec::new();
 
     for stmt in schema.split(';') {
         let stmt_upper = stmt.to_uppercase();
         if stmt_upper.contains("CREATE MATERIALIZED VIEW") {
-            let from_pattern_with_keyspace = format!("FROM {}.{}", _keyspace.to_uppercase(), table_name.to_uppercase());
+            let from_pattern_with_keyspace = format!(
+                "FROM {}.{}",
+                _keyspace.to_uppercase(),
+                table_name.to_uppercase()
+            );
             let from_pattern_without_keyspace = format!("FROM {}", table_name.to_uppercase());
-            if stmt_upper.contains(&from_pattern_with_keyspace) || stmt_upper.contains(&from_pattern_without_keyspace) {
+            if stmt_upper.contains(&from_pattern_with_keyspace)
+                || stmt_upper.contains(&from_pattern_without_keyspace)
+            {
                 let trimmed = format!("{};", stmt.trim());
                 if !results.contains(&trimmed) {
                     results.push(trimmed);
@@ -121,7 +131,11 @@ fn find_materialized_views_for_table(schema: &str, table_name: &str, _keyspace: 
     results
 }
 
-fn get_table_statements(schema: &str, table_name: &str, keyspace: &str) -> Result<(Vec<String>, Vec<String>)> {
+fn get_table_statements(
+    schema: &str,
+    table_name: &str,
+    keyspace: &str,
+) -> Result<(Vec<String>, Vec<String>)> {
     let table_stmts = find_create_table(schema, table_name);
     if table_stmts.is_empty() {
         anyhow::bail!("Table '{}' not found in schema", table_name);
@@ -156,7 +170,9 @@ async fn cmd_reset(session: &Session, keyspace: &str) -> Result<()> {
     println!("Resetting database '{}'...", keyspace);
 
     println!("Dropping keyspace...");
-    session.query_unpaged(format!("DROP KEYSPACE IF EXISTS {}", keyspace), &[]).await?;
+    session
+        .query_unpaged(format!("DROP KEYSPACE IF EXISTS {}", keyspace), &[])
+        .await?;
 
     println!("Creating keyspace...");
     session.query_unpaged(
@@ -188,12 +204,22 @@ async fn cmd_recreate_table(session: &Session, table_name: &str, keyspace: &str)
         let mv_name = extract_mv_name(mv);
         if !mv_name.is_empty() {
             println!("Dropping materialized view '{}'...", mv_name);
-            session.query_unpaged(format!("DROP MATERIALIZED VIEW IF EXISTS {}.{}", keyspace, mv_name), &[]).await?;
+            session
+                .query_unpaged(
+                    format!("DROP MATERIALIZED VIEW IF EXISTS {}.{}", keyspace, mv_name),
+                    &[],
+                )
+                .await?;
         }
     }
 
     println!("Dropping table '{}'...", table_name);
-    session.query_unpaged(format!("DROP TABLE IF EXISTS {}.{}", keyspace, table_name), &[]).await?;
+    session
+        .query_unpaged(
+            format!("DROP TABLE IF EXISTS {}.{}", keyspace, table_name),
+            &[],
+        )
+        .await?;
 
     println!("Creating table...");
     for stmt in &table_stmts {
@@ -218,7 +244,10 @@ async fn cmd_recreate_table(session: &Session, table_name: &str, keyspace: &str)
         }
     }
 
-    println!("Table '{}' recreated successfully ({} MV recreated).", table_name, mv_count);
+    println!(
+        "Table '{}' recreated successfully ({} MV recreated).",
+        table_name, mv_count
+    );
     Ok(())
 }
 
