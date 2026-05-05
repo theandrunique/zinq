@@ -6,7 +6,8 @@ use crate::{
         data::{user_repository::UserRepository, user_session_repository::UserSessionRepository},
     },
     error::Error,
-    infra::{hash_handler::HashHandler, id_generator::IdGenerator, jwt_handler::JwtHandler},
+    infra::auth::{hash_handler::HashHandler, jwt_handler::JwtHandler},
+    infra::id_generator::IdGenerator,
     state::AppState,
 };
 
@@ -70,16 +71,16 @@ impl LoginCommandHandler {
 
         let access_token = self
             .jwt_handler
-            .generate_access_token(&user.id.to_string(), &session.token_id.to_string())
-            .await?;
-        let refresh_token = self
-            .jwt_handler
-            .generate_refresh_token(&user.id.to_string(), &session.token_id.to_string(), 604800)
-            .await?;
+            .generate_access_token(&user.id.to_string(), &session.token_id.to_string())?;
+        let refresh_token = self.jwt_handler.generate_refresh_token(
+            &user.id.to_string(),
+            &session.token_id.to_string(),
+            604800,
+        )?;
 
         return Ok(LoginCommandResult {
             access_token: access_token,
-            expires_in: 123,
+            expires_in: 604800,
             refresh_token: refresh_token,
         });
     }

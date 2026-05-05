@@ -9,6 +9,7 @@ use crate::error::Error;
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 enum ErrorCode {
     AuthInvalidCredentials,
+    AuthInvalidToken,
     AuthTotpRequired,
     InvalidJson,
     InvalidRequestBody,
@@ -56,6 +57,7 @@ impl IntoResponse for ApiError {
     fn into_response(self) -> axum::response::Response {
         let status = match self.code {
             ErrorCode::InternalServerError => StatusCode::INTERNAL_SERVER_ERROR,
+            ErrorCode::AuthInvalidToken => StatusCode::UNAUTHORIZED,
             _ => StatusCode::BAD_REQUEST,
         };
 
@@ -69,6 +71,7 @@ impl IntoResponse for Error {
             Error::AuthInvalidCredentials => {
                 ApiError::new(ErrorCode::AuthInvalidCredentials, "Invalid Credentials")
             }
+            Error::AuthInvalidToken => ApiError::new(ErrorCode::AuthInvalidToken, "Invalid token"),
             Error::AuthTotpRequired {
                 username,
                 global_name,

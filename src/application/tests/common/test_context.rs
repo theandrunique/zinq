@@ -7,18 +7,18 @@ pub mod integration_tests {
         application::tests::common::test_infra::get_infra,
         domain::events::EventBus,
         infra::{
+            auth::{
+                hash_handler::BcryptHandler, jwks_service::FileJwksService,
+                jwt_handler::JwtService, totp_handler::TotpService,
+            },
             data::{
                 attachment_repository::ScyllaAttachmentRepository,
                 chat_repotisory::ScyllaChatRepository, message_repository::ScyllaMessageRepository,
                 user_repository::ScyllaUserRepository,
                 user_session_repository::ScyllaUserSessionRepository,
             },
-            hash_handler::BcryptHandler,
             id_generator::SnowflakeIdGenerator,
-            jwks_service::JwksServiceImpl,
-            jwt_handler::JwtService,
             smtp_client::SmtpService,
-            totp_handler::TotpService,
         },
         state::AppState,
     };
@@ -47,8 +47,8 @@ pub mod integration_tests {
 
             session.use_keyspace(keyspace, true).await.unwrap();
 
-            let jwks_service = JwksServiceImpl::new("keys").unwrap();
-            let jwks_service_clone = JwksServiceImpl::new("keys").unwrap();
+            let jwks_service = FileJwksService::load_from_directory("keys").unwrap();
+            let jwks_service_clone = FileJwksService::load_from_directory("keys").unwrap();
 
             let state = AppState {
                 event_bus: Arc::new(EventBus::new()),
@@ -62,7 +62,7 @@ pub mod integration_tests {
                 attachment_repository: Arc::new(ScyllaAttachmentRepository::new(session.clone())),
                 hash_handler: Arc::new(BcryptHandler::new()),
                 jwks_service: Arc::new(jwks_service),
-                jwt_handler: Arc::new(JwtService::new(Box::new(jwks_service_clone), 3600)),
+                jwt_handler: Arc::new(JwtService::new(jwks_service_clone, 3600)),
                 smtp_client: Arc::new(SmtpService::new(
                     "test@test.com".to_string(),
                     "smtp.test.com".to_string(),

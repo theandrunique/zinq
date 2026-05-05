@@ -3,6 +3,7 @@ use std::collections::HashMap;
 #[derive(Debug)]
 pub enum Error {
     AuthInvalidCredentials,
+    AuthInvalidToken,
     AuthTotpRequired {
         username: String,
         global_name: String,

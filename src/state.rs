@@ -14,18 +14,20 @@ use crate::{
         messages::data::MessageRepository,
     },
     infra::{
+        auth::{
+            hash_handler::{BcryptHandler, HashHandler},
+            jwks_service::FileJwksService,
+            jwt_handler::{JwtHandler, JwtService},
+            totp_handler::{TotpHandler, TotpService},
+        },
         data::{
             attachment_repository::ScyllaAttachmentRepository,
             chat_repotisory::ScyllaChatRepository, message_repository::ScyllaMessageRepository,
             user_repository::ScyllaUserRepository,
             user_session_repository::ScyllaUserSessionRepository,
         },
-        hash_handler::{BcryptHandler, HashHandler},
         id_generator::{IdGenerator, SnowflakeIdGenerator},
-        jwks_service::{JwksService, JwksServiceImpl},
-        jwt_handler::{JwtHandler, JwtService},
         smtp_client::{SmtpClient, SmtpService},
-        totp_handler::{TotpHandler, TotpService},
     },
 };
 
@@ -39,7 +41,7 @@ pub struct AppState {
     pub message_repository: Arc<dyn MessageRepository>,
     pub attachment_repository: Arc<dyn AttachmentRepository>,
     pub hash_handler: Arc<dyn HashHandler>,
-    pub jwks_service: Arc<dyn JwksService>,
+    pub jwks_service: Arc<FileJwksService>,
     pub jwt_handler: Arc<dyn JwtHandler>,
     pub smtp_client: Arc<dyn SmtpClient>,
     pub totp_handler: Arc<dyn TotpHandler>,
@@ -58,6 +60,9 @@ pub async fn init_state() -> AppState {
 
     session.use_keyspace("zinq", true).await;
 
+    let jwks_service = FileJwksService::load_from_directory(&app_config.auth.keys_directory)
+        .expect("Failed to init JwksService");
+
     AppState {
         event_bus: Arc::new(EventBus::new()),
         id_gen: Arc::new(SnowflakeIdGenerator::new()),
@@ -67,16 +72,10 @@ pub async fn init_state() -> AppState {
         message_repository: Arc::new(ScyllaMessageRepository::new(session.clone())),
         attachment_repository: Arc::new(ScyllaAttachmentRepository::new(session.clone())),
         hash_handler: Arc::new(BcryptHandler::new()),
-        jwks_service: Arc::new(
-            JwksServiceImpl::new(&app_config.auth.keys_directory)
-                .expect("Failed to init JwksService"),
-        ),
+        jwks_service: Arc::new(jwks_service),
         jwt_handler: Arc::new(JwtService::new(
-            Box::new(
-                JwksServiceImpl::new(&app_config.auth.keys_directory)
-                    .expect("Failed to init JwksService for JWT"),
-            ),
-            app_config.auth.access_token_expiration_seconds,
+            jwks_service,
+            app_config.auth.access_token_expiration_seconds as i64,
         )),
         smtp_client: Arc::new(SmtpService::new(
             app_config.smtp.from.clone(),

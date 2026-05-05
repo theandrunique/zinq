@@ -1,6 +1,6 @@
 use axum::{Json, extract::State, routing::get};
 
-use crate::infra::jwks_service::Jwks;
+use crate::infra::auth::jwks_service::{Jwks, JwksService};
 use crate::state::AppState;
 
 pub fn well_known_router(state: AppState) -> axum::Router {

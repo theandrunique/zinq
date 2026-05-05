@@ -1,10 +1,7 @@
 use chrono::{DateTime, Utc};
-use serde::{Deserialize, Serialize};
-use socketioxide::{
-    SocketIo,
-    extract::{Data, SocketRef},
-    layer::SocketIoLayer,
-};
+use serde::Serialize;
+use socketioxide::{SocketIo, extract::SocketRef, layer::SocketIoLayer};
+use std::collections::HashMap;
 use tokio::sync::broadcast;
 use tracing::info;
 
@@ -13,12 +10,7 @@ use crate::{
     state::AppState,
 };
 
-#[derive(Deserialize, Serialize, Debug)]
-struct AuthData {
-    access_token: String,
-}
-
-#[derive(Serialize)]
+#[derive(Serialize, Debug)]
 pub struct UserPublicSchema {
     pub id: String,
     pub username: String,
@@ -41,6 +33,12 @@ impl UserPublicSchema {
     }
 }
 
+#[derive(Serialize, Debug)]
+pub struct HelloEvent {
+    pub user_id: String,
+    pub session_id: String,
+}
+
 async fn socket_event_loop(io: SocketIo, mut events: broadcast::Receiver<DomainEvent>) {
     while let Ok(event) = events.recv().await {
         match event {
@@ -54,24 +52,65 @@ async fn socket_event_loop(io: SocketIo, mut events: broadcast::Receiver<DomainE
     }
 }
 
-async fn on_connect(socket: SocketRef) {
-    info!("Socket.IO connected: {:?} {:?}", socket.ns(), socket.id);
-
-    socket.on("auth", async |socket: SocketRef, Data::<AuthData>(data)| {
-        info!(?data, "Received event:");
-        socket.emit("message-back", &data).ok();
-    })
-}
-
 pub fn gateway(app_state: AppState) -> SocketIoLayer {
-    let (layer, io) = SocketIo::builder().build_layer();
+    let state = app_state.clone();
+    let (layer, io) = SocketIo::builder().with_state(app_state).build_layer();
 
-    io.ns("/", on_connect);
+    io.ns("/", move |socket: SocketRef| async move {
+        info!("Socket.IO connected: {:?} {:?}", socket.ns(), socket.id);
 
-    tokio::spawn(socket_event_loop(
-        io.clone(),
-        app_state.event_bus.subscribe(),
-    ));
+        let uri = &socket.req_parts().uri;
+        let query = uri.query().unwrap_or_default();
+
+        info!("Full URI: {}", uri);
+
+        let token = query
+            .split('&')
+            .find(|s| s.starts_with("access_token="))
+            .and_then(|s| s.strip_prefix("access_token="))
+            .map(|s| s.to_string());
+
+        info!("Extracted token: {:?}", token);
+
+        let token = match token {
+            Some(t) => t,
+            None => {
+                socket.emit("error", "Missing access_token").ok();
+                socket.disconnect().ok();
+                return;
+            }
+        };
+
+        info!("Token (first 50 chars): {}", &token[..50.min(token.len())]);
+
+        let claims = match state.jwt_handler.verify_access_token(&token) {
+            Ok(c) => c,
+            Err(e) => {
+                info!("Token verification error: {}", e);
+                socket.emit("error", &e.to_string()).ok();
+                socket.disconnect().ok();
+                return;
+            }
+        };
+
+        info!(
+            "Token verified successfully, user_id: {}, session_id: {}",
+            claims.sub, claims.session_id
+        );
+
+        let hello = HelloEvent {
+            user_id: claims.sub.clone(),
+            session_id: claims.session_id.clone(),
+        };
+
+        info!(
+            "Sending hello: user_id={}, session_id={}",
+            hello.user_id, hello.session_id
+        );
+        socket.emit("hello", &hello).ok();
+    });
+
+    tokio::spawn(socket_event_loop(io.clone(), state.event_bus.subscribe()));
 
     return layer;
 }

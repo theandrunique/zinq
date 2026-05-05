@@ -13,7 +13,8 @@ use crate::{
         events::{DomainEvent, EventBus},
     },
     error::Error,
-    infra::{hash_handler::HashHandler, id_generator::IdGenerator},
+    infra::auth::hash_handler::HashHandler,
+    infra::id_generator::IdGenerator,
     state::AppState,
 };
 
