@@ -48,6 +48,7 @@ async fn socket_event_loop(io: SocketIo, mut events: broadcast::Receiver<DomainE
                     .await
                     .ok();
             }
+            DomainEvent::ChatCreate { chat: _chat } => {}
         }
     }
 }

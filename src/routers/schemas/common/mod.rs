@@ -1,7 +1,10 @@
 use chrono::{DateTime, Utc};
 use serde::Serialize;
 
-use crate::domain::auth::{SessionLifetime, User};
+use crate::domain::{
+    auth::{SessionLifetime, User},
+    chats::{Chat, ChatType},
+};
 
 #[derive(Serialize)]
 pub struct UserPrivateSchema {
@@ -54,6 +57,29 @@ impl From<User> for UserPublicSchema {
             bio: value.bio,
             avatar: value.avatar,
             timestamp: value.created_at,
+        }
+    }
+}
+
+#[derive(Serialize)]
+pub struct ChatSchema {
+    pub id: String,
+    pub owner_id: Option<String>,
+    pub name: Option<String>,
+    pub description: Option<String>,
+    pub image: Option<String>,
+    pub chat_type: ChatType,
+}
+
+impl From<Chat> for ChatSchema {
+    fn from(value: Chat) -> Self {
+        Self {
+            id: value.id.to_string(),
+            owner_id: value.owner_id.map(|id| id.to_string()),
+            name: value.name,
+            description: Some("".to_string()),
+            image: value.image,
+            chat_type: value.chat_type,
         }
     }
 }

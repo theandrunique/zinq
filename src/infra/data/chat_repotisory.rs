@@ -109,7 +109,7 @@ impl ScyllaChatRepository {
 
 #[async_trait]
 impl ChatRepository for ScyllaChatRepository {
-    async fn upsert(&self, chat: Chat) -> Result<(), anyhow::Error> {
+    async fn save(&self, chat: Chat) -> Result<(), anyhow::Error> {
         // Insert chat row
         let query_chat = "
             INSERT INTO chats_by_id (

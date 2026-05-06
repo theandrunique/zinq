@@ -191,7 +191,7 @@ impl UserRepository for ScyllaUserRepository {
         row.map(User::try_from).transpose()
     }
 
-    async fn get_by_email(&self, email: String) -> Result<Option<User>, anyhow::Error> {
+    async fn get_by_email(&self, email: &str) -> Result<Option<User>, anyhow::Error> {
         let row: Option<(i64,)> = self
             .common
             .exec_first(
@@ -206,7 +206,7 @@ impl UserRepository for ScyllaUserRepository {
         }
     }
 
-    async fn get_by_username(&self, username: String) -> Result<Option<User>, anyhow::Error> {
+    async fn get_by_username(&self, username: &str) -> Result<Option<User>, anyhow::Error> {
         let row: Option<(i64,)> = self
             .common
             .exec_first(
@@ -221,7 +221,7 @@ impl UserRepository for ScyllaUserRepository {
         }
     }
 
-    async fn get_by_ids(&self, user_ids: Vec<i64>) -> Result<Vec<User>, anyhow::Error> {
+    async fn get_by_ids(&self, user_ids: &[i64]) -> Result<Vec<User>, anyhow::Error> {
         if user_ids.is_empty() {
             return Ok(Vec::new());
         }
@@ -234,7 +234,7 @@ impl UserRepository for ScyllaUserRepository {
         user_dbs.into_iter().map(User::try_from).collect()
     }
 
-    async fn exists_by_email(&self, email: String) -> Result<bool, anyhow::Error> {
+    async fn exists_by_email(&self, email: &str) -> Result<bool, anyhow::Error> {
         let result: Option<(i64,)> = self
             .common
             .exec_first(
@@ -245,7 +245,7 @@ impl UserRepository for ScyllaUserRepository {
         Ok(result.is_some())
     }
 
-    async fn exists_by_username(&self, username: String) -> Result<bool, anyhow::Error> {
+    async fn exists_by_username(&self, username: &str) -> Result<bool, anyhow::Error> {
         let result: Option<(i64,)> = self
             .common
             .exec_first(
@@ -259,8 +259,8 @@ impl UserRepository for ScyllaUserRepository {
     async fn update_email(
         &self,
         user_id: i64,
-        email: String,
-        old_email: String,
+        email: &str,
+        old_email: &str,
         ts: DateTime<Utc>,
         verified: bool,
     ) -> Result<(), UpdateEmailError> {
@@ -288,8 +288,8 @@ impl UserRepository for ScyllaUserRepository {
     async fn update_username(
         &self,
         user_id: i64,
-        username: String,
-        old_username: String,
+        username: &str,
+        old_username: &str,
         ts: DateTime<Utc>,
     ) -> Result<(), UpdateUsernameError> {
         if !self

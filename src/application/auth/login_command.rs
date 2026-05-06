@@ -1,13 +1,16 @@
 use std::sync::Arc;
 
 use crate::{
+    application::RequestHandler,
     domain::auth::{
         UserSession, UserSessionCreateRequest,
         data::{user_repository::UserRepository, user_session_repository::UserSessionRepository},
     },
     error::Error,
-    infra::auth::{hash_handler::HashHandler, jwt_handler::JwtHandler},
-    infra::id_generator::IdGenerator,
+    infra::{
+        auth::{hash_handler::HashHandler, jwt_handler::JwtHandler},
+        id_generator::IdGenerator,
+    },
     state::AppState,
 };
 
@@ -42,18 +45,24 @@ impl LoginCommandHandler {
             hash_handler: Arc::clone(&state.hash_handler),
         }
     }
+}
 
-    pub async fn handle(&self, command: LoginCommand) -> Result<LoginCommandResult, Error> {
+impl RequestHandler for LoginCommandHandler {
+    type Request = LoginCommand;
+    type Output = LoginCommandResult;
+    type Error = Error;
+
+    async fn handle(&self, request: Self::Request) -> Result<Self::Output, Self::Error> {
         let user = self
             .user_repository
-            .get_by_username(command.username)
+            .get_by_username(&request.username)
             .await
             .map_err(|e| Error::InternalServerError(e))?
             .ok_or(Error::AuthInvalidCredentials)?;
 
         if !self
             .hash_handler
-            .verify(&command.password, &user.password_hash)
+            .verify(&request.password, &user.password_hash)
             .await?
         {
             return Err(Error::AuthInvalidCredentials);

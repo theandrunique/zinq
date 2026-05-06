@@ -3,7 +3,10 @@ use serde::{Deserialize, Serialize};
 
 use super::schemas::common::UserPrivateSchema;
 use crate::{
-    application::{LoginCommand, LoginCommandHandler, RegisterComandHandler, RegisterCommand},
+    application::{
+        RequestHandler,
+        auth::{LoginCommand, LoginCommandHandler, RegisterComandHandler, RegisterCommand},
+    },
     error::Error,
     state::AppState,
 };

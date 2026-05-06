@@ -6,7 +6,7 @@ use tracing_subscriber::{EnvFilter, layer::SubscriberExt, util::SubscriberInitEx
 
 use crate::{
     gateway::gateway,
-    routers::{auth_router, emoji_router, user_router, well_known_router},
+    routers::{auth_router, chat_router, emoji_router, user_router, well_known_router},
     state::init_state,
 };
 
@@ -40,6 +40,7 @@ async fn main() {
         .nest("/users", user_router())
         .nest("/auth", auth_router(app_state.clone()))
         .nest("/emoji-packs", emoji_router(app_state.clone()))
+        .nest("/chats", chat_router(app_state.clone()))
         .layer(gateway(app_state.clone()));
 
     let address = format!("0.0.0.0:{}", app_config.port);

@@ -14,6 +14,8 @@ enum ErrorCode {
     InvalidJson,
     InvalidRequestBody,
     UsernameAlreadyInUse,
+    UserNotFound,
+    UsersNotFound,
     EmailAlreadyInUse,
     InternalServerError,
 }
@@ -87,6 +89,14 @@ impl IntoResponse for Error {
             Error::EmailAlreadyInUse => {
                 ApiError::new(ErrorCode::EmailAlreadyInUse, "Email already in use")
             }
+            Error::UserNotFound(user_id) => ApiError::new(
+                ErrorCode::UserNotFound,
+                format!("User not found: {}", user_id),
+            ),
+            Error::UsersNotFound(user_ids) => ApiError::new(
+                ErrorCode::UsersNotFound,
+                format!("Users not found: {:?}", user_ids),
+            ),
             Error::InternalServerError(e) => {
                 tracing::error!(error = ?e, "Unhandled domain error");
                 ApiError::new(ErrorCode::InternalServerError, "Internal server error")

@@ -42,6 +42,7 @@ pub trait JwksService: Send + Sync {
     fn get_jwks(&self) -> Jwks;
 }
 
+#[derive(Clone)]
 pub struct FileJwksService {
     active_key: KeyPair,
 }

@@ -1,6 +1,7 @@
 use std::sync::Arc;
 
 use crate::{
+    application::RequestHandler,
     core::ValidateExt,
     domain::{
         auth::{
@@ -13,8 +14,7 @@ use crate::{
         events::{DomainEvent, EventBus},
     },
     error::Error,
-    infra::auth::hash_handler::HashHandler,
-    infra::id_generator::IdGenerator,
+    infra::{auth::hash_handler::HashHandler, id_generator::IdGenerator},
     state::AppState,
 };
 
@@ -49,8 +49,14 @@ impl RegisterComandHandler {
             hash_handler: Arc::clone(&state.hash_handler),
         }
     }
+}
 
-    pub async fn handle(&self, command: RegisterCommand) -> Result<User, Error> {
+impl RequestHandler for RegisterComandHandler {
+    type Request = RegisterCommand;
+    type Output = User;
+    type Error = Error;
+
+    async fn handle(&self, command: RegisterCommand) -> Result<User, Error> {
         command.validate()?;
 
         let new_user = User::create(UserCreateRequest {

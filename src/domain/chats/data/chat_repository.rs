@@ -4,7 +4,7 @@ use crate::domain::chats::{Chat, ChatMember};
 
 #[async_trait]
 pub trait ChatRepository: Send + Sync {
-    async fn upsert(&self, chat: Chat) -> Result<(), anyhow::Error>;
+    async fn save(&self, chat: Chat) -> Result<(), anyhow::Error>;
     async fn get_by_id(&self, chat_id: i64) -> Result<Option<Chat>, anyhow::Error>;
     async fn get_dm_channel(
         &self,

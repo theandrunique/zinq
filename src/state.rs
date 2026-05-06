@@ -72,7 +72,7 @@ pub async fn init_state() -> AppState {
         message_repository: Arc::new(ScyllaMessageRepository::new(session.clone())),
         attachment_repository: Arc::new(ScyllaAttachmentRepository::new(session.clone())),
         hash_handler: Arc::new(BcryptHandler::new()),
-        jwks_service: Arc::new(jwks_service),
+        jwks_service: Arc::new(jwks_service.clone()),
         jwt_handler: Arc::new(JwtService::new(
             jwks_service,
             app_config.auth.access_token_expiration_seconds as i64,

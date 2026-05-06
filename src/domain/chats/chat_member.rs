@@ -1,5 +1,6 @@
 use crate::domain::{auth::User, chats::chat::ChatPermissions};
 
+#[derive(Clone, Debug)]
 pub struct ChatMember {
     pub user_id: i64,
     pub last_read_message_id: Option<i64>,

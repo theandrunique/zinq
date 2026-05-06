@@ -10,6 +10,8 @@ pub enum Error {
     },
     UsernameAlreadyInUse,
     EmailAlreadyInUse,
+    UserNotFound(i64),
+    UsersNotFound(Vec<i64>),
     InvalidRequestBody(HashMap<String, Vec<String>>),
     InternalServerError(anyhow::Error),
 }
