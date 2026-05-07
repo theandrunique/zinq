@@ -44,7 +44,7 @@ impl TryFrom<ChatMemberDb> for ChatMember {
 struct ChatDb {
     chat_id: i64,
     #[scylla(rename = "type")]
-    chat_type: String,
+    chat_type: i32,
     name: Option<String>,
     owner_id: Option<i64>,
     image: Option<String>,
@@ -62,9 +62,11 @@ impl TryFrom<ChatDb> for Chat {
             owner_id: value.owner_id,
             name: value.name,
             image: value.image,
-            chat_type: ChatType::from_str(&value.chat_type).map_err(|e| {
-                anyhow::anyhow!("Error parsing chat_type '{}': {}", value.chat_type, e)
-            })?,
+            chat_type: match value.chat_type {
+                0 => ChatType::DM,
+                1 => ChatType::GroupDM,
+                _ => return Err(anyhow::anyhow!("Unknown chat_type: {}", value.chat_type)),
+            },
             last_message_id: value.last_message_id,
             timestamp: value.timestamp,
             permissions: ChatPermissions::try_from(value.permissions)?,
@@ -82,9 +84,11 @@ impl TryFrom<(ChatDb, Vec<ChatMember>)> for Chat {
             owner_id: db.owner_id,
             name: db.name,
             image: db.image,
-            chat_type: ChatType::from_str(&db.chat_type).map_err(|e| {
-                anyhow::anyhow!("Error parsing chat_type '{}': {}", db.chat_type, e)
-            })?,
+            chat_type: match db.chat_type {
+                0 => ChatType::DM,
+                1 => ChatType::GroupDM,
+                _ => return Err(anyhow::anyhow!("Unknown chat_type: {}", db.chat_type)),
+            },
             last_message_id: db.last_message_id,
             timestamp: db.timestamp,
             permissions: ChatPermissions::try_from(db.permissions)?,
@@ -129,7 +133,10 @@ impl ChatRepository for ScyllaChatRepository {
                 query_chat,
                 (
                     chat.id,
-                    chat.chat_type.to_string(),
+                    match chat.chat_type {
+                        ChatType::DM => 0,
+                        ChatType::GroupDM => 1,
+                    },
                     chat.name.clone(),
                     chat.owner_id,
                     chat.image.clone(),

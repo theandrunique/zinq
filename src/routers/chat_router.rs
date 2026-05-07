@@ -1,12 +1,16 @@
 use axum::{Json, Router, extract::State, routing::post};
 use serde::{Deserialize, Serialize};
-use serde_with::{serde_as, DisplayFromStr, Map};
+use serde_with::{DisplayFromStr, Map, serde_as};
 
 use crate::{
     application::{
         RequestHandler,
         chats::{CreateChatCommand, CreateChatCommandHandler},
-    }, error::Error, infra::AuthUser, routers::schemas::common::ChatSchema, state::AppState
+    },
+    error::Error,
+    infra::AuthUser,
+    routers::schemas::common::ChatSchema,
+    state::AppState,
 };
 
 #[serde_as]
@@ -37,5 +41,7 @@ async fn create_chat(
 }
 
 pub fn chat_router(state: AppState) -> Router {
-    Router::new().route("/", post(create_chat)).with_state(state)
+    Router::new()
+        .route("/", post(create_chat))
+        .with_state(state)
 }

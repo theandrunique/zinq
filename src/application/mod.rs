@@ -1,7 +1,6 @@
 pub mod auth;
 pub mod chats;
 pub mod messages;
-mod tests;
 
 pub trait RequestHandler {
     type Request;

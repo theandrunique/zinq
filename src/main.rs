@@ -10,6 +10,9 @@ use crate::{
     state::init_state,
 };
 
+#[cfg(test)]
+mod tests;
+
 mod application;
 mod config;
 mod core;

@@ -44,4 +44,11 @@ serde_with = "3.19.0"
 
 [[bin]]
 name = "db"
-path = "src/bin/db.rs"
+path = "scripts/db.rs"
+
+[[bin]]
+name = "test"
+path = "scripts/test.rs"
+
+[lints.rust]
+unused_imports = "allow"
