@@ -7,4 +7,6 @@ mod get_dm_chat_query;
 mod get_user_chats_query;
 mod update_chat_command;
 
+pub use add_chat_member_command::{AddChatMemberCommand, AddChatMemberCommandHandler};
 pub use create_chat_command::{CreateChatCommand, CreateChatCommandHandler};
+pub use delete_chat_member_command::{DeleteChatMemberCommand, DeleteChatMemberCommandHandler};

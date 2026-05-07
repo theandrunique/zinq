@@ -71,6 +71,39 @@ impl TryFrom<i64> for ChatPermissions {
     }
 }
 
+impl std::fmt::Display for ChatPermissions {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let bits = self.bits();
+        if bits == Self::SEND_MESSAGES.bits() {
+            write!(f, "SEND_MESSAGES")
+        } else if bits == Self::ADD_MEMBERS.bits() {
+            write!(f, "ADD_MEMBERS")
+        } else if bits == Self::PIN_MESSAGES.bits() {
+            write!(f, "PIN_MESSAGES")
+        } else if bits == Self::SEND_VIDEO_MESSAGES.bits() {
+            write!(f, "SEND_VIDEO_MESSAGES")
+        } else if bits == Self::SEND_VOICE_MESSAGES.bits() {
+            write!(f, "SEND_VOICE_MESSAGES")
+        } else if bits == Self::SEND_FILES.bits() {
+            write!(f, "SEND_FILES")
+        } else if bits == Self::CREATE_POLLS.bits() {
+            write!(f, "CREATE_POLLS")
+        } else if bits == Self::CHANGE_GROUP_INFO.bits() {
+            write!(f, "CHANGE_GROUP_INFO")
+        } else if bits == Self::DELETE_MESSAGES.bits() {
+            write!(f, "DELETE_MESSAGES")
+        } else if bits == Self::MANAGE_MEMBERS.bits() {
+            write!(f, "MANAGE_MEMBERS")
+        } else if bits == Self::MANAGE_INVITE_LINKS.bits() {
+            write!(f, "MANAGE_INVITE_LINKS")
+        } else if bits == Self::ADD_ADMINS.bits() {
+            write!(f, "ADD_ADMINS")
+        } else {
+            write!(f, "{:?}", self)
+        }
+    }
+}
+
 #[derive(Clone, Debug)]
 pub struct Chat {
     pub id: i64,
@@ -83,6 +116,14 @@ pub struct Chat {
     pub timestamp: DateTime<Utc>,
 
     pub members: Vec<super::chat_member::ChatMember>,
+}
+
+pub struct CreateGroupChatRequest {
+    pub id: i64,
+    pub owner_id: i64,
+    pub name: String,
+    pub members: Vec<super::chat_member::ChatMember>,
+    pub permissions: Option<ChatPermissions>,
 }
 
 impl Chat {
@@ -100,17 +141,19 @@ impl Chat {
         }
     }
 
-    pub fn create_group_dm(id: i64, owner_id: i64, name: String, members: Vec<ChatMember>) -> Self {
+    pub fn create_group_dm(request: CreateGroupChatRequest) -> Self {
         Self {
-            id: id,
-            owner_id: Some(owner_id),
-            name: Some(name),
+            id: request.id,
+            owner_id: Some(request.owner_id),
+            name: Some(request.name),
             image: None,
             chat_type: ChatType::GroupDM,
             last_message_id: None,
-            permissions: ChatPermissions::DEFAULT_DM_GROUP_MEMBER,
+            permissions: request
+                .permissions
+                .unwrap_or(ChatPermissions::DEFAULT_DM_GROUP_MEMBER),
             timestamp: Utc::now(),
-            members: members,
+            members: request.members,
         }
     }
 

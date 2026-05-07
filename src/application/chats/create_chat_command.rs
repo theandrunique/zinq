@@ -5,7 +5,7 @@ use crate::{
     core::ValidateExt,
     domain::{
         auth::data::user_repository::UserRepository,
-        chats::{Chat, ChatMember, data::ChatRepository},
+        chats::{Chat, ChatMember, CreateGroupChatRequest, data::ChatRepository},
         events::{DomainEvent, EventBus},
     },
     error::Error,
@@ -77,12 +77,13 @@ impl RequestHandler for CreateChatCommandHandler {
             return Err(Error::UsersNotFound(missing));
         }
 
-        let new_chat = Chat::create_group_dm(
-            self.id_gen.gen_id().await,
-            request.current_user_id,
-            request.name,
-            users.into_iter().map(|u| ChatMember::from(u)).collect(),
-        );
+        let new_chat = Chat::create_group_dm(CreateGroupChatRequest {
+            id: self.id_gen.gen_id().await,
+            owner_id: request.current_user_id,
+            name: request.name,
+            members: users.into_iter().map(|u| ChatMember::from(u)).collect(),
+            permissions: None,
+        });
 
         self.chat_repository.save(new_chat.clone()).await?;
 

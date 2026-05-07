@@ -3,14 +3,15 @@ use std::{fs, sync::Arc};
 use scylla::client::{session::Session, session_builder::SessionBuilder};
 
 use crate::{
+    domain::chats::data::ChatLoader,
     domain::events::EventBus,
     infra::{
         auth::{
-            hash_handler::BcryptHandler, jwks_service::FileJwksService,
-            jwt_handler::JwtService, totp_handler::TotpService,
+            hash_handler::BcryptHandler, jwks_service::FileJwksService, jwt_handler::JwtService,
+            totp_handler::TotpService,
         },
         data::{
-            attachment_repository::ScyllaAttachmentRepository,
+            attachment_repository::ScyllaAttachmentRepository, chat_loader::ScyllaChatLoader,
             chat_repotisory::ScyllaChatRepository, message_repository::ScyllaMessageRepository,
             user_repository::ScyllaUserRepository,
             user_session_repository::ScyllaUserSessionRepository,
@@ -18,7 +19,8 @@ use crate::{
         id_generator::SnowflakeIdGenerator,
         smtp_client::SmtpService,
     },
-    state::AppState, tests::common::test_config::{SCYLLA_HOST_ENV, SCYLLA_PORT_ENV},
+    state::AppState,
+    tests::common::test_config::{SCYLLA_HOST_ENV, SCYLLA_PORT_ENV},
 };
 
 pub struct TestContext {
@@ -54,9 +56,8 @@ impl TestContext {
             event_bus: Arc::new(EventBus::new()),
             id_gen: Arc::new(SnowflakeIdGenerator::new()),
             user_repository: Arc::new(ScyllaUserRepository::new(session.clone())),
-            user_session_repository: Arc::new(ScyllaUserSessionRepository::new(
-                session.clone(),
-            )),
+            user_session_repository: Arc::new(ScyllaUserSessionRepository::new(session.clone())),
+            chat_loader: Arc::new(ScyllaChatLoader::new(session.clone())),
             chat_repotisory: Arc::new(ScyllaChatRepository::new(session.clone())),
             message_repository: Arc::new(ScyllaMessageRepository::new(session.clone())),
             attachment_repository: Arc::new(ScyllaAttachmentRepository::new(session.clone())),
@@ -100,11 +101,7 @@ impl TestContext {
         }
     }
 
-    pub async fn create_test_user(
-        &self,
-        username: &str,
-        email: &str,
-    ) -> crate::domain::auth::User {
+    pub async fn create_test_user(&self, username: &str, email: &str) -> crate::domain::auth::User {
         use crate::application::RequestHandler;
         use crate::application::auth::{RegisterComandHandler, RegisterCommand};
 

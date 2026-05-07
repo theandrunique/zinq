@@ -1,7 +1,10 @@
-use crate::{application::{
-    RequestHandler,
-    chats::{CreateChatCommand, CreateChatCommandHandler},
-}, tests::common::TestContext};
+use crate::{
+    application::{
+        RequestHandler,
+        chats::{CreateChatCommand, CreateChatCommandHandler},
+    },
+    tests::common::TestContext,
+};
 
 fn valid_command(current_user_id: i64, other_user_ids: Vec<i64>) -> CreateChatCommand {
     CreateChatCommand {

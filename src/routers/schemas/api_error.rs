@@ -16,6 +16,11 @@ enum ErrorCode {
     UsernameAlreadyInUse,
     UserNotFound,
     UsersNotFound,
+    UserNotMember,
+    ChatNotFound,
+    ChatTypeNotSupported,
+    InsufficientPermissions,
+    UserAlreadyMember,
     EmailAlreadyInUse,
     InternalServerError,
 }
@@ -96,6 +101,32 @@ impl IntoResponse for Error {
             Error::UsersNotFound(user_ids) => ApiError::new(
                 ErrorCode::UsersNotFound,
                 format!("Users not found: {:?}", user_ids),
+            ),
+            Error::UserNotMember { user_id, chat_id } => ApiError::new(
+                ErrorCode::UserNotMember,
+                format!("User {} is not a member of chat {}", user_id, chat_id),
+            ),
+            Error::ChatNotFound(chat_id) => ApiError::new(
+                ErrorCode::ChatNotFound,
+                format!("Chat not found: {}", chat_id),
+            ),
+            Error::ChatTypeNotSupported { chat_id: _ } => ApiError::new(
+                ErrorCode::ChatTypeNotSupported,
+                "Only group chats support this operation",
+            ),
+            Error::InsufficientPermissions {
+                permission,
+                chat_id,
+            } => ApiError::new(
+                ErrorCode::InsufficientPermissions,
+                format!(
+                    "Requires '{}' permission for chat '{}'",
+                    permission, chat_id
+                ),
+            ),
+            Error::UserAlreadyMember { user_id, chat_id } => ApiError::new(
+                ErrorCode::UserAlreadyMember,
+                format!("User {} is already a member of chat {}", user_id, chat_id),
             ),
             Error::InternalServerError(e) => {
                 tracing::error!(error = ?e, "Unhandled domain error");

@@ -9,7 +9,7 @@ use crate::{
         auth::data::{
             user_repository::UserRepository, user_session_repository::UserSessionRepository,
         },
-        chats::data::ChatRepository,
+        chats::data::{ChatLoader, ChatRepository},
         events::EventBus,
         messages::data::MessageRepository,
     },
@@ -21,7 +21,7 @@ use crate::{
             totp_handler::{TotpHandler, TotpService},
         },
         data::{
-            attachment_repository::ScyllaAttachmentRepository,
+            attachment_repository::ScyllaAttachmentRepository, chat_loader::ScyllaChatLoader,
             chat_repotisory::ScyllaChatRepository, message_repository::ScyllaMessageRepository,
             user_repository::ScyllaUserRepository,
             user_session_repository::ScyllaUserSessionRepository,
@@ -37,6 +37,7 @@ pub struct AppState {
     pub id_gen: Arc<dyn IdGenerator>,
     pub user_repository: Arc<dyn UserRepository>,
     pub user_session_repository: Arc<dyn UserSessionRepository>,
+    pub chat_loader: Arc<dyn ChatLoader>,
     pub chat_repotisory: Arc<dyn ChatRepository>,
     pub message_repository: Arc<dyn MessageRepository>,
     pub attachment_repository: Arc<dyn AttachmentRepository>,
@@ -68,6 +69,7 @@ pub async fn init_state() -> AppState {
         id_gen: Arc::new(SnowflakeIdGenerator::new()),
         user_repository: Arc::new(ScyllaUserRepository::new(session.clone())),
         user_session_repository: Arc::new(ScyllaUserSessionRepository::new(session.clone())),
+        chat_loader: Arc::new(ScyllaChatLoader::new(session.clone())),
         chat_repotisory: Arc::new(ScyllaChatRepository::new(session.clone())),
         message_repository: Arc::new(ScyllaMessageRepository::new(session.clone())),
         attachment_repository: Arc::new(ScyllaAttachmentRepository::new(session.clone())),

@@ -1,3 +1,5 @@
+mod add_chat_member_command_tests;
 mod common;
 mod create_chat_command_tests;
+mod delete_chat_member_command_tests;
 mod register_command_tests;

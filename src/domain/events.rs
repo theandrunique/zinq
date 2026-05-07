@@ -1,11 +1,16 @@
 use tokio::sync::broadcast;
 
-use crate::domain::{auth::User, chats::Chat};
+use crate::domain::{
+    auth::User,
+    chats::{Chat, ChatMember},
+};
 
 #[derive(Clone, Debug)]
 pub enum DomainEvent {
     UserCreate { user: User },
     ChatCreate { chat: Chat },
+    ChatMemberAdded { chat: Chat, member: ChatMember },
+    ChatMemberRemoved { chat_id: i64, user_id: i64 },
 }
 
 pub struct EventBus {

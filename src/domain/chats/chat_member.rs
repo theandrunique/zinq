@@ -11,6 +11,12 @@ pub struct ChatMember {
     pub permissions: Option<ChatPermissions>,
 }
 
+impl ChatMember {
+    pub fn set_leave_status(&mut self, is_leave: bool) {
+        self.is_leave = is_leave;
+    }
+}
+
 impl From<User> for ChatMember {
     fn from(value: User) -> Self {
         Self {

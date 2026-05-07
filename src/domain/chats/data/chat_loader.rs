@@ -2,14 +2,39 @@ use async_trait::async_trait;
 
 use crate::domain::chats::Chat;
 
-pub trait ChatLoaderFactory {
-    fn create() -> impl ChatLoader;
+#[derive(Clone)]
+pub struct ChatLoadOptions {
+    pub chat_id: Option<i64>,
+    pub member_ids: Vec<i64>,
+}
+
+impl ChatLoadOptions {
+    pub fn with_chat_id(mut self, chat_id: i64) -> Self {
+        self.chat_id = Some(chat_id);
+        self
+    }
+
+    pub fn with_member(mut self, member_id: i64) -> Self {
+        self.member_ids.push(member_id);
+        self
+    }
+
+    pub fn with_members(mut self, member_ids: Vec<i64>) -> Self {
+        self.member_ids.extend(member_ids);
+        self
+    }
+}
+
+impl Default for ChatLoadOptions {
+    fn default() -> Self {
+        Self {
+            chat_id: None,
+            member_ids: Vec::new(),
+        }
+    }
 }
 
 #[async_trait]
 pub trait ChatLoader: Send + Sync {
-    fn with_id(&self, chat_id: i64) -> Self;
-    fn with_members(&self, member_ids: Vec<i64>) -> Self;
-    fn with_member(&self, member_id: i64) -> Self;
-    async fn load(&self) -> Option<Chat>;
+    async fn load(&self, options: ChatLoadOptions) -> Result<Option<Chat>, anyhow::Error>;
 }
