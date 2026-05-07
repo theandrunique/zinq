@@ -52,3 +52,4 @@ path = "scripts/test.rs"
 
 [lints.rust]
 unused_imports = "allow"
+dead_code = "allow"
