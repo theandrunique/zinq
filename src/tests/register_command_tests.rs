@@ -1,6 +1,7 @@
-use crate::application::RequestHandler;
 use crate::application::auth::{RegisterComandHandler, RegisterCommand};
+use crate::error::Error;
 use crate::tests::common::TestContext;
+use crate::{application::RequestHandler, assert_err};
 
 fn valid_command() -> RegisterCommand {
     RegisterCommand {
@@ -43,7 +44,7 @@ async fn test_register_duplicate_username() {
         .handle(cmd)
         .await
         .expect_err("Expected error when registering duplicate username");
-    dbg!(&err);
+    assert_err!(err, Error::UsernameAlreadyInUse);
 }
 
 #[tokio::test]
@@ -65,7 +66,7 @@ async fn test_register_duplicate_email() {
         .await
         .expect_err("Expected error when registering duplicate email");
 
-    dbg!(&err);
+    assert_err!(err, Error::EmailAlreadyInUse);
 }
 
 #[tokio::test]

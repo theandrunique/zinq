@@ -3,6 +3,8 @@ use crate::{
         RequestHandler,
         chats::{CreateChatCommand, CreateChatCommandHandler},
     },
+    assert_err,
+    error::Error,
     tests::common::TestContext,
 };
 
@@ -53,11 +55,7 @@ async fn test_create_chat_duplicate_members() {
         .await
         .expect_err("Expected validation error for duplicate members");
 
-    let err_str = format!("{:?}", err);
-    assert!(
-        err_str.contains("unique") || err_str.contains("members"),
-        "Error should mention duplicate members"
-    );
+    assert_err!(err, Error::InvalidRequestBody(_));
 }
 
 #[tokio::test]
@@ -81,11 +79,7 @@ async fn test_create_chat_missing_users() {
         .await
         .expect_err("Expected UsersNotFound error");
 
-    let err_str = format!("{:?}", err);
-    assert!(
-        err_str.contains("UsersNotFound") || err_str.contains("not found"),
-        "Error should indicate users not found"
-    );
+    assert_err!(err, Error::UsersNotFound(_));
 }
 
 #[tokio::test]

@@ -1,11 +1,17 @@
-use crate::application::chats::{CreateChatCommand, CreateChatCommandHandler};
-use crate::domain::chats::CreateGroupChatRequest;
 use crate::{
     application::{
         RequestHandler,
-        chats::{AddChatMemberCommand, AddChatMemberCommandHandler},
+        chats::{
+            AddChatMemberCommand, AddChatMemberCommandHandler, CreateChatCommand,
+            CreateChatCommandHandler,
+        },
     },
-    domain::chats::{Chat, ChatMember, ChatPermissions},
+    assert_err,
+    domain::{
+        chats::{Chat, ChatMember, ChatPermissions, CreateGroupChatRequest},
+        events::DomainEvent,
+    },
+    error::Error,
     tests::common::TestContext,
 };
 
@@ -67,12 +73,7 @@ async fn test_add_chat_member_not_member() {
         .await
         .expect_err("Should fail - not member");
 
-    let err_str = format!("{:?}", err);
-    assert!(
-        err_str.contains("UserNotMember"),
-        "Error should be UserNotMember, got: {}",
-        err_str
-    );
+    assert_err!(err, Error::UserNotMember { .. });
 }
 
 #[tokio::test]
@@ -104,12 +105,7 @@ async fn test_add_chat_member_dm_not_supported() {
 
     let err = handler.handle(cmd).await.expect_err("Should fail - DM");
 
-    let err_str = format!("{:?}", err);
-    assert!(
-        err_str.contains("ChatTypeNotSupported"),
-        "Error should be ChatTypeNotSupported, got: {}",
-        err_str
-    );
+    assert_err!(err, Error::ChatTypeNotSupported { .. });
 }
 
 #[tokio::test]
@@ -150,12 +146,7 @@ async fn test_add_chat_member_no_permission() {
         .await
         .expect_err("Should fail - no permission");
 
-    let err_str = format!("{:?}", err);
-    assert!(
-        err_str.contains("InsufficientPermissions"),
-        "Error should be InsufficientPermissions, got: {}",
-        err_str
-    );
+    assert_err!(err, Error::InsufficientPermissions { .. });
 }
 
 #[tokio::test]
@@ -188,12 +179,7 @@ async fn test_add_chat_member_already_member() {
         .await
         .expect_err("Should fail - already member");
 
-    let err_str = format!("{:?}", err);
-    assert!(
-        err_str.contains("UserAlreadyMember"),
-        "Error should be UserAlreadyMember, got: {}",
-        err_str
-    );
+    assert_err!(err, Error::UserAlreadyMember { .. });
 }
 
 #[tokio::test]
@@ -214,12 +200,7 @@ async fn test_add_chat_member_chat_not_found() {
         .await
         .expect_err("Should fail - not found");
 
-    let err_str = format!("{:?}", err);
-    assert!(
-        err_str.contains("ChatNotFound"),
-        "Error should be ChatNotFound, got: {}",
-        err_str
-    );
+    assert_err!(err, Error::ChatNotFound(_));
 }
 
 #[tokio::test]
@@ -252,12 +233,7 @@ async fn test_add_chat_member_user_not_found() {
         .await
         .expect_err("Should fail - user not found");
 
-    let err_str = format!("{:?}", err);
-    assert!(
-        err_str.contains("UserNotFound"),
-        "Error should be UserNotFound, got: {}",
-        err_str
-    );
+    assert_err!(err, Error::UserNotFound(_));
 }
 
 #[tokio::test]
@@ -294,11 +270,5 @@ async fn test_add_chat_member_publishes_event() {
         .await
         .expect("Should receive event")
         .expect("Event should be available");
-
-    let event_str = format!("{:?}", event);
-    assert!(
-        event_str.contains("ChatMemberAdded"),
-        "Event should be ChatMemberAdded, got: {}",
-        event_str
-    );
+    assert!(matches!(event, DomainEvent::ChatMemberAdded { .. }));
 }

@@ -1,10 +1,12 @@
-use crate::application::chats::{CreateChatCommand, CreateChatCommandHandler};
 use crate::{
+    application::chats::{CreateChatCommand, CreateChatCommandHandler},
     application::{
         RequestHandler,
         chats::{DeleteChatMemberCommand, DeleteChatMemberCommandHandler},
     },
+    assert_err,
     domain::chats::Chat,
+    error::Error,
     tests::common::TestContext,
 };
 
@@ -64,12 +66,7 @@ async fn test_delete_chat_member_not_member() {
         .await
         .expect_err("Should fail - not member");
 
-    let err_str = format!("{:?}", err);
-    assert!(
-        err_str.contains("UserNotMember"),
-        "Error should be UserNotMember, got: {}",
-        err_str
-    );
+    assert_err!(err, Error::UserNotMember { .. });
 }
 
 #[tokio::test]
@@ -100,12 +97,7 @@ async fn test_delete_chat_member_dm_not_supported() {
 
     let err = handler.handle(cmd).await.expect_err("Should fail - DM");
 
-    let err_str = format!("{:?}", err);
-    assert!(
-        err_str.contains("ChatTypeNotSupported"),
-        "Error should be ChatTypeNotSupported, got: {}",
-        err_str
-    );
+    assert_err!(err, Error::ChatTypeNotSupported { .. });
 }
 
 #[tokio::test]
@@ -137,12 +129,7 @@ async fn test_delete_chat_member_no_permission() {
         .await
         .expect_err("Should fail - no permission");
 
-    let err_str = format!("{:?}", err);
-    assert!(
-        err_str.contains("InsufficientPermissions"),
-        "Error should be InsufficientPermissions, got: {}",
-        err_str
-    );
+    assert_err!(err, Error::InsufficientPermissions { .. });
 }
 
 #[tokio::test]
@@ -174,12 +161,7 @@ async fn test_delete_chat_member_target_not_found() {
         .await
         .expect_err("Should fail - target not found");
 
-    let err_str = format!("{:?}", err);
-    assert!(
-        err_str.contains("UserNotMember"),
-        "Error should be UserNotMember, got: {}",
-        err_str
-    );
+    assert_err!(err, Error::UserNotMember { .. });
 }
 
 #[tokio::test]
@@ -200,12 +182,7 @@ async fn test_delete_chat_member_chat_not_found() {
         .await
         .expect_err("Should fail - not found");
 
-    let err_str = format!("{:?}", err);
-    assert!(
-        err_str.contains("ChatNotFound"),
-        "Error should be ChatNotFound, got: {}",
-        err_str
-    );
+    assert_err!(err, Error::ChatNotFound(_));
 }
 
 #[tokio::test]
