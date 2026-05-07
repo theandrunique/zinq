@@ -18,6 +18,8 @@ enum ErrorCode {
     UsersNotFound,
     UserNotMember,
     ChatNotFound,
+    AttachmentInvalidUploadFilename,
+    AttachmentObjectNotFound,
     ChatTypeNotSupported,
     InsufficientPermissions,
     UserAlreadyMember,
@@ -123,6 +125,14 @@ impl IntoResponse for Error {
                     "Requires '{}' permission for chat '{}'",
                     permission, chat_id
                 ),
+            ),
+            Error::AttachmentObjectNotFound { upload_filename } => ApiError::new(
+                ErrorCode::AttachmentObjectNotFound,
+                format!("Attachment '{}' not found in object storage", upload_filename),
+            ),
+            Error::AttachmentInvalidUploadFilename { upload_filename } => ApiError::new(
+                ErrorCode::AttachmentInvalidUploadFilename,
+                format!("Invalid upload filename format '{}'", upload_filename),
             ),
             Error::UserAlreadyMember { user_id, chat_id } => ApiError::new(
                 ErrorCode::UserAlreadyMember,

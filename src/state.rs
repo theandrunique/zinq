@@ -3,6 +3,7 @@ use std::sync::Arc;
 use scylla::client::session_builder::SessionBuilder;
 
 use crate::{
+    application::services::{AttachmentService, AvatarService, ChannelImageService},
     config,
     domain::{
         attachments::data::AttachmentRepository,
@@ -27,6 +28,7 @@ use crate::{
             user_session_repository::ScyllaUserSessionRepository,
         },
         id_generator::{IdGenerator, SnowflakeIdGenerator},
+        s3::{AwsS3Service, S3Service},
         smtp_client::{SmtpClient, SmtpService},
     },
 };
@@ -46,6 +48,10 @@ pub struct AppState {
     pub jwt_handler: Arc<dyn JwtHandler>,
     pub smtp_client: Arc<dyn SmtpClient>,
     pub totp_handler: Arc<dyn TotpHandler>,
+    pub s3_service: Arc<dyn S3Service>,
+    pub attachment_service: Arc<AttachmentService>,
+    pub avatar_service: Arc<AvatarService>,
+    pub channel_image_service: Arc<ChannelImageService>,
 }
 
 pub async fn init_state() -> AppState {
@@ -67,9 +73,23 @@ pub async fn init_state() -> AppState {
     let jwks_service = FileJwksService::load_from_directory(&app_config.auth.keys_directory)
         .expect("Failed to init JwksService");
 
+    let s3_service: Arc<dyn S3Service> = Arc::new(AwsS3Service::new(&app_config.s3).await);
+
+    let id_gen: Arc<dyn IdGenerator> = Arc::new(SnowflakeIdGenerator::new());
+
+    let attachment_service = Arc::new(AttachmentService::new(
+        s3_service.clone(),
+        id_gen.clone(),
+        &app_config.s3,
+    ));
+
+    let avatar_service = Arc::new(AvatarService::new(s3_service.clone(), &app_config.s3));
+
+    let channel_image_service = Arc::new(ChannelImageService::new(s3_service.clone(), &app_config.s3));
+
     AppState {
         event_bus: Arc::new(EventBus::new()),
-        id_gen: Arc::new(SnowflakeIdGenerator::new()),
+        id_gen: id_gen.clone(),
         user_repository: Arc::new(ScyllaUserRepository::new(session.clone())),
         user_session_repository: Arc::new(ScyllaUserSessionRepository::new(session.clone())),
         chat_loader: Arc::new(ScyllaChatLoader::new(session.clone())),
@@ -90,5 +110,9 @@ pub async fn init_state() -> AppState {
             app_config.smtp.password.clone(),
         )),
         totp_handler: Arc::new(TotpService::new()),
+        s3_service,
+        attachment_service,
+        avatar_service,
+        channel_image_service,
     }
 }

@@ -30,6 +30,12 @@ pub enum Error {
         user_id: i64,
         chat_id: i64,
     },
+    AttachmentInvalidUploadFilename {
+        upload_filename: String,
+    },
+    AttachmentObjectNotFound {
+        upload_filename: String,
+    },
     InvalidRequestBody(HashMap<String, Vec<String>>),
     InternalServerError(anyhow::Error),
 }

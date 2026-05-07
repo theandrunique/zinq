@@ -19,8 +19,7 @@ struct AttachmentDb {
     filename: String,
     is_spoiler: bool,
     placeholder: Option<String>,
-    signed_url: String,
-    signed_url_expires: DateTime<Utc>,
+    storage_key: Option<String>,
     size: i64,
     waveform: Option<String>,
     timestamp: DateTime<Utc>,
@@ -37,8 +36,7 @@ impl TryFrom<AttachmentDb> for Attachment {
             filename: value.filename,
             content_type: value.content_type,
             size: value.size,
-            signed_url: value.signed_url,
-            signed_url_expires: value.signed_url_expires,
+            storage_key: value.storage_key.unwrap_or_default(),
             placeholder: value.placeholder,
             duration_secs: value.duration_secs,
             waveform: value.waveform,
@@ -104,10 +102,10 @@ impl AttachmentRepository for ScyllaAttachmentRepository {
         rows.into_iter().map(Attachment::try_from).collect()
     }
 
-    async fn update_signed_urls(&self, attachments: Vec<Attachment>) -> Result<(), anyhow::Error> {
+    async fn update_storage_keys(&self, attachments: Vec<Attachment>) -> Result<(), anyhow::Error> {
         let query = "
             UPDATE attachments_by_message_id
-            SET signed_url = ?, signed_url_expires = ?
+            SET storage_key = ?
             WHERE chat_id = ? AND message_id = ? AND attachment_id = ?
         ";
 
@@ -116,8 +114,7 @@ impl AttachmentRepository for ScyllaAttachmentRepository {
                 .exec(
                     query,
                     (
-                        attachment.signed_url.clone(),
-                        attachment.signed_url_expires,
+                        attachment.storage_key.clone(),
                         attachment.chat_id,
                         attachment.message_id,
                         attachment.id,

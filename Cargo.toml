@@ -39,8 +39,12 @@ rsa = "0.9"
 pem = "3.0"
 base64 = "0.22"
 sha2 = "0.10"
+sha1 = "0.10"
 clap = { version = "4", features = ["derive"] }
 serde_with = "3.19.0"
+aws-config = "1.8.0"
+aws-sdk-s3 = "1.21.0"
+image = "0.25"
 
 [[bin]]
 name = "db"
