@@ -275,7 +275,7 @@ impl UserRepository for ScyllaUserRepository {
         let query = "UPDATE users SET email = ?, email_updated_timestamp = ?, is_email_verified = ? WHERE user_id = ?";
 
         self.common
-            .exec(query, (email.clone(), ts, verified, user_id))
+            .exec(query, (email, ts, verified, user_id))
             .await
             .map_err(UpdateEmailError::InternalError)?;
         self.delete_index("users_by_email", "email", &old_email)
@@ -304,7 +304,7 @@ impl UserRepository for ScyllaUserRepository {
             "UPDATE users SET username = ?, username_updated_timestamp = ? WHERE user_id = ?";
 
         self.common
-            .exec(query, (username.clone(), ts, user_id))
+            .exec(query, (username, ts, user_id))
             .await
             .map_err(UpdateUsernameError::InternalError)?;
         self.delete_index("users_by_username", "username", &old_username)
