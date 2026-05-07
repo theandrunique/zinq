@@ -59,7 +59,9 @@ pub async fn init_state() -> AppState {
             .expect("Error creating scylla session"),
     );
 
-    session.use_keyspace("zinq", true).await
+    session
+        .use_keyspace("zinq", true)
+        .await
         .expect("Failed to use keyspace");
 
     let jwks_service = FileJwksService::load_from_directory(&app_config.auth.keys_directory)

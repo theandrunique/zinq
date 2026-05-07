@@ -218,10 +218,11 @@ async fn test_delete_chat_member_publishes_event() {
         .expect("Should receive event")
         .expect("Event should be available");
 
-    let event_str = format!("{:?}", event);
     assert!(
-        event_str.contains("ChatMemberRemoved"),
-        "Event should be ChatMemberRemoved, got: {}",
-        event_str
+        matches!(
+            event,
+            crate::domain::events::DomainEvent::ChatMemberRemoved { .. }
+        ),
+        "Event should be ChatMemberRemoved"
     );
 }

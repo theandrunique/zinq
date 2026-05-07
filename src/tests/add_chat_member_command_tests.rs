@@ -157,7 +157,6 @@ async fn test_add_chat_member_already_member() {
     let owner = ctx.create_test_user("owner", "owner@test.com").await;
     let member = ctx.create_test_user("member", "member@test.com").await;
 
-    use crate::application::chats::{CreateChatCommand, CreateChatCommandHandler};
     let chat_handler = CreateChatCommandHandler::new(&ctx.app_state);
     let chat = chat_handler
         .handle(CreateChatCommand {
@@ -211,7 +210,6 @@ async fn test_add_chat_member_user_not_found() {
     let owner = ctx.create_test_user("owner", "owner@test.com").await;
     let member = ctx.create_test_user("member", "member@test.com").await;
 
-    use crate::application::chats::{CreateChatCommand, CreateChatCommandHandler};
     let chat_handler = CreateChatCommandHandler::new(&ctx.app_state);
     let chat = chat_handler
         .handle(CreateChatCommand {
@@ -245,7 +243,6 @@ async fn test_add_chat_member_publishes_event() {
     let member = ctx.create_test_user("member", "member@test.com").await;
     let new_user = ctx.create_test_user("newuser", "new@test.com").await;
 
-    use crate::application::chats::{CreateChatCommand, CreateChatCommandHandler};
     let chat_handler = CreateChatCommandHandler::new(&ctx.app_state);
     let chat = chat_handler
         .handle(CreateChatCommand {

@@ -217,9 +217,8 @@ async fn test_create_chat_publishes_event() {
         .expect("Should receive event")
         .expect("Event should be available");
 
-    let event_str = format!("{:?}", event);
     assert!(
-        event_str.contains("ChatCreate"),
+        matches!(event, crate::domain::events::DomainEvent::ChatCreate { .. }),
         "Event should be ChatCreate"
     );
 }

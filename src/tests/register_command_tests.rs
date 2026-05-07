@@ -14,7 +14,7 @@ fn valid_command() -> RegisterCommand {
 
 #[tokio::test]
 async fn test_register_command_success() {
-    let ctx = TestContext::new("test_reggister_command_success").await;
+    let ctx = TestContext::new("test_register_command_success").await;
 
     let handler = RegisterComandHandler::new(&ctx.app_state);
 
