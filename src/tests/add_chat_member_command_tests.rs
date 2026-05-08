@@ -30,6 +30,7 @@ async fn test_add_chat_member_success() {
             current_user_id: owner.id,
             name: "Test Group".to_string(),
             members: vec![member.id],
+            permissions: None,
         })
         .await
         .expect("Failed to create chat");
@@ -58,6 +59,7 @@ async fn test_add_chat_member_not_member() {
             current_user_id: owner.id,
             name: "Test Group".to_string(),
             members: vec![member.id],
+            permissions: None,
         })
         .await
         .expect("Failed to create chat");
@@ -163,6 +165,7 @@ async fn test_add_chat_member_already_member() {
             current_user_id: owner.id,
             name: "Test Group".to_string(),
             members: vec![member.id],
+            permissions: None,
         })
         .await
         .expect("Failed to create chat");
@@ -216,6 +219,7 @@ async fn test_add_chat_member_user_not_found() {
             current_user_id: owner.id,
             name: "Test Group".to_string(),
             members: vec![member.id],
+            permissions: None,
         })
         .await
         .expect("Failed to create chat");
@@ -249,6 +253,7 @@ async fn test_add_chat_member_publishes_event() {
             current_user_id: owner.id,
             name: "Test Group".to_string(),
             members: vec![member.id],
+            permissions: None,
         })
         .await
         .expect("Failed to create chat");

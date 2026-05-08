@@ -3,10 +3,18 @@ use std::{fs, sync::Arc};
 use scylla::client::{session::Session, session_builder::SessionBuilder};
 
 use crate::{
-    application::services::{AttachmentService, AvatarService, ChannelImageService},
+    application::{
+        RequestHandler,
+        auth::{RegisterComandHandler, RegisterCommand},
+        chats::{CreateChatCommand, CreateChatCommandHandler},
+        services::{AttachmentService, AvatarService, ChannelImageService},
+    },
     config::S3Config,
-    domain::chats::data::ChatLoader,
-    domain::events::EventBus,
+    domain::{
+        auth::User,
+        chats::{Chat, ChatPermissions, data::ChatLoader},
+        events::EventBus,
+    },
     infra::{
         auth::{
             hash_handler::BcryptHandler, jwks_service::FileJwksService, jwt_handler::JwtService,
@@ -23,14 +31,11 @@ use crate::{
         smtp_client::SmtpService,
     },
     state::AppState,
-    tests::common::test_config::{SCYLLA_HOST_ENV, SCYLLA_PORT_ENV},
+    tests::common::test_config::{
+        S3_ACCESS_KEY_ENV, S3_BUCKET_ENV, S3_ENDPOINT_ENV, S3_REGION_ENV, S3_SECRET_KEY_ENV,
+        SCYLLA_HOST_ENV, SCYLLA_PORT_ENV,
+    },
 };
-
-const S3_ENDPOINT_ENV: &str = "TEST_S3_ENDPOINT";
-const S3_ACCESS_KEY_ENV: &str = "TEST_S3_ACCESS_KEY";
-const S3_SECRET_KEY_ENV: &str = "TEST_S3_SECRET_KEY";
-const S3_BUCKET_ENV: &str = "TEST_S3_BUCKET";
-const S3_REGION_ENV: &str = "TEST_S3_REGION";
 
 pub struct TestContext {
     pub app_state: AppState,
@@ -147,10 +152,7 @@ impl TestContext {
         }
     }
 
-    pub async fn create_test_user(&self, username: &str, email: &str) -> crate::domain::auth::User {
-        use crate::application::RequestHandler;
-        use crate::application::auth::{RegisterComandHandler, RegisterCommand};
-
+    pub async fn create_test_user(&self, username: &str, email: &str) -> User {
         let cmd = RegisterCommand {
             username: username.to_string(),
             password: "Test123!".to_string(),
@@ -163,5 +165,26 @@ impl TestContext {
             .handle(cmd)
             .await
             .expect(&format!("Failed to create test user {}", username))
+    }
+
+    pub async fn create_group_chat(
+        &self,
+        owner_id: i64,
+        name: &str,
+        members: Vec<i64>,
+        permissions: Option<ChatPermissions>,
+    ) -> Chat {
+        let cmd = CreateChatCommand {
+            current_user_id: owner_id,
+            name: name.to_string(),
+            members,
+            permissions,
+        };
+
+        let handler = CreateChatCommandHandler::new(&self.app_state);
+        handler
+            .handle(cmd)
+            .await
+            .expect(&format!("Failed to create group chat {}", name))
     }
 }

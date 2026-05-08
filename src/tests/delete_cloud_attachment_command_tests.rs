@@ -48,24 +48,12 @@ async fn test_delete_cloud_attachment_success_no_record() {
 
     let owner = ctx.create_test_user("owner", "owner@test.com").await;
 
-    let chat_id = ctx.app_state.id_gen.gen_id().await;
-
-    let chat = Chat::create_group_dm(CreateGroupChatRequest {
-        id: chat_id,
-        owner_id: owner.id,
-        name: "Test Group".to_string(),
-        permissions: Some(ChatPermissions::all()),
-        members: vec![ChatMember::from(owner.clone())],
-    });
-
-    ctx.app_state
-        .chat_repository
-        .save(chat)
-        .await
-        .expect("Failed to save chat");
+    let chat = ctx
+        .create_group_chat(owner.id, "Test Group", vec![], Some(ChatPermissions::all()))
+        .await;
 
     let attachment_id = ctx.app_state.id_gen.gen_id().await;
-    let upload_filename = format!("attachments/{}/{}/test.txt", chat_id, attachment_id);
+    let upload_filename = format!("attachments/{}/{}/test.txt", chat.id, attachment_id);
 
     ctx.app_state
         .s3_service

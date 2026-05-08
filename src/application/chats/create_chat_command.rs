@@ -5,7 +5,7 @@ use crate::{
     core::ValidateExt,
     domain::{
         auth::data::user_repository::UserRepository,
-        chats::{Chat, ChatMember, CreateGroupChatRequest, data::ChatRepository},
+        chats::{Chat, ChatMember, ChatPermissions, CreateGroupChatRequest, data::ChatRepository},
         events::{DomainEvent, EventBus},
     },
     error::Error,
@@ -29,6 +29,7 @@ pub struct CreateChatCommand {
     pub name: String,
     #[validate(custom(function = unique_members))]
     pub members: Vec<i64>,
+    pub permissions: Option<ChatPermissions>,
 }
 
 pub struct CreateChatCommandHandler {
@@ -82,7 +83,7 @@ impl RequestHandler for CreateChatCommandHandler {
             owner_id: request.current_user_id,
             name: request.name,
             members: users.into_iter().map(|u| ChatMember::from(u)).collect(),
-            permissions: None,
+            permissions: request.permissions,
         });
 
         self.chat_repository.save(new_chat.clone()).await?;

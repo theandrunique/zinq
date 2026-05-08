@@ -33,6 +33,7 @@ async fn create_chat(
         current_user_id: claims.sub.parse().unwrap(),
         name: payload.name,
         members: payload.members,
+        permissions: None,
     };
 
     let result = handler.handle(command).await?;

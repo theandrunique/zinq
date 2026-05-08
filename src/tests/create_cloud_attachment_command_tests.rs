@@ -4,7 +4,7 @@ use crate::{
     application::messages::{
         CreateCloudAttachmentsCommand, CreateCloudAttachmentsCommandHandler, UploadAttachmentDto,
     },
-    domain::chats::{Chat, ChatMember, ChatPermissions, CreateGroupChatRequest},
+    domain::chats::ChatPermissions,
     error::Error,
     tests::common::TestContext,
 };
@@ -15,19 +15,9 @@ async fn test_create_cloud_attachments_success() {
     let handler = CreateCloudAttachmentsCommandHandler::new(&ctx.app_state);
 
     let owner = ctx.create_test_user("owner", "owner@test.com").await;
-    let chat = Chat::create_group_dm(CreateGroupChatRequest {
-        id: ctx.app_state.id_gen.gen_id().await,
-        owner_id: owner.id,
-        name: "Test Group".to_string(),
-        permissions: Some(ChatPermissions::all()),
-        members: vec![ChatMember::from(owner.clone())],
-    });
-
-    ctx.app_state
-        .chat_repository
-        .save(chat.clone())
-        .await
-        .expect("Failed to save chat");
+    let chat = ctx
+        .create_group_chat(owner.id, "Test Group", vec![], Some(ChatPermissions::all()))
+        .await;
 
     let cmd = CreateCloudAttachmentsCommand {
         current_user_id: owner.id,
@@ -71,19 +61,9 @@ async fn test_create_cloud_attachments_not_member() {
         .create_test_user("nonmember", "nonmember@test.com")
         .await;
 
-    let chat = Chat::create_group_dm(CreateGroupChatRequest {
-        id: ctx.app_state.id_gen.gen_id().await,
-        owner_id: owner.id,
-        name: "Test Group".to_string(),
-        permissions: Some(ChatPermissions::all()),
-        members: vec![ChatMember::from(owner.clone())],
-    });
-
-    ctx.app_state
-        .chat_repository
-        .save(chat.clone())
-        .await
-        .expect("Failed to save chat");
+    let chat = ctx
+        .create_group_chat(owner.id, "Test Group", vec![], Some(ChatPermissions::all()))
+        .await;
 
     let cmd = CreateCloudAttachmentsCommand {
         current_user_id: non_member.id,
@@ -112,22 +92,9 @@ async fn test_create_cloud_attachments_no_permission() {
     let member = ctx.create_test_user("member", "member@test.com").await;
 
     let limited_perms = ChatPermissions::SEND_MESSAGES;
-    let chat = Chat::create_group_dm(CreateGroupChatRequest {
-        id: ctx.app_state.id_gen.gen_id().await,
-        owner_id: owner.id,
-        name: "Test Group".to_string(),
-        permissions: Some(limited_perms),
-        members: vec![
-            ChatMember::from(owner.clone()),
-            ChatMember::from(member.clone()),
-        ],
-    });
-
-    ctx.app_state
-        .chat_repository
-        .save(chat.clone())
-        .await
-        .expect("Failed to save chat");
+    let chat = ctx
+        .create_group_chat(owner.id, "Test Group", vec![member.id], Some(limited_perms))
+        .await;
 
     let cmd = CreateCloudAttachmentsCommand {
         current_user_id: member.id,
@@ -153,19 +120,9 @@ async fn test_create_cloud_attachments_file_too_small() {
     let handler = CreateCloudAttachmentsCommandHandler::new(&ctx.app_state);
 
     let owner = ctx.create_test_user("owner", "owner@test.com").await;
-    let chat = Chat::create_group_dm(CreateGroupChatRequest {
-        id: ctx.app_state.id_gen.gen_id().await,
-        owner_id: owner.id,
-        name: "Test Group".to_string(),
-        permissions: Some(ChatPermissions::all()),
-        members: vec![ChatMember::from(owner.clone())],
-    });
-
-    ctx.app_state
-        .chat_repository
-        .save(chat.clone())
-        .await
-        .expect("Failed to save chat");
+    let chat = ctx
+        .create_group_chat(owner.id, "Test Group", vec![], Some(ChatPermissions::all()))
+        .await;
 
     let cmd = CreateCloudAttachmentsCommand {
         current_user_id: owner.id,
@@ -191,19 +148,9 @@ async fn test_create_cloud_attachments_file_too_large() {
     let handler = CreateCloudAttachmentsCommandHandler::new(&ctx.app_state);
 
     let owner = ctx.create_test_user("owner", "owner@test.com").await;
-    let chat = Chat::create_group_dm(CreateGroupChatRequest {
-        id: ctx.app_state.id_gen.gen_id().await,
-        owner_id: owner.id,
-        name: "Test Group".to_string(),
-        permissions: Some(ChatPermissions::all()),
-        members: vec![ChatMember::from(owner.clone())],
-    });
-
-    ctx.app_state
-        .chat_repository
-        .save(chat.clone())
-        .await
-        .expect("Failed to save chat");
+    let chat = ctx
+        .create_group_chat(owner.id, "Test Group", vec![], Some(ChatPermissions::all()))
+        .await;
 
     let max_size = 10 * 1024 * 1024 + 1;
     let cmd = CreateCloudAttachmentsCommand {
@@ -230,19 +177,9 @@ async fn test_create_cloud_attachments_mixed_valid_invalid() {
     let handler = CreateCloudAttachmentsCommandHandler::new(&ctx.app_state);
 
     let owner = ctx.create_test_user("owner", "owner@test.com").await;
-    let chat = Chat::create_group_dm(CreateGroupChatRequest {
-        id: ctx.app_state.id_gen.gen_id().await,
-        owner_id: owner.id,
-        name: "Test Group".to_string(),
-        permissions: Some(ChatPermissions::all()),
-        members: vec![ChatMember::from(owner.clone())],
-    });
-
-    ctx.app_state
-        .chat_repository
-        .save(chat.clone())
-        .await
-        .expect("Failed to save chat");
+    let chat = ctx
+        .create_group_chat(owner.id, "Test Group", vec![], Some(ChatPermissions::all()))
+        .await;
 
     let cmd = CreateCloudAttachmentsCommand {
         current_user_id: owner.id,

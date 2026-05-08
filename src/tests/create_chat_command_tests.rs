@@ -2,10 +2,7 @@ use crate::{
     application::{
         RequestHandler,
         chats::{CreateChatCommand, CreateChatCommandHandler},
-    },
-    assert_err,
-    error::Error,
-    tests::common::TestContext,
+    }, assert_err, domain::events::DomainEvent, error::Error, tests::common::TestContext
 };
 
 fn valid_command(current_user_id: i64, other_user_ids: Vec<i64>) -> CreateChatCommand {
@@ -13,6 +10,7 @@ fn valid_command(current_user_id: i64, other_user_ids: Vec<i64>) -> CreateChatCo
         current_user_id,
         name: "Test Chat".to_string(),
         members: other_user_ids,
+        permissions: None,
     }
 }
 
@@ -72,6 +70,7 @@ async fn test_create_chat_missing_users() {
         current_user_id: current_user.id,
         name: "Test Chat".to_string(),
         members: vec![nonexistent_id],
+        permissions: None,
     };
 
     let err = handler
@@ -120,6 +119,7 @@ async fn test_create_chat_current_user_not_in_members() {
         current_user_id: current_user.id,
         name: "Test Chat".to_string(),
         members: vec![other_user.id],
+        permissions: None,
     };
 
     let chat = handler.handle(cmd).await.unwrap();
@@ -141,6 +141,7 @@ async fn test_create_chat_empty_members() {
         current_user_id: current_user.id,
         name: "Test Chat".to_string(),
         members: vec![],
+        permissions: None,
     };
 
     let chat = handler
@@ -164,6 +165,7 @@ async fn test_create_chat_only_current_user() {
         current_user_id: current_user.id,
         name: "Solo Chat".to_string(),
         members: vec![],
+        permissions: None,
     };
 
     let chat = handler
@@ -188,6 +190,7 @@ async fn test_create_chat_current_user_in_members_explicitly() {
         current_user_id: current_user.id,
         name: "Test Chat".to_string(),
         members: vec![current_user.id, other_user.id],
+        permissions: None,
     };
 
     let chat = handler.handle(cmd).await.unwrap();
@@ -218,7 +221,7 @@ async fn test_create_chat_publishes_event() {
         .expect("Event should be available");
 
     assert!(
-        matches!(event, crate::domain::events::DomainEvent::ChatCreate { .. }),
+        matches!(event, DomainEvent::ChatCreate { .. }),
         "Event should be ChatCreate"
     );
 }
@@ -237,6 +240,7 @@ async fn test_create_chat_with_empty_name() {
         current_user_id: current_user.id,
         name: "".to_string(),
         members: vec![other_user.id],
+        permissions: None,
     };
 
     let chat = handler
@@ -260,6 +264,7 @@ async fn test_create_chat_multiple_users() {
         current_user_id: current_user.id,
         name: "Group Chat".to_string(),
         members: vec![user2.id, user3.id],
+        permissions: None,
     };
 
     let chat = handler.handle(cmd).await.unwrap();

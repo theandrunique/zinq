@@ -24,6 +24,7 @@ async fn test_delete_chat_member_success() {
             current_user_id: owner.id,
             name: "Test Group".to_string(),
             members: vec![member.id],
+            permissions: None,
         })
         .await
         .expect("Failed to create chat");
@@ -51,6 +52,7 @@ async fn test_delete_chat_member_not_member() {
             current_user_id: owner.id,
             name: "Test Group".to_string(),
             members: vec![member.id],
+            permissions: None,
         })
         .await
         .expect("Failed to create chat");
@@ -114,6 +116,7 @@ async fn test_delete_chat_member_no_permission() {
             current_user_id: owner.id,
             name: "Test Group".to_string(),
             members: vec![member.id],
+            permissions: None,
         })
         .await
         .expect("Failed to create chat");
@@ -146,6 +149,7 @@ async fn test_delete_chat_member_target_not_found() {
             current_user_id: owner.id,
             name: "Test Group".to_string(),
             members: vec![member.id],
+            permissions: None,
         })
         .await
         .expect("Failed to create chat");
@@ -199,6 +203,7 @@ async fn test_delete_chat_member_publishes_event() {
             current_user_id: owner.id,
             name: "Test Group".to_string(),
             members: vec![member.id],
+            permissions: None,
         })
         .await
         .expect("Failed to create chat");
