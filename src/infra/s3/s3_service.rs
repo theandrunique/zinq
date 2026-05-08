@@ -37,9 +37,14 @@ pub trait S3Service: Send + Sync {
 
     async fn delete_object(&self, key: &str) -> Result<(), anyhow::Error>;
 
-    async fn get_object_metadata(&self, key: &str) -> Result<Option<S3ObjectMetadata>, anyhow::Error>;
+    async fn get_object_metadata(
+        &self,
+        key: &str,
+    ) -> Result<Option<S3ObjectMetadata>, anyhow::Error>;
 
     async fn is_object_exists(&self, key: &str) -> Result<bool, anyhow::Error>;
+
+    async fn create_bucket(&self, bucket_name: &str) -> Result<(), anyhow::Error>;
 }
 
 pub struct AwsS3Service {
@@ -49,7 +54,22 @@ pub struct AwsS3Service {
 
 impl AwsS3Service {
     pub async fn new(config: &S3Config) -> Self {
-        let sdk_config = aws_config::load_defaults(aws_config::BehaviorVersion::latest()).await;
+        use aws_sdk_s3::config::SharedCredentialsProvider;
+
+        let credentials = aws_sdk_s3::config::Credentials::new(
+            config.access_key.clone(),
+            config.secret_key.clone(),
+            None,
+            None,
+            "static",
+        );
+
+        let sdk_config = aws_config::load_defaults(aws_config::BehaviorVersion::latest())
+            .await
+            .to_builder()
+            .credentials_provider(SharedCredentialsProvider::new(credentials))
+            .region(aws_sdk_s3::config::Region::new(config.region.clone()))
+            .build();
 
         let mut s3_config_builder = aws_sdk_s3::config::Builder::from(&sdk_config)
             .force_path_style(config.force_path_style);
@@ -142,7 +162,10 @@ impl S3Service for AwsS3Service {
         Ok(())
     }
 
-    async fn get_object_metadata(&self, key: &str) -> Result<Option<S3ObjectMetadata>, anyhow::Error> {
+    async fn get_object_metadata(
+        &self,
+        key: &str,
+    ) -> Result<Option<S3ObjectMetadata>, anyhow::Error> {
         let result = self
             .client
             .head_object()
@@ -167,8 +190,13 @@ impl S3Service for AwsS3Service {
                 }))
             }
             Err(e) => {
-                let err_str = e.to_string();
-                if err_str.contains("404") || err_str.contains("NoSuchKey") {
+                let err_str = e.to_string().to_lowercase();
+                if err_str.contains("not found")
+                    || err_str.contains("nosuchkey")
+                    || err_str.contains("404")
+                    || err_str.contains("no such key")
+                    || err_str.contains("service error")
+                {
                     Ok(None)
                 } else {
                     Err(anyhow::anyhow!("S3 error: {}", e))
@@ -179,5 +207,24 @@ impl S3Service for AwsS3Service {
 
     async fn is_object_exists(&self, key: &str) -> Result<bool, anyhow::Error> {
         Ok(self.get_object_metadata(key).await?.is_some())
+    }
+
+    async fn create_bucket(&self, bucket_name: &str) -> Result<(), anyhow::Error> {
+        use aws_sdk_s3::types::BucketLocationConstraint;
+
+        let constraint = BucketLocationConstraint::from(self.bucket_name.as_str());
+
+        self.client
+            .create_bucket()
+            .bucket(bucket_name)
+            .set_create_bucket_configuration(Some(
+                aws_sdk_s3::types::CreateBucketConfiguration::builder()
+                    .location_constraint(constraint)
+                    .build(),
+            ))
+            .send()
+            .await?;
+
+        Ok(())
     }
 }

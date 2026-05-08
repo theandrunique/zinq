@@ -36,6 +36,10 @@ pub enum Error {
     AttachmentObjectNotFound {
         upload_filename: String,
     },
+    AttachmentInUse {
+        upload_filename: String,
+        attachment_id: i64,
+    },
     InvalidRequestBody(HashMap<String, Vec<String>>),
     InternalServerError(anyhow::Error),
 }

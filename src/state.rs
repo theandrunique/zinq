@@ -85,7 +85,8 @@ pub async fn init_state() -> AppState {
 
     let avatar_service = Arc::new(AvatarService::new(s3_service.clone(), &app_config.s3));
 
-    let channel_image_service = Arc::new(ChannelImageService::new(s3_service.clone(), &app_config.s3));
+    let channel_image_service =
+        Arc::new(ChannelImageService::new(s3_service.clone(), &app_config.s3));
 
     AppState {
         event_bus: Arc::new(EventBus::new()),

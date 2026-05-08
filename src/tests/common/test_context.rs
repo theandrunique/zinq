@@ -3,6 +3,8 @@ use std::{fs, sync::Arc};
 use scylla::client::{session::Session, session_builder::SessionBuilder};
 
 use crate::{
+    application::services::{AttachmentService, AvatarService, ChannelImageService},
+    config::S3Config,
     domain::chats::data::ChatLoader,
     domain::events::EventBus,
     infra::{
@@ -17,11 +19,18 @@ use crate::{
             user_session_repository::ScyllaUserSessionRepository,
         },
         id_generator::SnowflakeIdGenerator,
+        s3::AwsS3Service,
         smtp_client::SmtpService,
     },
     state::AppState,
     tests::common::test_config::{SCYLLA_HOST_ENV, SCYLLA_PORT_ENV},
 };
+
+const S3_ENDPOINT_ENV: &str = "TEST_S3_ENDPOINT";
+const S3_ACCESS_KEY_ENV: &str = "TEST_S3_ACCESS_KEY";
+const S3_SECRET_KEY_ENV: &str = "TEST_S3_SECRET_KEY";
+const S3_BUCKET_ENV: &str = "TEST_S3_BUCKET";
+const S3_REGION_ENV: &str = "TEST_S3_REGION";
 
 pub struct TestContext {
     pub app_state: AppState,
@@ -52,9 +61,42 @@ impl TestContext {
         let jwks_service = FileJwksService::load_from_directory("keys").unwrap();
         let jwks_service_clone = FileJwksService::load_from_directory("keys").unwrap();
 
+        let s3_endpoint = std::env::var(S3_ENDPOINT_ENV).expect("TEST_S3_ENDPOINT not set");
+        let s3_access_key = std::env::var(S3_ACCESS_KEY_ENV).expect("TEST_S3_ACCESS_KEY not set");
+        let s3_secret_key = std::env::var(S3_SECRET_KEY_ENV).expect("TEST_S3_SECRET_KEY not set");
+        let s3_bucket = std::env::var(S3_BUCKET_ENV).expect("TEST_S3_BUCKET not set");
+        let s3_region = std::env::var(S3_REGION_ENV).unwrap_or("us-east-1".to_string());
+
+        let s3_config = S3Config {
+            access_key: s3_access_key,
+            secret_key: s3_secret_key,
+            service_url: s3_endpoint,
+            force_path_style: true,
+            bucket_name: s3_bucket,
+            region: s3_region,
+        };
+
+        let s3_service: Arc<dyn crate::infra::s3::S3Service> =
+            Arc::new(AwsS3Service::new(&s3_config).await);
+
+        let _ = s3_service.create_bucket(&s3_config.bucket_name).await;
+
+        let id_gen = Arc::new(SnowflakeIdGenerator::new());
+
+        let attachment_service = Arc::new(AttachmentService::new(
+            s3_service.clone(),
+            id_gen.clone(),
+            &s3_config,
+        ));
+
+        let avatar_service = Arc::new(AvatarService::new(s3_service.clone(), &s3_config));
+
+        let channel_image_service =
+            Arc::new(ChannelImageService::new(s3_service.clone(), &s3_config));
+
         let state = AppState {
             event_bus: Arc::new(EventBus::new()),
-            id_gen: Arc::new(SnowflakeIdGenerator::new()),
+            id_gen,
             user_repository: Arc::new(ScyllaUserRepository::new(session.clone())),
             user_session_repository: Arc::new(ScyllaUserSessionRepository::new(session.clone())),
             chat_loader: Arc::new(ScyllaChatLoader::new(session.clone())),
@@ -72,6 +114,10 @@ impl TestContext {
                 "test".to_string(),
             )),
             totp_handler: Arc::new(TotpService::new()),
+            s3_service,
+            attachment_service,
+            avatar_service,
+            channel_image_service,
         };
 
         Self { app_state: state }

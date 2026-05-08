@@ -1,5 +1,6 @@
 use chrono::{DateTime, Utc};
 
+#[derive(Debug, Clone)]
 pub struct Attachment {
     pub id: i64,
     pub message_id: i64,

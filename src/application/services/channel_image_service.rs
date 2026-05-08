@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use sha1::{Sha1, Digest};
+use sha1::{Digest, Sha1};
 
 use crate::{
     config::S3Config,

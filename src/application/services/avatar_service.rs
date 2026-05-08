@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use sha1::{Sha1, Digest};
+use sha1::{Digest, Sha1};
 
 use crate::{
     config::S3Config,
@@ -23,7 +23,11 @@ impl AvatarService {
         }
     }
 
-    pub async fn upload_avatar(&self, user: &User, image_data: &[u8]) -> Result<String, anyhow::Error> {
+    pub async fn upload_avatar(
+        &self,
+        user: &User,
+        image_data: &[u8],
+    ) -> Result<String, anyhow::Error> {
         let processed = if ImageProcessor::is_gif(image_data) {
             ImageProcessor::process_gif(image_data, AVATAR_MAX_SIZE)?
         } else {

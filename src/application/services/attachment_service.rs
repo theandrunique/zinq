@@ -4,13 +4,22 @@ use async_trait::async_trait;
 use regex::Regex;
 
 use crate::{
-    config::S3Config, domain::attachments::Attachment, error::Error, infra::{IdGenerator, S3Service, s3::S3ObjectMetadata}
+    config::S3Config,
+    domain::attachments::Attachment,
+    error::Error,
+    infra::{IdGenerator, S3Service, s3::S3ObjectMetadata},
 };
 
 #[derive(Debug, Clone)]
 pub struct UploadUrl {
     pub storage_key: String,
     pub upload_url: String,
+}
+
+pub struct ParseUploadFilenameResult {
+    pub chat_id: i64,
+    pub attachment_id: i64,
+    pub filename: String,
 }
 
 pub struct AttachmentService {
@@ -43,11 +52,7 @@ impl AttachmentService {
 
         let upload_url = self
             .s3_service
-            .generate_presigned_upload_url(
-                &storage_key,
-                3600,
-                size,
-            )
+            .generate_presigned_upload_url(&storage_key, 3600, size)
             .await?;
 
         Ok(UploadUrl {
@@ -59,28 +64,29 @@ impl AttachmentService {
     pub async fn validate_and_create_attachment(
         &self,
         uploaded_filename: &str,
-        original_filename: &str,
+        filename: &str,
     ) -> Result<Attachment, Error> {
         let parsed = self
             .parse_storage_key(uploaded_filename)
-            .ok_or_else(|| Error::AttachmentInvalidUploadFilename { upload_filename: uploaded_filename.to_string() })?;
+            .ok_or_else(|| Error::AttachmentInvalidUploadFilename {
+                upload_filename: uploaded_filename.to_string(),
+            })?;
 
         let object_meta = self
             .s3_service
             .get_object_metadata(uploaded_filename)
             .await?
-            .ok_or_else(|| Error::AttachmentObjectNotFound { upload_filename: uploaded_filename.to_string() })?;
+            .ok_or_else(|| Error::AttachmentObjectNotFound {
+                upload_filename: uploaded_filename.to_string(),
+            })?;
 
         let (content_type, size) = extract_object_info(&object_meta);
 
-        let chat_id = parsed.0;
-        let attachment_id = parsed.1;
-
         Ok(Attachment {
-            id: attachment_id,
+            id: parsed.attachment_id,
             message_id: 0,
-            chat_id,
-            filename: original_filename.to_string(),
+            chat_id: parsed.chat_id,
+            filename: filename.to_string(),
             content_type,
             size,
             storage_key: uploaded_filename.to_string(),
@@ -104,12 +110,11 @@ impl AttachmentService {
         format!("attachments/{}/{}/{}", chat_id, attachment_id, filename)
     }
 
-    fn parse_storage_key(&self, key: &str) -> Option<(i64, i64, String)> {
-        static UPLOAD_FILENAME_REGEX: std::sync::LazyLock<Regex> =
-            std::sync::LazyLock::new(|| {
-                Regex::new(r"^attachments/(?P<chat_id>\d+)/(?P<attachment_id>\d+)/(?P<filename>.+)$")
-                    .unwrap()
-            });
+    pub fn parse_storage_key(&self, key: &str) -> Option<ParseUploadFilenameResult> {
+        static UPLOAD_FILENAME_REGEX: std::sync::LazyLock<Regex> = std::sync::LazyLock::new(|| {
+            Regex::new(r"^attachments/(?P<chat_id>\d+)/(?P<attachment_id>\d+)/(?P<filename>.+)$")
+                .unwrap()
+        });
 
         let caps = UPLOAD_FILENAME_REGEX.captures(key)?;
 
@@ -117,7 +122,11 @@ impl AttachmentService {
         let attachment_id: i64 = caps.name("attachment_id")?.as_str().parse().ok()?;
         let filename = caps.name("filename")?.as_str().to_string();
 
-        Some((chat_id, attachment_id, filename))
+        Some(ParseUploadFilenameResult {
+            chat_id,
+            attachment_id,
+            filename,
+        })
     }
 }
 

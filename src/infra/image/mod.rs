@@ -1,5 +1,5 @@
-use std::io::Cursor;
 use image::{ImageFormat, ImageReader};
+use std::io::Cursor;
 
 pub struct ProcessedImage {
     pub data: Vec<u8>,
@@ -9,15 +9,25 @@ pub struct ProcessedImage {
 pub struct ImageProcessor;
 
 impl ImageProcessor {
-    pub fn process_avatar(image_data: &[u8], max_size: u32) -> Result<ProcessedImage, anyhow::Error> {
+    pub fn process_avatar(
+        image_data: &[u8],
+        max_size: u32,
+    ) -> Result<ProcessedImage, anyhow::Error> {
         Self::process_to_webp(image_data, max_size, max_size)
     }
 
-    pub fn process_chat_image(image_data: &[u8], max_size: u32) -> Result<ProcessedImage, anyhow::Error> {
+    pub fn process_chat_image(
+        image_data: &[u8],
+        max_size: u32,
+    ) -> Result<ProcessedImage, anyhow::Error> {
         Self::process_to_webp(image_data, max_size, max_size)
     }
 
-    fn process_to_webp(image_data: &[u8], max_width: u32, max_height: u32) -> Result<ProcessedImage, anyhow::Error> {
+    fn process_to_webp(
+        image_data: &[u8],
+        max_width: u32,
+        max_height: u32,
+    ) -> Result<ProcessedImage, anyhow::Error> {
         let img = ImageReader::new(Cursor::new(image_data))
             .with_guessed_format()?
             .decode()?;

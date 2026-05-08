@@ -25,6 +25,7 @@ pub struct S3Config {
     pub service_url: String,
     pub force_path_style: bool,
     pub bucket_name: String,
+    pub region: String,
 }
 
 pub struct Config {
@@ -72,6 +73,7 @@ async fn init_config() -> Config {
                 .parse()
                 .unwrap_or(false),
             bucket_name: env::var("AWS_BUCKET_NAME").expect("AWS_BUCKET_NAME required"),
+            region: env::var("AWS_REGION").unwrap_or("us-east-1".to_string()),
         },
     }
 }
