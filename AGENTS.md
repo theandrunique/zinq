@@ -99,7 +99,7 @@ cargo run --bin db -- recreate-table <TABLE_NAME>
   pub enum Error {
       AuthInvalidCredentials,
       UserNotFound(i64),
-      Error::InternalServerError(anyhow::Error),
+      InternalServerError(anyhow::Error),
       // ...
   }
   ```
@@ -112,6 +112,13 @@ cargo run --bin db -- recreate-table <TABLE_NAME>
    ```rust
    .map_err(|e| Error::InternalServerError(e))?
    ```
+
+### Code Style
+
+- **Всегда используйте `use` statements** вместо полных путей `crate::`. Добавляйте импорты в начало файла.
+  - ❌ Плохо: `crate::domain::Error::UserNotFound`
+  - ✅ Хорошо: `use crate::domain::Error;` + `Error::UserNotFound`
+- Следуйте существующему стилю кода в файле (форматирование, именование).
 
 ### Auth / JWT
 
@@ -136,3 +143,38 @@ cargo run --bin db -- recreate-table <TABLE_NAME>
   - Выполняет команду и проверяет результат
 - Проверка доменных ошибок через макрос `assert_err!(err, Error::UserNotFound)`
 - Запуск: `cargo run --bin test` — инициализирует инфраструктуру и передает env vars (DB host/port)
+
+### Test Infrastructure
+
+Тесты используют **реальную инфраструктуру** через testcontainers:
+- **ScyllaDB** — основная БД (запускается в `scripts/test.rs`)
+- **MinIO** — S3-совместимое хранилище (запускается в `scripts/test.rs`)
+
+Переменные окружения передаются в `TestContext` через `src/tests/common/test_config.rs`:
+- `TEST_SCYLLA_*` — хост/порт ScyllaDB
+- `TEST_S3_*` — endpoint, access key, secret key, bucket, region
+
+#### Добавление нового сервиса (например, Redis)
+
+1. **Добавить зависимость** в `Cargo.toml`:
+   ```toml
+   testcontainers-modules = { version = "...", features = ["redis"] }
+   ```
+
+2. **Обновить `scripts/test.rs`** — запустить контейнер и передать env vars:
+   ```rust
+   let redis = match Redis::default().start().await { ... };
+   let redis_host = redis.get_host().await.unwrap().to_string();
+   let redis_port = redis.get_host_port_ipv4(6379).await.unwrap();
+   
+   .env("TEST_REDIS_HOST", redis_host)
+   .env("TEST_REDIS_PORT", redis_port.to_string())
+   ```
+
+3. **Добавить константы в `src/tests/common/test_config.rs`**:
+   ```rust
+   pub const REDIS_HOST_ENV: &str = "TEST_REDIS_HOST";
+   pub const REDIS_PORT_ENV: &str = "TEST_REDIS_PORT";
+   ```
+
+4. **Обновить `TestContext::new()` в `src/tests/common/test_context.rs`** — парсить env vars и создавать клиент
