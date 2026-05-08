@@ -66,11 +66,11 @@ impl AttachmentService {
         uploaded_filename: &str,
         filename: &str,
     ) -> Result<Attachment, Error> {
-        let parsed = self
-            .parse_storage_key(uploaded_filename)
-            .ok_or_else(|| Error::AttachmentInvalidUploadFilename {
+        let parsed = self.parse_storage_key(uploaded_filename).ok_or_else(|| {
+            Error::AttachmentInvalidUploadFilename {
                 upload_filename: uploaded_filename.to_string(),
-            })?;
+            }
+        })?;
 
         let object_meta = self
             .s3_service

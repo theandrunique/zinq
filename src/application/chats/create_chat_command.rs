@@ -44,7 +44,7 @@ impl CreateChatCommandHandler {
             id_gen: Arc::clone(&state.id_gen),
             event_bus: Arc::clone(&state.event_bus),
             user_repository: Arc::clone(&state.user_repository),
-            chat_repository: Arc::clone(&state.chat_repotisory),
+            chat_repository: Arc::clone(&state.chat_repository),
         }
     }
 }

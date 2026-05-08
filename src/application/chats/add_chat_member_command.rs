@@ -35,7 +35,7 @@ impl AddChatMemberCommandHandler {
         Self {
             event_bus: Arc::clone(&state.event_bus),
             user_repository: Arc::clone(&state.user_repository),
-            chat_repository: Arc::clone(&state.chat_repotisory),
+            chat_repository: Arc::clone(&state.chat_repository),
             chat_loader: Arc::clone(&state.chat_loader),
         }
     }

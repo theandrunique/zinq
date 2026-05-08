@@ -32,7 +32,7 @@ impl DeleteChatMemberCommandHandler {
     pub fn new(state: &AppState) -> Self {
         Self {
             event_bus: Arc::clone(&state.event_bus),
-            chat_repository: Arc::clone(&state.chat_repotisory),
+            chat_repository: Arc::clone(&state.chat_repository),
             chat_loader: Arc::clone(&state.chat_loader),
         }
     }

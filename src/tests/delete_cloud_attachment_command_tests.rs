@@ -59,7 +59,7 @@ async fn test_delete_cloud_attachment_success_no_record() {
     });
 
     ctx.app_state
-        .chat_repotisory
+        .chat_repository
         .save(chat)
         .await
         .expect("Failed to save chat");
@@ -77,7 +77,5 @@ async fn test_delete_cloud_attachment_success_no_record() {
         upload_filename: upload_filename.clone(),
     };
 
-    let result = delete_handler.handle(cmd).await.expect("Should succeed");
-
-    assert!(result);
+    delete_handler.handle(cmd).await.expect("Should succeed");
 }

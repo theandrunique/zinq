@@ -24,7 +24,7 @@ async fn test_create_cloud_attachments_success() {
     });
 
     ctx.app_state
-        .chat_repotisory
+        .chat_repository
         .save(chat.clone())
         .await
         .expect("Failed to save chat");
@@ -80,7 +80,7 @@ async fn test_create_cloud_attachments_not_member() {
     });
 
     ctx.app_state
-        .chat_repotisory
+        .chat_repository
         .save(chat.clone())
         .await
         .expect("Failed to save chat");
@@ -124,7 +124,7 @@ async fn test_create_cloud_attachments_no_permission() {
     });
 
     ctx.app_state
-        .chat_repotisory
+        .chat_repository
         .save(chat.clone())
         .await
         .expect("Failed to save chat");
@@ -162,7 +162,7 @@ async fn test_create_cloud_attachments_file_too_small() {
     });
 
     ctx.app_state
-        .chat_repotisory
+        .chat_repository
         .save(chat.clone())
         .await
         .expect("Failed to save chat");
@@ -200,7 +200,7 @@ async fn test_create_cloud_attachments_file_too_large() {
     });
 
     ctx.app_state
-        .chat_repotisory
+        .chat_repository
         .save(chat.clone())
         .await
         .expect("Failed to save chat");
@@ -239,7 +239,7 @@ async fn test_create_cloud_attachments_mixed_valid_invalid() {
     });
 
     ctx.app_state
-        .chat_repotisory
+        .chat_repository
         .save(chat.clone())
         .await
         .expect("Failed to save chat");

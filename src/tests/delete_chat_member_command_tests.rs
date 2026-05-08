@@ -84,7 +84,7 @@ async fn test_delete_chat_member_dm_not_supported() {
     );
 
     ctx.app_state
-        .chat_repotisory
+        .chat_repository
         .save(dm_chat.clone())
         .await
         .expect("Failed to save DM chat");

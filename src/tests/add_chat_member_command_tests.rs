@@ -92,7 +92,7 @@ async fn test_add_chat_member_dm_not_supported() {
     );
 
     ctx.app_state
-        .chat_repotisory
+        .chat_repository
         .save(dm_chat.clone())
         .await
         .expect("Failed to save DM chat");
@@ -130,7 +130,7 @@ async fn test_add_chat_member_no_permission() {
     });
 
     ctx.app_state
-        .chat_repotisory
+        .chat_repository
         .save(chat.clone())
         .await
         .expect("Failed to save chat");

@@ -98,7 +98,7 @@ async fn test_create_chat_saved_in_repository() {
 
     let stored_chat = ctx
         .app_state
-        .chat_repotisory
+        .chat_repository
         .get_by_id(chat.id)
         .await
         .unwrap_or_else(|e| panic!("Failed to get chat by id: {:?}", e))

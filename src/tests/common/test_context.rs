@@ -100,7 +100,7 @@ impl TestContext {
             user_repository: Arc::new(ScyllaUserRepository::new(session.clone())),
             user_session_repository: Arc::new(ScyllaUserSessionRepository::new(session.clone())),
             chat_loader: Arc::new(ScyllaChatLoader::new(session.clone())),
-            chat_repotisory: Arc::new(ScyllaChatRepository::new(session.clone())),
+            chat_repository: Arc::new(ScyllaChatRepository::new(session.clone())),
             message_repository: Arc::new(ScyllaMessageRepository::new(session.clone())),
             attachment_repository: Arc::new(ScyllaAttachmentRepository::new(session.clone())),
             hash_handler: Arc::new(BcryptHandler::new()),
