@@ -1,4 +1,5 @@
 mod add_chat_member_command_tests;
+mod add_or_edit_message_command_tests;
 mod common;
 mod create_chat_command_tests;
 mod create_cloud_attachment_command_tests;

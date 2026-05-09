@@ -165,10 +165,7 @@ impl AttachmentRepository for ScyllaAttachmentRepository {
             WHERE chat_id = ? AND message_id IN ?
         ";
 
-        let rows: Vec<AttachmentDb> = self
-            .common
-            .exec_all(query, (chat_id, message_ids))
-            .await?;
+        let rows: Vec<AttachmentDb> = self.common.exec_all(query, (chat_id, message_ids)).await?;
 
         rows.into_iter().map(Attachment::try_from).collect()
     }

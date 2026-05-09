@@ -168,7 +168,9 @@ impl RequestHandler for AddOrEditMessageCommandHandler {
         } else {
             let message_id = self.id_gen.gen_id().await;
             let message_type = if request.referenced_message_id.is_some() {
-                MessageType::Reply { referenced_message_id: request.referenced_message_id.unwrap() }
+                MessageType::Reply {
+                    referenced_message_id: request.referenced_message_id.unwrap(),
+                }
             } else {
                 MessageType::Default
             };

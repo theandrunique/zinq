@@ -7,6 +7,7 @@ mod get_messages_query;
 
 pub use add_or_edit_message_command::{
     AddOrEditMessageCommand, AddOrEditMessageCommandHandler, AddOrEditMessageCommandResult,
+    MessageAttachmentInput,
 };
 pub use create_cloud_attachment_command::{
     CreateCloudAttachmentsCommand, CreateCloudAttachmentsCommandHandler, UploadAttachmentDto,
