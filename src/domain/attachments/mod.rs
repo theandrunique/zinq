@@ -1,4 +1,4 @@
 mod attachment;
 pub mod data;
 
-pub use attachment::Attachment;
+pub use attachment::{Attachment, CreateAttachmentRequest};

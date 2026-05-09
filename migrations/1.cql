@@ -83,14 +83,10 @@ CREATE TABLE IF NOT EXISTS messages_by_chat_id (
     chat_id bigint,
     message_id bigint,
     author_id bigint,
-    target_user_id bigint,
     content text,
     timestamp timestamp,
     edited_timestamp timestamp,
-    pinned boolean,
-    type int,
-    referenced_message_id bigint,
-    metadata text,
+    type text,
 
     PRIMARY KEY ((chat_id), message_id)
 ) WITH CLUSTERING ORDER BY (message_id DESC);

@@ -34,8 +34,7 @@ impl TryFrom<ChatMemberDb> for ChatMember {
             is_leave: value.is_leave,
             permissions: value
                 .permission_overwrites
-                .map(ChatPermissions::try_from)
-                .transpose()?,
+                .map(ChatPermissions::from_bits_truncate),
         })
     }
 }
@@ -63,13 +62,13 @@ impl TryFrom<ChatDb> for Chat {
             name: value.name,
             image: value.image,
             chat_type: match value.chat_type {
-                0 => ChatType::DM,
-                1 => ChatType::GroupDM,
+                0 => ChatType::Dm,
+                1 => ChatType::GroupDm,
                 _ => return Err(anyhow::anyhow!("Unknown chat_type: {}", value.chat_type)),
             },
             last_message_id: value.last_message_id,
             timestamp: value.timestamp,
-            permissions: ChatPermissions::try_from(value.permissions)?,
+            permissions: ChatPermissions::from_bits_truncate(value.permissions),
             members: Vec::new(),
         })
     }

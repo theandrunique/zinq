@@ -1,4 +1,4 @@
-use crate::domain::{auth::User, chats::chat::ChatPermissions};
+use crate::domain::{auth::User, chats::ChatPermissions};
 
 #[derive(Clone, Debug)]
 pub struct ChatMember {

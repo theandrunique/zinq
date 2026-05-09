@@ -40,6 +40,8 @@ pub enum Error {
         upload_filename: String,
         attachment_id: i64,
     },
+    MessageNotFound(i64),
+    MessageWasSentByAnotherUser(i64),
     InvalidRequestBody(HashMap<String, Vec<String>>),
     InternalServerError(anyhow::Error),
 }

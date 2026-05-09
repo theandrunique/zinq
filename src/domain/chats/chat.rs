@@ -1,6 +1,9 @@
 use std::str::FromStr;
 
-use crate::domain::{auth::User, chats::chat_member::ChatMember};
+use crate::domain::{
+    auth::User,
+    chats::{chat_member::ChatMember, chat_permissions::ChatPermissions},
+};
 use bitflags::bitflags;
 use chrono::{DateTime, Utc};
 use serde::Serialize;
@@ -8,100 +11,8 @@ use serde::Serialize;
 #[derive(Serialize, Clone, Debug, PartialEq)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum ChatType {
-    DM,
-    GroupDM,
-}
-
-impl std::fmt::Display for ChatType {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let str = match self {
-            ChatType::DM => "DM",
-            ChatType::GroupDM => "GROUP_DM",
-        };
-        write!(f, "{}", str)
-    }
-}
-
-impl FromStr for ChatType {
-    type Err = String;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match s {
-            "DM" => Ok(ChatType::DM),
-            "GROUP_DM" => Ok(ChatType::GroupDM),
-            _ => Err(format!("Unknown ChatType: {}", s)),
-        }
-    }
-}
-
-bitflags! {
-    #[derive(Clone, Debug)]
-    pub struct ChatPermissions: i64 {
-        const SEND_MESSAGES = 1 << 0;
-        const ADD_MEMBERS = 1 << 1;
-        const PIN_MESSAGES = 1 << 2;
-        const SEND_VIDEO_MESSAGES = 1 << 3;
-        const SEND_VOICE_MESSAGES = 1 << 4;
-        const SEND_FILES = 1 << 5;
-        const CREATE_POLLS = 1 << 6;
-        const CHANGE_GROUP_INFO = 1 << 7;
-
-        const DELETE_MESSAGES = 1 << 8;
-        const MANAGE_MEMBERS = 1 << 9;
-        const MANAGE_INVITE_LINKS = 1 << 10;
-        const ADD_ADMINS = 1 << 11;
-
-        const DM_CHAT = Self::SEND_MESSAGES.bits() | Self::SEND_VIDEO_MESSAGES.bits()
-            | Self::SEND_VOICE_MESSAGES.bits() | Self::DELETE_MESSAGES.bits()
-            | Self::SEND_FILES.bits() | Self::PIN_MESSAGES.bits();
-
-        const DEFAULT_DM_GROUP_MEMBER = Self::SEND_MESSAGES.bits() | Self::SEND_VIDEO_MESSAGES.bits()
-            | Self::SEND_VOICE_MESSAGES.bits() | Self::ADD_MEMBERS.bits()
-            | Self::SEND_FILES.bits() | Self::PIN_MESSAGES.bits()
-            | Self::CREATE_POLLS.bits() | Self::CHANGE_GROUP_INFO.bits();
-    }
-}
-
-impl TryFrom<i64> for ChatPermissions {
-    type Error = anyhow::Error;
-
-    fn try_from(value: i64) -> Result<Self, Self::Error> {
-        ChatPermissions::from_bits(value)
-            .ok_or_else(|| anyhow::anyhow!("Invalid ChatPermissions bits: {}", value))
-    }
-}
-
-impl std::fmt::Display for ChatPermissions {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let bits = self.bits();
-        if bits == Self::SEND_MESSAGES.bits() {
-            write!(f, "SEND_MESSAGES")
-        } else if bits == Self::ADD_MEMBERS.bits() {
-            write!(f, "ADD_MEMBERS")
-        } else if bits == Self::PIN_MESSAGES.bits() {
-            write!(f, "PIN_MESSAGES")
-        } else if bits == Self::SEND_VIDEO_MESSAGES.bits() {
-            write!(f, "SEND_VIDEO_MESSAGES")
-        } else if bits == Self::SEND_VOICE_MESSAGES.bits() {
-            write!(f, "SEND_VOICE_MESSAGES")
-        } else if bits == Self::SEND_FILES.bits() {
-            write!(f, "SEND_FILES")
-        } else if bits == Self::CREATE_POLLS.bits() {
-            write!(f, "CREATE_POLLS")
-        } else if bits == Self::CHANGE_GROUP_INFO.bits() {
-            write!(f, "CHANGE_GROUP_INFO")
-        } else if bits == Self::DELETE_MESSAGES.bits() {
-            write!(f, "DELETE_MESSAGES")
-        } else if bits == Self::MANAGE_MEMBERS.bits() {
-            write!(f, "MANAGE_MEMBERS")
-        } else if bits == Self::MANAGE_INVITE_LINKS.bits() {
-            write!(f, "MANAGE_INVITE_LINKS")
-        } else if bits == Self::ADD_ADMINS.bits() {
-            write!(f, "ADD_ADMINS")
-        } else {
-            write!(f, "{:?}", self)
-        }
-    }
+    Dm,
+    GroupDm,
 }
 
 #[derive(Clone, Debug)]
@@ -115,14 +26,14 @@ pub struct Chat {
     pub permissions: ChatPermissions,
     pub timestamp: DateTime<Utc>,
 
-    pub members: Vec<super::chat_member::ChatMember>,
+    pub members: Vec<ChatMember>,
 }
 
 pub struct CreateGroupChatRequest {
     pub id: i64,
     pub owner_id: i64,
     pub name: String,
-    pub members: Vec<super::chat_member::ChatMember>,
+    pub members: Vec<ChatMember>,
     pub permissions: Option<ChatPermissions>,
 }
 
@@ -133,7 +44,7 @@ impl Chat {
             owner_id: None,
             name: None,
             image: None,
-            chat_type: ChatType::DM,
+            chat_type: ChatType::Dm,
             last_message_id: None,
             permissions: ChatPermissions::DM_CHAT,
             timestamp: Utc::now(),
@@ -147,11 +58,11 @@ impl Chat {
             owner_id: Some(request.owner_id),
             name: Some(request.name),
             image: None,
-            chat_type: ChatType::GroupDM,
+            chat_type: ChatType::GroupDm,
             last_message_id: None,
             permissions: request
                 .permissions
-                .unwrap_or(ChatPermissions::DEFAULT_DM_GROUP_MEMBER),
+                .unwrap_or(ChatPermissions::DEFAULT_GROUP_DM_MEMBER),
             timestamp: Utc::now(),
             members: request.members,
         }
@@ -218,7 +129,7 @@ mod tests {
             owner_id: Some(owner_id),
             name: Some("test".into()),
             image: None,
-            chat_type: ChatType::GroupDM,
+            chat_type: ChatType::GroupDm,
             last_message_id: None,
             permissions: ChatPermissions::empty(),
             timestamp: Utc::now(),
@@ -242,7 +153,7 @@ mod tests {
             owner_id: None,
             name: None,
             image: None,
-            chat_type: ChatType::GroupDM,
+            chat_type: ChatType::GroupDm,
             last_message_id: None,
             permissions: ChatPermissions::SEND_MESSAGES | ChatPermissions::SEND_FILES,
             timestamp: Utc::now(),
@@ -266,7 +177,7 @@ mod tests {
             owner_id: None,
             name: None,
             image: None,
-            chat_type: ChatType::GroupDM,
+            chat_type: ChatType::GroupDm,
             last_message_id: None,
             permissions: ChatPermissions::SEND_MESSAGES | ChatPermissions::SEND_FILES,
             timestamp: Utc::now(),
@@ -284,7 +195,7 @@ mod tests {
             owner_id: None,
             name: None,
             image: None,
-            chat_type: ChatType::GroupDM,
+            chat_type: ChatType::GroupDm,
             last_message_id: None,
             permissions: ChatPermissions::SEND_MESSAGES,
             timestamp: Utc::now(),
@@ -306,7 +217,7 @@ mod tests {
             owner_id: None,
             name: None,
             image: None,
-            chat_type: ChatType::GroupDM,
+            chat_type: ChatType::GroupDm,
             last_message_id: None,
             permissions: ChatPermissions::SEND_MESSAGES,
             timestamp: Utc::now(),

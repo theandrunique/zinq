@@ -65,7 +65,7 @@ impl RequestHandler for DeleteChatMemberCommandHandler {
             });
         }
 
-        if chat.chat_type != ChatType::GroupDM {
+        if chat.chat_type != ChatType::GroupDm {
             return Err(Error::ChatTypeNotSupported {
                 chat_id: request.chat_id,
             });

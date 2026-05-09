@@ -1,11 +1,12 @@
 use std::sync::Arc;
 
 use async_trait::async_trait;
+use chrono::Utc;
 use regex::Regex;
 
 use crate::{
     config::S3Config,
-    domain::attachments::Attachment,
+    domain::attachments::{Attachment, CreateAttachmentRequest},
     error::Error,
     infra::{IdGenerator, S3Service, s3::S3ObjectMetadata},
 };
@@ -63,6 +64,7 @@ impl AttachmentService {
 
     pub async fn validate_and_create_attachment(
         &self,
+        message_id: i64,
         uploaded_filename: &str,
         filename: &str,
     ) -> Result<Attachment, Error> {
@@ -82,20 +84,15 @@ impl AttachmentService {
 
         let (content_type, size) = extract_object_info(&object_meta);
 
-        Ok(Attachment {
+        Ok(Attachment::new(CreateAttachmentRequest {
             id: parsed.attachment_id,
-            message_id: 0,
+            message_id: message_id,
             chat_id: parsed.chat_id,
             filename: filename.to_string(),
-            content_type,
-            size,
+            content_type: content_type,
+            size: size,
             storage_key: uploaded_filename.to_string(),
-            is_spoiler: false,
-            placeholder: None,
-            duration_secs: None,
-            waveform: None,
-            timestamp: chrono::Utc::now(),
-        })
+        }))
     }
 
     pub async fn delete_object(&self, storage_key: &str) -> Result<(), anyhow::Error> {

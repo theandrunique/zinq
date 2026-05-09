@@ -34,8 +34,7 @@ impl TryFrom<ChatMemberDb> for ChatMember {
             is_leave: value.is_leave,
             permissions: value
                 .permission_overwrites
-                .map(ChatPermissions::try_from)
-                .transpose()?,
+                .map(|v| ChatPermissions::from_bits_truncate(v)),
         })
     }
 }
@@ -63,13 +62,13 @@ impl TryFrom<ChatDb> for Chat {
             name: value.name,
             image: value.image,
             chat_type: match value.chat_type {
-                0 => ChatType::DM,
-                1 => ChatType::GroupDM,
+                0 => ChatType::Dm,
+                1 => ChatType::GroupDm,
                 _ => return Err(anyhow::anyhow!("Unknown chat_type: {}", value.chat_type)),
             },
             last_message_id: value.last_message_id,
             timestamp: value.timestamp,
-            permissions: ChatPermissions::try_from(value.permissions)?,
+            permissions: ChatPermissions::from_bits_truncate(value.permissions),
             members: Vec::new(),
         })
     }
@@ -85,13 +84,13 @@ impl TryFrom<(ChatDb, Vec<ChatMember>)> for Chat {
             name: db.name,
             image: db.image,
             chat_type: match db.chat_type {
-                0 => ChatType::DM,
-                1 => ChatType::GroupDM,
+                0 => ChatType::Dm,
+                1 => ChatType::GroupDm,
                 _ => return Err(anyhow::anyhow!("Unknown chat_type: {}", db.chat_type)),
             },
             last_message_id: db.last_message_id,
             timestamp: db.timestamp,
-            permissions: ChatPermissions::try_from(db.permissions)?,
+            permissions: ChatPermissions::from_bits_truncate(db.permissions),
             members: members,
         })
     }
@@ -134,8 +133,8 @@ impl ChatRepository for ScyllaChatRepository {
                 (
                     chat.id,
                     match chat.chat_type {
-                        ChatType::DM => 0,
-                        ChatType::GroupDM => 1,
+                        ChatType::Dm => 0,
+                        ChatType::GroupDm => 1,
                     },
                     chat.name.clone(),
                     chat.owner_id,
@@ -148,7 +147,7 @@ impl ChatRepository for ScyllaChatRepository {
             .await?;
 
         // For DM chats also maintain mapping in private_chats
-        if chat.chat_type == ChatType::DM && chat.members.len() == 2 {
+        if chat.chat_type == ChatType::Dm && chat.members.len() == 2 {
             let user_id1 = chat.members[0].user_id;
             let user_id2 = chat.members[1].user_id;
             let (u1, u2) = if user_id1 < user_id2 {

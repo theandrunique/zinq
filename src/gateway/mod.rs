@@ -51,6 +51,8 @@ async fn socket_event_loop(io: SocketIo, mut events: broadcast::Receiver<DomainE
             DomainEvent::ChatCreate { chat: _chat } => {}
             DomainEvent::ChatMemberAdded { .. } => {}
             DomainEvent::ChatMemberRemoved { .. } => {}
+            DomainEvent::MessageCreated { .. } => {}
+            DomainEvent::MessageUpdated { .. } => {}
         }
     }
 }

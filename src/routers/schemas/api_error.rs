@@ -25,6 +25,8 @@ enum ErrorCode {
     InsufficientPermissions,
     UserAlreadyMember,
     EmailAlreadyInUse,
+    MessageNotFound,
+    MessageWasSentByAnotherUser,
     InternalServerError,
 }
 
@@ -157,6 +159,14 @@ impl IntoResponse for Error {
                 ApiError::new(ErrorCode::InternalServerError, "Internal server error")
             }
             Error::InvalidRequestBody(e) => ApiError::validation(e),
+            Error::MessageNotFound(message_id) => ApiError::new(
+                ErrorCode::MessageNotFound,
+                format!("Message not found: {}", message_id),
+            ),
+            Error::MessageWasSentByAnotherUser(message_id) => ApiError::new(
+                ErrorCode::MessageWasSentByAnotherUser,
+                format!("Message {} was sent by another user", message_id),
+            ),
         };
 
         return e.into_response();

@@ -3,9 +3,10 @@ use std::sync::Arc;
 use async_trait::async_trait;
 use chrono::{DateTime, Utc};
 use scylla::{DeserializeRow, client::session::Session};
+use serde_json;
 
 use crate::{
-    domain::messages::{Message, MessageMetadata, MessageType, data::MessageRepository},
+    domain::messages::{Message, MessageType, data::MessageRepository},
     infra::data::common::ScyllaCommon,
 };
 
@@ -14,45 +15,19 @@ struct MessageDb {
     chat_id: i64,
     message_id: i64,
     author_id: i64,
-    target_user_id: Option<i64>,
     content: String,
     timestamp: DateTime<Utc>,
     edited_timestamp: Option<DateTime<Utc>>,
     #[scylla(rename = "type")]
-    message_type: i32,
-    referenced_message_id: Option<i64>,
+    message_type: String,
 }
 
-fn message_type_to_i32(t: &MessageType) -> i32 {
-    match t {
-        MessageType::Default => 0,
-        MessageType::Reply => 1,
-        MessageType::MemberAdd => 2,
-        MessageType::MemberRemove => 3,
-        MessageType::MemberLeave => 4,
-        MessageType::ChannelNameUpdate => 5,
-        MessageType::ChannelImageUpdate => 6,
-        MessageType::ChannelPinnedMessage => 7,
-        MessageType::ChannelUnpinMessage => 8,
-        MessageType::ChannelCreate => 9,
-        MessageType::Forward => 10,
-    }
+fn message_type_to_string(t: &MessageType) -> String {
+    serde_json::to_string(t).unwrap_or_else(|_| "{\"type\":\"default\"}".to_string())
 }
 
-fn message_type_from_i32(v: i32) -> MessageType {
-    match v {
-        1 => MessageType::Reply,
-        2 => MessageType::MemberAdd,
-        3 => MessageType::MemberRemove,
-        4 => MessageType::MemberLeave,
-        5 => MessageType::ChannelNameUpdate,
-        6 => MessageType::ChannelImageUpdate,
-        7 => MessageType::ChannelPinnedMessage,
-        8 => MessageType::ChannelUnpinMessage,
-        9 => MessageType::ChannelCreate,
-        10 => MessageType::Forward,
-        _ => MessageType::Default,
-    }
+fn message_type_from_string(s: &str) -> MessageType {
+    serde_json::from_str(s).unwrap_or(MessageType::Default)
 }
 
 impl TryFrom<MessageDb> for Message {
@@ -61,15 +36,12 @@ impl TryFrom<MessageDb> for Message {
     fn try_from(value: MessageDb) -> Result<Self, Self::Error> {
         Ok(Message {
             id: value.message_id,
-            channel_id: value.chat_id,
+            chat_id: value.chat_id,
             author_id: value.author_id,
-            target_user_id: value.target_user_id,
             content: value.content,
-            timestamp: value.timestamp,
-            edited_timestamp: value.edited_timestamp.unwrap_or(value.timestamp),
-            message_type: message_type_from_i32(value.message_type),
-            referenced_message_id: value.referenced_message_id,
-            metadata: MessageMetadata::None,
+            created_at: value.timestamp,
+            edited_at: value.edited_timestamp,
+            message_type: message_type_from_string(&value.message_type),
         })
     }
 }
@@ -92,36 +64,28 @@ impl ScyllaMessageRepository {
 impl MessageRepository for ScyllaMessageRepository {
     async fn upsert(&self, message: Message) -> Result<(), anyhow::Error> {
         let query = "
-            INSERT INTO messages (
+            INSERT INTO messages_by_chat_id (
                 chat_id,
                 message_id,
                 author_id,
-                target_user_id,
                 content,
                 timestamp,
                 edited_timestamp,
-                pinned,
-                type,
-                referenced_message_id,
-                metadata
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                type
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
         ";
 
         self.common
             .exec(
                 query,
                 (
-                    message.channel_id,
+                    message.chat_id,
                     message.id,
                     message.author_id,
-                    message.target_user_id,
                     message.content,
-                    message.timestamp,
-                    message.edited_timestamp,
-                    false,                                      // pinned
-                    message_type_to_i32(&message.message_type), // type
-                    message.referenced_message_id,
-                    Option::<String>::None, // metadata
+                    message.created_at,
+                    message.edited_at,
+                    message_type_to_string(&message.message_type),
                 ),
             )
             .await?;
@@ -129,9 +93,9 @@ impl MessageRepository for ScyllaMessageRepository {
         Ok(())
     }
 
-    async fn bulk_upsert(&self, messages: Vec<Message>) -> Result<(), anyhow::Error> {
+    async fn bulk_upsert(&self, messages: &[Message]) -> Result<(), anyhow::Error> {
         for message in messages {
-            self.upsert(message).await?;
+            self.upsert(message.clone()).await?;
         }
         Ok(())
     }
@@ -143,7 +107,7 @@ impl MessageRepository for ScyllaMessageRepository {
     ) -> Result<Option<Message>, anyhow::Error> {
         let query = "
             SELECT *
-            FROM messages
+            FROM messages_by_chat_id
             WHERE chat_id = ? AND message_id = ?
         ";
 
@@ -155,7 +119,7 @@ impl MessageRepository for ScyllaMessageRepository {
     async fn get_by_ids(
         &self,
         chat_id: i64,
-        message_ids: Vec<i64>,
+        message_ids: &[i64],
     ) -> Result<Vec<Message>, anyhow::Error> {
         if message_ids.is_empty() {
             return Ok(Vec::new());
@@ -163,7 +127,7 @@ impl MessageRepository for ScyllaMessageRepository {
 
         let query = "
             SELECT *
-            FROM messages
+            FROM messages_by_chat_id
             WHERE chat_id = ? AND message_id IN ?
         ";
 
@@ -171,13 +135,13 @@ impl MessageRepository for ScyllaMessageRepository {
         rows.into_iter().map(Message::try_from).collect()
     }
 
-    async fn get_lasts_from(&self, chat_ids: Vec<i64>) -> Result<Vec<Message>, anyhow::Error> {
+    async fn get_lasts_from(&self, chat_ids: &[i64]) -> Result<Vec<Message>, anyhow::Error> {
         let mut result = Vec::new();
 
         for chat_id in chat_ids {
             let query = "
                 SELECT *
-                FROM messages
+                FROM messages_by_chat_id
                 WHERE chat_id = ?
                 LIMIT 1
             ";
@@ -200,7 +164,7 @@ impl MessageRepository for ScyllaMessageRepository {
         let rows: Vec<MessageDb> = if before <= 0 {
             let query = "
                 SELECT *
-                FROM messages
+                FROM messages_by_chat_id
                 WHERE chat_id = ?
                 LIMIT ?
             ";
@@ -208,7 +172,7 @@ impl MessageRepository for ScyllaMessageRepository {
         } else {
             let query = "
                 SELECT *
-                FROM messages
+                FROM messages_by_chat_id
                 WHERE chat_id = ? AND message_id < ?
                 LIMIT ?
             ";
@@ -221,7 +185,7 @@ impl MessageRepository for ScyllaMessageRepository {
     }
 
     async fn delete_by_id(&self, chat_id: i64, message_id: i64) -> Result<(), anyhow::Error> {
-        let query = "DELETE FROM messages WHERE chat_id = ? AND message_id = ?";
+        let query = "DELETE FROM messages_by_chat_id WHERE chat_id = ? AND message_id = ?";
         self.common.exec(query, (chat_id, message_id)).await?;
         Ok(())
     }

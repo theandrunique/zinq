@@ -41,7 +41,7 @@ impl TryFrom<AttachmentDb> for Attachment {
             duration_secs: value.duration_secs,
             waveform: value.waveform,
             is_spoiler: value.is_spoiler,
-            timestamp: value.timestamp,
+            created_at: value.timestamp,
         })
     }
 }
@@ -62,6 +62,54 @@ impl ScyllaAttachmentRepository {
 
 #[async_trait]
 impl AttachmentRepository for ScyllaAttachmentRepository {
+    async fn save(&self, attachment: Attachment) -> Result<(), anyhow::Error> {
+        let query = "
+            INSERT INTO attachments_by_message_id (
+                chat_id,
+                attachment_id,
+                message_id,
+                content_type,
+                duration_secs,
+                filename,
+                is_spoiler,
+                placeholder,
+                storage_key,
+                size,
+                waveform,
+                timestamp
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ";
+
+        self.common
+            .exec(
+                query,
+                (
+                    attachment.chat_id,
+                    attachment.id,
+                    attachment.message_id,
+                    attachment.content_type,
+                    attachment.duration_secs,
+                    attachment.filename,
+                    attachment.is_spoiler,
+                    attachment.placeholder,
+                    attachment.storage_key,
+                    attachment.size,
+                    attachment.waveform,
+                    attachment.created_at,
+                ),
+            )
+            .await?;
+
+        Ok(())
+    }
+
+    async fn bulk_save(&self, attachments: &[Attachment]) -> Result<(), anyhow::Error> {
+        for attachment in attachments {
+            self.save(attachment.clone()).await?;
+        }
+        Ok(())
+    }
+
     async fn get_by_id(
         &self,
         chat_id: i64,
@@ -102,27 +150,26 @@ impl AttachmentRepository for ScyllaAttachmentRepository {
         rows.into_iter().map(Attachment::try_from).collect()
     }
 
-    async fn update_storage_keys(&self, attachments: Vec<Attachment>) -> Result<(), anyhow::Error> {
-        let query = "
-            UPDATE attachments_by_message_id
-            SET storage_key = ?
-            WHERE chat_id = ? AND message_id = ? AND attachment_id = ?
-        ";
-
-        for attachment in attachments {
-            self.common
-                .exec(
-                    query,
-                    (
-                        attachment.storage_key.clone(),
-                        attachment.chat_id,
-                        attachment.message_id,
-                        attachment.id,
-                    ),
-                )
-                .await?;
+    async fn get_by_message_ids(
+        &self,
+        chat_id: i64,
+        message_ids: &[i64],
+    ) -> Result<Vec<Attachment>, anyhow::Error> {
+        if message_ids.is_empty() {
+            return Ok(Vec::new());
         }
 
-        Ok(())
+        let query = "
+            SELECT *
+            FROM attachments_by_message_id
+            WHERE chat_id = ? AND message_id IN ?
+        ";
+
+        let rows: Vec<AttachmentDb> = self
+            .common
+            .exec_all(query, (chat_id, message_ids))
+            .await?;
+
+        rows.into_iter().map(Attachment::try_from).collect()
     }
 }

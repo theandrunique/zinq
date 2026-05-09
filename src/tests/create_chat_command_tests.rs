@@ -2,7 +2,11 @@ use crate::{
     application::{
         RequestHandler,
         chats::{CreateChatCommand, CreateChatCommandHandler},
-    }, assert_err, domain::events::DomainEvent, error::Error, tests::common::TestContext
+    },
+    assert_err,
+    domain::events::DomainEvent,
+    error::Error,
+    tests::common::TestContext,
 };
 
 fn valid_command(current_user_id: i64, other_user_ids: Vec<i64>) -> CreateChatCommand {
