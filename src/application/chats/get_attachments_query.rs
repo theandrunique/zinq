@@ -3,7 +3,7 @@ use std::sync::Arc;
 use crate::{
     application::RequestHandler,
     domain::{
-        attachments::data::AttachmentRepository,
+        attachments::{Attachment, data::AttachmentRepository},
         chats::data::{ChatLoadOptions, ChatLoader},
     },
     error::Error,
@@ -34,7 +34,7 @@ impl GetAttachmentsQueryHandler {
 
 impl RequestHandler for GetAttachmentsQueryHandler {
     type Request = GetAttachmentsQuery;
-    type Output = Vec<crate::domain::attachments::Attachment>;
+    type Output = Vec<Attachment>;
     type Error = Error;
 
     async fn handle(&self, request: Self::Request) -> Result<Self::Output, Self::Error> {
