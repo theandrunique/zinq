@@ -203,12 +203,32 @@ impl ChatRepository for ScyllaChatRepository {
     }
 
     async fn get_by_id(&self, chat_id: i64) -> Result<Option<Chat>, anyhow::Error> {
-        let result: Option<ChatDb> = self
+        let chat_db: Option<ChatDb> = self
             .common
             .exec_first("SELECT * FROM chats_by_id WHERE chat_id = ?", (chat_id,))
             .await?;
 
-        result.map(Chat::try_from).transpose()
+        let chat_db = match chat_db {
+            Some(c) => c,
+            None => return Ok(None),
+        };
+
+        let members_db: Vec<ChatMemberDb> = self
+            .common
+            .exec_all(
+                "SELECT * FROM chat_users_by_chat_id WHERE chat_id = ?",
+                (chat_id,),
+            )
+            .await?;
+
+        let members: Vec<ChatMember> = members_db
+            .into_iter()
+            .filter_map(|m| ChatMember::try_from(m).ok())
+            .collect();
+
+        let mut chat = Chat::try_from(chat_db)?;
+        chat.members = members;
+        Ok(Some(chat))
     }
 
     async fn get_dm_channel(
@@ -256,16 +276,24 @@ impl ChatRepository for ScyllaChatRepository {
         let query = "SELECT * FROM chats_by_id WHERE chat_id IN ?";
         let chats_db: Vec<ChatDb> = self.common.exec_all(query, (chat_ids.clone(),)).await?;
 
-        let query = "SELECT * FROM chat_users_by_chat_id WHERE chat_id IN ?";
-        let members_db: Vec<ChatMemberDb> = self.common.exec_all(query, (chat_ids,)).await?;
+        let dm_chat_ids: Vec<i64> = chats_db
+            .iter()
+            .filter(|c| c.chat_type == 0)
+            .map(|c| c.chat_id)
+            .collect();
 
         let mut members_by_chat: HashMap<i64, Vec<ChatMember>> = HashMap::new();
 
-        for member in members_db {
-            members_by_chat
-                .entry(member.chat_id)
-                .or_default()
-                .push(ChatMember::try_from(member)?);
+        if !dm_chat_ids.is_empty() {
+            let query = "SELECT * FROM chat_users_by_chat_id WHERE chat_id IN ?";
+            let members_db: Vec<ChatMemberDb> = self.common.exec_all(query, (dm_chat_ids,)).await?;
+
+            for member in members_db {
+                members_by_chat
+                    .entry(member.chat_id)
+                    .or_default()
+                    .push(ChatMember::try_from(member)?);
+            }
         }
 
         let chats: Vec<Chat> = chats_db

@@ -38,7 +38,7 @@ pub struct CreateGroupChatRequest {
 }
 
 impl Chat {
-    pub fn create_dm(id: i64, user_1: User, user_2: User) -> Self {
+    pub fn create_dm(id: i64, members: Vec<ChatMember>) -> Self {
         Self {
             id: id,
             owner_id: None,
@@ -48,7 +48,7 @@ impl Chat {
             last_message_id: None,
             permissions: ChatPermissions::DM_CHAT,
             timestamp: Utc::now(),
-            members: Vec::from([ChatMember::from(user_1), ChatMember::from(user_2)]),
+            members: members,
         }
     }
 
@@ -232,7 +232,8 @@ mod tests {
         let user1 = user(1);
         let user2 = user(2);
 
-        let chat = Chat::create_dm(1, user1, user2);
+        let members = vec![ChatMember::from(user1), ChatMember::from(user2)];
+        let chat = Chat::create_dm(1, members);
 
         assert!(chat.has_permission(1, ChatPermissions::SEND_MESSAGES));
         assert!(chat.has_permission(2, ChatPermissions::SEND_FILES));

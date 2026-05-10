@@ -6,7 +6,7 @@ use crate::{
     application::{
         RequestHandler,
         auth::{RegisterComandHandler, RegisterCommand},
-        chats::{CreateChatCommand, CreateChatCommandHandler},
+        chats::{CreateChatCommand, CreateChatCommandHandler, GetDMChannelCommand, GetDMChannelCommandHandler},
         messages::{
             AddOrEditMessageCommand, AddOrEditMessageCommandHandler, AddOrEditMessageCommandResult,
         },
@@ -190,6 +190,19 @@ impl TestContext {
             .handle(cmd)
             .await
             .expect(&format!("Failed to create group chat {}", name))
+    }
+
+    pub async fn get_or_create_dm_chat(&self, user1_id: i64, user2_id: i64) -> Chat {
+        let cmd = GetDMChannelCommand {
+            current_user_id: user1_id,
+            user_id: user2_id,
+        };
+
+        let handler = GetDMChannelCommandHandler::new(&self.app_state);
+        handler
+            .handle(cmd)
+            .await
+            .expect(&format!("Failed to get DM chat between {} and {}", user1_id, user2_id))
     }
 
     pub async fn create_message(

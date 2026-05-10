@@ -1,10 +1,10 @@
 use crate::{
     application::{
+        RequestHandler,
         messages::{
             AddOrEditMessageCommand, AddOrEditMessageCommandHandler, CreateCloudAttachmentsCommand,
             CreateCloudAttachmentsCommandHandler, MessageAttachmentInput, UploadAttachmentDto,
         },
-        RequestHandler,
     },
     assert_err,
     domain::{chats::ChatPermissions, events::DomainEvent, messages::MessageType},
