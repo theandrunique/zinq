@@ -7,6 +7,9 @@ use crate::{
         RequestHandler,
         auth::{RegisterComandHandler, RegisterCommand},
         chats::{CreateChatCommand, CreateChatCommandHandler},
+        messages::{
+            AddOrEditMessageCommand, AddOrEditMessageCommandHandler, AddOrEditMessageCommandResult,
+        },
         services::{AttachmentService, AvatarService, ChannelImageService},
     },
     config::S3Config,
@@ -14,6 +17,7 @@ use crate::{
         auth::User,
         chats::{Chat, ChatPermissions, data::ChatLoader},
         events::EventBus,
+        messages::{CreateMessageRequest, Message},
     },
     infra::{
         auth::{
@@ -186,5 +190,28 @@ impl TestContext {
             .handle(cmd)
             .await
             .expect(&format!("Failed to create group chat {}", name))
+    }
+
+    pub async fn create_message(
+        &self,
+        chat_id: i64,
+        author_id: i64,
+        content: &str,
+    ) -> AddOrEditMessageCommandResult {
+        let cmd = AddOrEditMessageCommand {
+            current_user_id: author_id,
+            message_id: None,
+            referenced_message_id: None,
+            chat_id: chat_id,
+            content: content.to_string(),
+            attachments: vec![],
+        };
+
+        let msg_handler = AddOrEditMessageCommandHandler::new(&self.app_state);
+
+        msg_handler
+            .handle(cmd)
+            .await
+            .expect("Failed to create message")
     }
 }
