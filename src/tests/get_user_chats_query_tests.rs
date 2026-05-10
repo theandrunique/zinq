@@ -1,8 +1,8 @@
 use crate::{
     application::{
         RequestHandler,
-        chats::{GetUserChatsQuery, GetUserChatsQueryHandler},
         chats::{CreateChatCommand, CreateChatCommandHandler},
+        chats::{GetUserChatsQuery, GetUserChatsQueryHandler},
     },
     domain::chats::{Chat, ChatMember, ChatType},
     tests::common::TestContext,
@@ -32,14 +32,27 @@ async fn test_get_user_chats_returns_chats() {
     let member2 = ctx.create_test_user("member2", "member2@test.com").await;
     let member3 = ctx.create_test_user("member3", "member3@test.com").await;
 
-    let group_chat = ctx.create_group_chat(current_user.id, "Test Group", vec![member1.id, member2.id], None).await;
-    let _ = ctx.create_message(group_chat.id, current_user.id, "Hello group").await;
+    let group_chat = ctx
+        .create_group_chat(
+            current_user.id,
+            "Test Group",
+            vec![member1.id, member2.id],
+            None,
+        )
+        .await;
+    let _ = ctx
+        .create_message(group_chat.id, current_user.id, "Hello group")
+        .await;
 
     let dm_chat1 = ctx.get_or_create_dm_chat(current_user.id, member2.id).await;
-    let _ = ctx.create_message(dm_chat1.id, current_user.id, "Hello DM 1").await;
+    let _ = ctx
+        .create_message(dm_chat1.id, current_user.id, "Hello DM 1")
+        .await;
 
     let dm_chat2 = ctx.get_or_create_dm_chat(current_user.id, member3.id).await;
-    let _ = ctx.create_message(dm_chat2.id, current_user.id, "Hello DM 2").await;
+    let _ = ctx
+        .create_message(dm_chat2.id, current_user.id, "Hello DM 2")
+        .await;
 
     let query_handler = GetUserChatsQueryHandler::new(&ctx.app_state);
     let query = GetUserChatsQuery {
@@ -51,7 +64,10 @@ async fn test_get_user_chats_returns_chats() {
     assert_eq!(result.len(), 3, "Should return 3 chats (1 group + 2 DM)");
 
     for chat in &result {
-        assert!(chat.last_message_id.is_some(), "All returned chats should have last_message_id set");
+        assert!(
+            chat.last_message_id.is_some(),
+            "All returned chats should have last_message_id set"
+        );
 
         match chat.chat_type {
             ChatType::GroupDm => {

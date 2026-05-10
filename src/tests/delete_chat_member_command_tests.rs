@@ -79,7 +79,10 @@ async fn test_delete_chat_member_dm_not_supported() {
     let user1 = ctx.create_test_user("user1", "user1@test.com").await;
     let user2 = ctx.create_test_user("user2", "user2@test.com").await;
 
-    let members = vec![ChatMember::from(user1.clone()), ChatMember::from(user2.clone())];
+    let members = vec![
+        ChatMember::from(user1.clone()),
+        ChatMember::from(user2.clone()),
+    ];
     let dm_chat = Chat::create_dm(ctx.app_state.id_gen.gen_id().await, members);
 
     ctx.app_state

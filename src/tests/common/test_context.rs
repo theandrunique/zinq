@@ -6,7 +6,10 @@ use crate::{
     application::{
         RequestHandler,
         auth::{RegisterComandHandler, RegisterCommand},
-        chats::{CreateChatCommand, CreateChatCommandHandler, GetDMChannelCommand, GetDMChannelCommandHandler},
+        chats::{
+            CreateChatCommand, CreateChatCommandHandler, GetDMChannelCommand,
+            GetDMChannelCommandHandler,
+        },
         messages::{
             AddOrEditMessageCommand, AddOrEditMessageCommandHandler, AddOrEditMessageCommandResult,
         },
@@ -26,6 +29,7 @@ use crate::{
         },
         data::{
             attachment_repository::ScyllaAttachmentRepository, chat_loader::ScyllaChatLoader,
+            chat_member_repository::ScyllaChatMemberRepository,
             chat_repotisory::ScyllaChatRepository, message_repository::ScyllaMessageRepository,
             user_repository::ScyllaUserRepository,
             user_session_repository::ScyllaUserSessionRepository,
@@ -109,6 +113,7 @@ impl TestContext {
             user_repository: Arc::new(ScyllaUserRepository::new(session.clone())),
             user_session_repository: Arc::new(ScyllaUserSessionRepository::new(session.clone())),
             chat_loader: Arc::new(ScyllaChatLoader::new(session.clone())),
+            chat_member_repository: Arc::new(ScyllaChatMemberRepository::new(session.clone())),
             chat_repository: Arc::new(ScyllaChatRepository::new(session.clone())),
             message_repository: Arc::new(ScyllaMessageRepository::new(session.clone())),
             attachment_repository: Arc::new(ScyllaAttachmentRepository::new(session.clone())),
@@ -199,10 +204,10 @@ impl TestContext {
         };
 
         let handler = GetDMChannelCommandHandler::new(&self.app_state);
-        handler
-            .handle(cmd)
-            .await
-            .expect(&format!("Failed to get DM chat between {} and {}", user1_id, user2_id))
+        handler.handle(cmd).await.expect(&format!(
+            "Failed to get DM chat between {} and {}",
+            user1_id, user2_id
+        ))
     }
 
     pub async fn create_message(

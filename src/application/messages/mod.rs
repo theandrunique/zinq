@@ -15,3 +15,5 @@ pub use create_cloud_attachment_command::{
 pub use delete_cloud_attachment_command::{
     DeleteCloudAttachmentCommand, DeleteCloudAttachmentCommandHandler,
 };
+pub use get_last_messages_query::{GetLastMessagesQuery, GetLastMessagesQueryHandler};
+pub use get_messages_query::{GetMessagesQuery, GetMessagesQueryHandler};

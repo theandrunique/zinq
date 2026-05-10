@@ -16,7 +16,9 @@ async fn test_get_messages_success() {
     let ctx = TestContext::new("test_get_messages_success").await;
 
     let current_user = ctx.create_test_user("currentuser", "owner@test.com").await;
-    let chat = ctx.create_group_chat(current_user.id, "Test Group", vec![], None).await;
+    let chat = ctx
+        .create_group_chat(current_user.id, "Test Group", vec![], None)
+        .await;
     let _msg1 = ctx.create_message(chat.id, current_user.id, "First").await;
     let msg2 = ctx.create_message(chat.id, current_user.id, "Second").await;
     let _msg3 = ctx.create_message(chat.id, current_user.id, "Third").await;
@@ -79,7 +81,9 @@ async fn test_get_messages_not_member() {
 
     let owner = ctx.create_test_user("owner", "owner@test.com").await;
     let stranger = ctx.create_test_user("stranger", "stranger@test.com").await;
-    let chat = ctx.create_group_chat(owner.id, "Test Group", vec![], None).await;
+    let chat = ctx
+        .create_group_chat(owner.id, "Test Group", vec![], None)
+        .await;
 
     let query_handler = GetMessagesQueryHandler::new(&ctx.app_state);
     let query = GetMessagesQuery {

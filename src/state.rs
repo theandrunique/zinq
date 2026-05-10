@@ -10,7 +10,7 @@ use crate::{
         auth::data::{
             user_repository::UserRepository, user_session_repository::UserSessionRepository,
         },
-        chats::data::{ChatLoader, ChatRepository},
+        chats::data::{ChatLoader, ChatMemberRepository, ChatRepository},
         events::EventBus,
         messages::data::MessageRepository,
     },
@@ -23,6 +23,7 @@ use crate::{
         },
         data::{
             attachment_repository::ScyllaAttachmentRepository, chat_loader::ScyllaChatLoader,
+            chat_member_repository::ScyllaChatMemberRepository,
             chat_repotisory::ScyllaChatRepository, message_repository::ScyllaMessageRepository,
             user_repository::ScyllaUserRepository,
             user_session_repository::ScyllaUserSessionRepository,
@@ -40,6 +41,7 @@ pub struct AppState {
     pub user_repository: Arc<dyn UserRepository>,
     pub user_session_repository: Arc<dyn UserSessionRepository>,
     pub chat_loader: Arc<dyn ChatLoader>,
+    pub chat_member_repository: Arc<dyn ChatMemberRepository>,
     pub chat_repository: Arc<dyn ChatRepository>,
     pub message_repository: Arc<dyn MessageRepository>,
     pub attachment_repository: Arc<dyn AttachmentRepository>,
@@ -94,6 +96,7 @@ pub async fn init_state() -> AppState {
         user_repository: Arc::new(ScyllaUserRepository::new(session.clone())),
         user_session_repository: Arc::new(ScyllaUserSessionRepository::new(session.clone())),
         chat_loader: Arc::new(ScyllaChatLoader::new(session.clone())),
+        chat_member_repository: Arc::new(ScyllaChatMemberRepository::new(session.clone())),
         chat_repository: Arc::new(ScyllaChatRepository::new(session.clone())),
         message_repository: Arc::new(ScyllaMessageRepository::new(session.clone())),
         attachment_repository: Arc::new(ScyllaAttachmentRepository::new(session.clone())),
