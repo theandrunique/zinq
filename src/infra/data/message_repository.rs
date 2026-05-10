@@ -90,6 +90,11 @@ impl MessageRepository for ScyllaMessageRepository {
             )
             .await?;
 
+        let update_query = "UPDATE chats_by_id SET last_message_id = ? WHERE chat_id = ?";
+        self.common
+            .exec(update_query, (message.id, message.chat_id))
+            .await?;
+
         Ok(())
     }
 

@@ -568,3 +568,31 @@ async fn test_add_message_with_attachments() {
     assert_eq!(result.attachments[0].filename, "test.txt");
     assert_eq!(result.attachments[1].filename, "image.png");
 }
+
+#[tokio::test]
+async fn test_add_message_updates_last_message_id() {
+    let ctx = TestContext::new("test_add_msg_last_msg_id").await;
+
+    let current_user = ctx.create_test_user("currentuser", "current@test.com").await;
+    let other_user = ctx.create_test_user("otheruser", "other@test.com").await;
+
+    let chat = ctx
+        .create_group_chat(current_user.id, "Test Chat", vec![other_user.id], None)
+        .await;
+
+    let result = ctx.create_message(chat.id, current_user.id, "Hello world").await;
+
+    let updated_chat = ctx
+        .app_state
+        .chat_repository
+        .get_by_id(chat.id)
+        .await
+        .expect("Should get chat")
+        .expect("Chat should exist");
+
+    assert_eq!(
+        updated_chat.last_message_id,
+        Some(result.message.id),
+        "last_message_id should be updated to the new message id"
+    );
+}
