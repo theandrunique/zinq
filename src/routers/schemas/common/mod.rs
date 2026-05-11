@@ -6,7 +6,7 @@ use crate::{
     domain::{
         attachments::Attachment,
         auth::{SessionLifetime, User},
-        chats::{Chat, ChatType},
+        chats::{Chat, ChatPermissions, ChatType},
         messages::{Message, MessageType},
     },
 };
@@ -67,6 +67,16 @@ impl From<User> for UserPublicSchema {
 }
 
 #[derive(Serialize)]
+pub struct ChatMemberSchema {
+    pub user_id: String,
+    pub username: String,
+    pub global_name: String,
+    pub avatar: Option<String>,
+    pub is_leave: bool,
+    pub permissions: Option<String>,
+}
+
+#[derive(Serialize)]
 pub struct ChatSchema {
     pub id: String,
     pub owner_id: Option<String>,
@@ -74,6 +84,10 @@ pub struct ChatSchema {
     pub description: Option<String>,
     pub image: Option<String>,
     pub chat_type: ChatType,
+    pub last_message_id: Option<String>,
+    pub permissions: String,
+    pub timestamp: DateTime<Utc>,
+    pub members: Vec<ChatMemberSchema>,
 }
 
 impl From<Chat> for ChatSchema {
@@ -85,6 +99,21 @@ impl From<Chat> for ChatSchema {
             description: Some("".to_string()),
             image: value.image,
             chat_type: value.chat_type,
+            last_message_id: value.last_message_id.map(|id| id.to_string()),
+            permissions: value.permissions.to_string(),
+            timestamp: value.timestamp,
+            members: value
+                .members
+                .into_iter()
+                .map(|m| ChatMemberSchema {
+                    user_id: m.user_id.to_string(),
+                    username: m.username,
+                    global_name: m.global_name,
+                    avatar: m.avatar,
+                    is_leave: m.is_leave,
+                    permissions: m.permissions.map(|p| p.to_string()),
+                })
+                .collect(),
         }
     }
 }

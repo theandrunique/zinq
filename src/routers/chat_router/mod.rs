@@ -31,7 +31,7 @@ pub fn chat_router(state: AppState) -> Router {
         .route("/{chat_id}/messages", get(get_chat_messages))
         .route("/{chat_id}/messages", post(create_message))
         .route("/{chat_id}/messages/{message_id}", put(edit_message))
-        .route("/{chat_id}/members/{member_id}", put(add_chat_member))
-        .route("/{chat_id}/members/{member_id}", delete(remove_chat_member))
+        .route("/{chat_id}/members/{user_id}", put(add_chat_member))
+        .route("/{chat_id}/members/{user_id}", delete(remove_chat_member))
         .with_state(state)
 }
