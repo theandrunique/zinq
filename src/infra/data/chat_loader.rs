@@ -95,7 +95,8 @@ impl ChatLoader for ScyllaChatLoader {
             .chat_id
             .ok_or_else(|| anyhow::anyhow!("chat_id is required"))?;
 
-        let chat_db: Option<ChatDb> = self.common
+        let chat_db: Option<ChatDb> = self
+            .common
             .exec_first("SELECT * FROM chats_by_id WHERE chat_id = ?", (chat_id,))
             .await?;
 
@@ -107,7 +108,8 @@ impl ChatLoader for ScyllaChatLoader {
         let members: Vec<ChatMember> = if options.member_ids.is_empty() {
             Vec::new()
         } else {
-            let members_db: Vec<ChatMemberDb> = self.common
+            let members_db: Vec<ChatMemberDb> = self
+                .common
                 .exec_all(
                     "SELECT * FROM chat_users_by_chat_id WHERE chat_id = ? AND user_id IN ?",
                     (chat_id, options.member_ids),

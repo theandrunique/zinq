@@ -1,5 +1,7 @@
 use std::sync::Arc;
 
+use serde::Serialize;
+
 use crate::{
     application::RequestHandler,
     core::ValidateExt,
@@ -12,7 +14,7 @@ const MAX_FILE_SIZE: i64 = 10 * 1024 * 1024;
 
 #[derive(Debug, validator::Validate, Clone)]
 pub struct UploadAttachmentDto {
-    pub id: Option<i64>,
+    pub id: Option<String>,
     pub filename: String,
     pub filesize: i64,
 }
@@ -20,24 +22,24 @@ pub struct UploadAttachmentDto {
 #[derive(Debug, validator::Validate, Clone)]
 pub struct CreateCloudAttachmentsCommand {
     pub current_user_id: i64,
-    pub channel_id: i64,
+    pub chat_id: i64,
     pub files: Vec<UploadAttachmentDto>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 pub struct CloudAttachmentSuccess {
-    pub id: Option<i64>,
+    pub id: Option<String>,
     pub upload_filename: String,
     pub upload_url: String,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 pub struct CloudAttachmentError {
-    pub id: Option<i64>,
+    pub id: Option<String>,
     pub errors: Vec<String>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 pub struct CreateCloudAttachmentsResponse {
     pub results: Vec<CloudAttachmentSuccess>,
     pub errors: Vec<CloudAttachmentError>,
@@ -66,7 +68,7 @@ impl RequestHandler for CreateCloudAttachmentsCommandHandler {
         request.validate()?;
 
         let options = ChatLoadOptions::default()
-            .with_chat_id(request.channel_id)
+            .with_chat_id(request.chat_id)
             .with_member(request.current_user_id);
 
         let chat = self
@@ -74,19 +76,19 @@ impl RequestHandler for CreateCloudAttachmentsCommandHandler {
             .load(options)
             .await
             .map_err(Error::InternalServerError)?
-            .ok_or_else(|| Error::ChatNotFound(request.channel_id))?;
+            .ok_or_else(|| Error::ChatNotFound(request.chat_id))?;
 
         if !chat.has_member(request.current_user_id) {
             return Err(Error::UserNotMember {
                 user_id: request.current_user_id,
-                chat_id: request.channel_id,
+                chat_id: request.chat_id,
             });
         }
 
         if !chat.has_permission(request.current_user_id, ChatPermissions::SEND_FILES) {
             return Err(Error::InsufficientPermissions {
                 permission: ChatPermissions::SEND_FILES,
-                chat_id: request.channel_id,
+                chat_id: request.chat_id,
             });
         }
 
@@ -107,7 +109,7 @@ impl RequestHandler for CreateCloudAttachmentsCommandHandler {
 
             let upload_url = self
                 .attachment_service
-                .generate_upload_url(file.filesize, request.channel_id, &file.filename)
+                .generate_upload_url(file.filesize, request.chat_id, &file.filename)
                 .await
                 .map_err(Error::InternalServerError)?;
 

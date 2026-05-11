@@ -80,12 +80,10 @@ impl RequestHandler for LoginCommandHandler {
 
         let access_token = self
             .jwt_handler
-            .generate_access_token(&user.id.to_string(), &session.token_id.to_string())?;
-        let refresh_token = self.jwt_handler.generate_refresh_token(
-            &user.id.to_string(),
-            &session.token_id.to_string(),
-            604800,
-        )?;
+            .generate_access_token(user.id, session.token_id)?;
+        let refresh_token =
+            self.jwt_handler
+                .generate_refresh_token(user.id, session.token_id, 604800)?;
 
         return Ok(LoginCommandResult {
             access_token: access_token,

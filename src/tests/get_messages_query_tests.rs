@@ -36,9 +36,9 @@ async fn test_get_messages_success() {
         .handle(query_limit)
         .await
         .expect("Should succeed with limit");
-    assert_eq!(result.len(), 2);
-    assert_eq!(result[0].content, "Third");
-    assert_eq!(result[1].content, "Second");
+    assert_eq!(result.messages.len(), 2);
+    assert_eq!(result.messages[0].content, "Third");
+    assert_eq!(result.messages[1].content, "Second");
 
     let query_before = GetMessagesQuery {
         current_user_id: current_user.id,
@@ -51,8 +51,8 @@ async fn test_get_messages_success() {
         .handle(query_before)
         .await
         .expect("Should succeed with before");
-    assert_eq!(result.len(), 1);
-    assert_eq!(result[0].content, "First");
+    assert_eq!(result.messages.len(), 1);
+    assert_eq!(result.messages[0].content, "First");
 }
 
 #[tokio::test]

@@ -21,15 +21,15 @@ async fn test_create_cloud_attachments_success() {
 
     let cmd = CreateCloudAttachmentsCommand {
         current_user_id: owner.id,
-        channel_id: chat.id,
+        chat_id: chat.id,
         files: vec![
             UploadAttachmentDto {
-                id: Some(1),
+                id: Some("1".to_string()),
                 filename: "test.txt".to_string(),
                 filesize: 1024,
             },
             UploadAttachmentDto {
-                id: Some(2),
+                id: Some("2".to_string()),
                 filename: "image.png".to_string(),
                 filesize: 2048,
             },
@@ -40,8 +40,8 @@ async fn test_create_cloud_attachments_success() {
 
     assert_eq!(response.results.len(), 2);
     assert_eq!(response.errors.len(), 0);
-    assert_eq!(response.results[0].id, Some(1));
-    assert_eq!(response.results[1].id, Some(2));
+    assert_eq!(response.results[0].id, Some("1".to_string()));
+    assert_eq!(response.results[1].id, Some("2".to_string()));
     assert!(!response.results[0].upload_filename.is_empty());
     assert!(!response.results[0].upload_url.is_empty());
     assert!(
@@ -67,9 +67,9 @@ async fn test_create_cloud_attachments_not_member() {
 
     let cmd = CreateCloudAttachmentsCommand {
         current_user_id: non_member.id,
-        channel_id: chat.id,
+        chat_id: chat.id,
         files: vec![UploadAttachmentDto {
-            id: Some(1),
+            id: Some("1".to_string()),
             filename: "test.txt".to_string(),
             filesize: 1024,
         }],
@@ -98,9 +98,9 @@ async fn test_create_cloud_attachments_no_permission() {
 
     let cmd = CreateCloudAttachmentsCommand {
         current_user_id: member.id,
-        channel_id: chat.id,
+        chat_id: chat.id,
         files: vec![UploadAttachmentDto {
-            id: Some(1),
+            id: Some("1".to_string()),
             filename: "test.txt".to_string(),
             filesize: 1024,
         }],
@@ -126,9 +126,9 @@ async fn test_create_cloud_attachments_file_too_small() {
 
     let cmd = CreateCloudAttachmentsCommand {
         current_user_id: owner.id,
-        channel_id: chat.id,
+        chat_id: chat.id,
         files: vec![UploadAttachmentDto {
-            id: Some(1),
+            id: Some("1".to_string()),
             filename: "test.txt".to_string(),
             filesize: 0,
         }],
@@ -138,7 +138,7 @@ async fn test_create_cloud_attachments_file_too_small() {
 
     assert_eq!(response.results.len(), 0);
     assert_eq!(response.errors.len(), 1);
-    assert_eq!(response.errors[0].id, Some(1));
+    assert_eq!(response.errors[0].id, Some("1".to_string()));
     assert!(response.errors[0].errors[0].contains("File size"));
 }
 
@@ -155,9 +155,9 @@ async fn test_create_cloud_attachments_file_too_large() {
     let max_size = 10 * 1024 * 1024 + 1;
     let cmd = CreateCloudAttachmentsCommand {
         current_user_id: owner.id,
-        channel_id: chat.id,
+        chat_id: chat.id,
         files: vec![UploadAttachmentDto {
-            id: Some(1),
+            id: Some("1".to_string()),
             filename: "test.txt".to_string(),
             filesize: max_size,
         }],
@@ -167,7 +167,7 @@ async fn test_create_cloud_attachments_file_too_large() {
 
     assert_eq!(response.results.len(), 0);
     assert_eq!(response.errors.len(), 1);
-    assert_eq!(response.errors[0].id, Some(1));
+    assert_eq!(response.errors[0].id, Some("1".to_string()));
     assert!(response.errors[0].errors[0].contains("File size"));
 }
 
@@ -183,15 +183,15 @@ async fn test_create_cloud_attachments_mixed_valid_invalid() {
 
     let cmd = CreateCloudAttachmentsCommand {
         current_user_id: owner.id,
-        channel_id: chat.id,
+        chat_id: chat.id,
         files: vec![
             UploadAttachmentDto {
-                id: Some(1),
+                id: Some("1".to_string()),
                 filename: "valid.txt".to_string(),
                 filesize: 1024,
             },
             UploadAttachmentDto {
-                id: Some(2),
+                id: Some("2".to_string()),
                 filename: "too_large.txt".to_string(),
                 filesize: 20 * 1024 * 1024,
             },
@@ -202,6 +202,6 @@ async fn test_create_cloud_attachments_mixed_valid_invalid() {
 
     assert_eq!(response.results.len(), 1);
     assert_eq!(response.errors.len(), 1);
-    assert_eq!(response.results[0].id, Some(1));
-    assert_eq!(response.errors[0].id, Some(2));
+    assert_eq!(response.results[0].id, Some("1".to_string()));
+    assert_eq!(response.errors[0].id, Some("2".to_string()));
 }

@@ -20,7 +20,10 @@ impl ScyllaCommon {
         }
     }
 
-    pub async fn get_or_prepare(&self, query: &str) -> Result<Arc<PreparedStatement>, anyhow::Error> {
+    pub async fn get_or_prepare(
+        &self,
+        query: &str,
+    ) -> Result<Arc<PreparedStatement>, anyhow::Error> {
         {
             let guard = self.prepared.read().await;
             if let Some(stmt) = guard.get(query) {

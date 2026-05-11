@@ -40,7 +40,7 @@ async fn main() {
 
     let app = Router::new()
         .nest("/.well-known", well_known_router(app_state.clone()))
-        .nest("/users", user_router())
+        .nest("/users", user_router(app_state.clone()))
         .nest("/auth", auth_router(app_state.clone()))
         .nest("/emoji-packs", emoji_router(app_state.clone()))
         .nest("/chats", chat_router(app_state.clone()))

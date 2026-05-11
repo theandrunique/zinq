@@ -504,15 +504,15 @@ async fn test_add_message_with_attachments() {
     let attachments_handler = CreateCloudAttachmentsCommandHandler::new(&ctx.app_state);
     let attachments_cmd = CreateCloudAttachmentsCommand {
         current_user_id: current_user.id,
-        channel_id: chat.id,
+        chat_id: chat.id,
         files: vec![
             UploadAttachmentDto {
-                id: Some(1),
+                id: Some("1".to_string()),
                 filename: "test.txt".to_string(),
                 filesize: 1024,
             },
             UploadAttachmentDto {
-                id: Some(2),
+                id: Some("2".to_string()),
                 filename: "image.png".to_string(),
                 filesize: 2048,
             },

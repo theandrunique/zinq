@@ -10,10 +10,11 @@ pub use add_or_edit_message_command::{
     MessageAttachmentInput,
 };
 pub use create_cloud_attachment_command::{
-    CreateCloudAttachmentsCommand, CreateCloudAttachmentsCommandHandler, UploadAttachmentDto,
+    CreateCloudAttachmentsCommand, CreateCloudAttachmentsCommandHandler,
+    CreateCloudAttachmentsResponse, UploadAttachmentDto,
 };
 pub use delete_cloud_attachment_command::{
     DeleteCloudAttachmentCommand, DeleteCloudAttachmentCommandHandler,
 };
 pub use get_last_messages_query::{GetLastMessagesQuery, GetLastMessagesQueryHandler};
-pub use get_messages_query::{GetMessagesQuery, GetMessagesQueryHandler};
+pub use get_messages_query::{GetMessagesQuery, GetMessagesQueryHandler, GetMessagesQueryResult};

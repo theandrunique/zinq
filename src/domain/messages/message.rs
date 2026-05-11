@@ -2,7 +2,7 @@ use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Serialize, Deserialize, Debug)]
-#[serde(tag = "type", content = "payload", rename_all = "snake_case")]
+#[serde(tag = "type", content = "metadata", rename_all = "snake_case")]
 pub enum MessageType {
     Default,
     Reply { referenced_message_id: i64 },

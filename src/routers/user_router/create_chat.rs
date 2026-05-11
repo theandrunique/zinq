@@ -1,11 +1,15 @@
-use axum::{Json, Router, extract::State, routing::post};
+use axum::{
+    Json, Router,
+    extract::{Path, Query, State},
+    routing::{get, post, put},
+};
 use serde::{Deserialize, Serialize};
 use serde_with::{DisplayFromStr, Map, serde_as};
 
 use crate::{
     application::{
         RequestHandler,
-        chats::{CreateChatCommand, CreateChatCommandHandler},
+        chats::{CreateChatCommand, CreateChatCommandHandler, GetChatQuery, GetChatQueryHandler},
     },
     error::Error,
     infra::AuthUser,
@@ -14,15 +18,15 @@ use crate::{
 };
 
 #[serde_as]
-#[derive(Deserialize, Serialize)]
-struct CreateChatRequestSchema {
+#[derive(Deserialize)]
+pub struct CreateChatRequestSchema {
     pub name: String,
     #[serde_as(as = "Vec<DisplayFromStr>")]
     pub members: Vec<i64>,
 }
 
 #[axum::debug_handler]
-async fn create_chat(
+pub async fn create_chat(
     State(state): State<AppState>,
     AuthUser { claims }: AuthUser,
     Json(payload): Json<CreateChatRequestSchema>,
@@ -30,7 +34,7 @@ async fn create_chat(
     let handler = CreateChatCommandHandler::new(&state);
 
     let command = CreateChatCommand {
-        current_user_id: claims.sub.parse().unwrap(),
+        current_user_id: claims.sub,
         name: payload.name,
         members: payload.members,
         permissions: None,
@@ -39,10 +43,4 @@ async fn create_chat(
     let result = handler.handle(command).await?;
 
     return Ok(Json(ChatSchema::from(result)));
-}
-
-pub fn chat_router(state: AppState) -> Router {
-    Router::new()
-        .route("/", post(create_chat))
-        .with_state(state)
 }

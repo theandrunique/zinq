@@ -1,10 +1,12 @@
+use std::collections::HashMap;
 use std::sync::Arc;
 
 use crate::{
     application::RequestHandler,
     domain::{
+        attachments::{Attachment, data::AttachmentRepository},
         chats::data::{ChatLoadOptions, ChatLoader},
-        messages::data::MessageRepository,
+        messages::{Message, data::MessageRepository},
     },
     error::Error,
     state::AppState,
@@ -18,9 +20,16 @@ pub struct GetMessagesQuery {
     pub limit: i32,
 }
 
+#[derive(Debug, Clone)]
+pub struct GetMessagesQueryResult {
+    pub messages: Vec<Message>,
+    pub attachments: HashMap<i64, Vec<crate::domain::attachments::Attachment>>,
+}
+
 pub struct GetMessagesQueryHandler {
     chat_loader: Arc<dyn ChatLoader>,
     message_repository: Arc<dyn MessageRepository>,
+    attachment_repository: Arc<dyn AttachmentRepository>,
 }
 
 impl GetMessagesQueryHandler {
@@ -28,13 +37,14 @@ impl GetMessagesQueryHandler {
         Self {
             chat_loader: Arc::clone(&state.chat_loader),
             message_repository: Arc::clone(&state.message_repository),
+            attachment_repository: Arc::clone(&state.attachment_repository),
         }
     }
 }
 
 impl RequestHandler for GetMessagesQueryHandler {
     type Request = GetMessagesQuery;
-    type Output = Vec<crate::domain::messages::Message>;
+    type Output = GetMessagesQueryResult;
     type Error = Error;
 
     async fn handle(&self, request: Self::Request) -> Result<Self::Output, Self::Error> {
@@ -64,6 +74,31 @@ impl RequestHandler for GetMessagesQueryHandler {
             .await
             .map_err(|e| Error::InternalServerError(e))?;
 
-        Ok(messages)
+        if messages.is_empty() {
+            return Ok(GetMessagesQueryResult {
+                messages,
+                attachments: HashMap::new(),
+            });
+        }
+
+        let message_ids: Vec<i64> = messages.iter().map(|m| m.id).collect();
+        let attachments = self
+            .attachment_repository
+            .get_by_message_ids(request.chat_id, &message_ids)
+            .await
+            .map_err(|e| Error::InternalServerError(e))?;
+
+        let mut attachments_by_message: HashMap<i64, Vec<Attachment>> = HashMap::new();
+        for attachment in attachments {
+            attachments_by_message
+                .entry(attachment.message_id)
+                .or_insert_with(Vec::new)
+                .push(attachment);
+        }
+
+        Ok(GetMessagesQueryResult {
+            messages,
+            attachments: attachments_by_message,
+        })
     }
 }

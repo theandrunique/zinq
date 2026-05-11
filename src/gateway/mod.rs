@@ -104,8 +104,8 @@ pub fn gateway(app_state: AppState) -> SocketIoLayer {
         );
 
         let hello = HelloEvent {
-            user_id: claims.sub.clone(),
-            session_id: claims.session_id.clone(),
+            user_id: claims.sub.to_string(),
+            session_id: claims.session_id.to_string(),
         };
 
         info!(

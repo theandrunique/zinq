@@ -1,6 +1,8 @@
 use anyhow::Result;
 use jsonwebtoken::{Algorithm, Header, Validation, decode, encode};
 use serde::{Deserialize, Serialize};
+use serde_with::{DisplayFromStr, serde_as};
+use uuid::Uuid;
 
 use crate::infra::auth::jwks_service::{JwksService, KeyPair};
 
@@ -8,14 +10,16 @@ use crate::infra::auth::jwks_service::{JwksService, KeyPair};
 #[serde(rename_all = "lowercase")]
 pub enum TokenType {
     Access,
-    #[serde(rename = "refresh")]
     Refresh,
 }
 
+#[serde_as]
 #[derive(Debug, Serialize, Deserialize)]
 pub struct TokenClaims {
-    pub sub: String,
-    pub session_id: String,
+    #[serde_as(as = "DisplayFromStr")]
+    pub sub: i64,
+    #[serde_as(as = "DisplayFromStr")]
+    pub session_id: Uuid,
     #[serde(rename = "token_type")]
     pub token_type: TokenType,
     pub exp: i64,
@@ -23,11 +27,11 @@ pub struct TokenClaims {
 }
 
 pub trait JwtHandler: Send + Sync {
-    fn generate_access_token(&self, user_id: &str, session_id: &str) -> Result<String>;
+    fn generate_access_token(&self, user_id: i64, session_id: Uuid) -> Result<String>;
     fn generate_refresh_token(
         &self,
-        user_id: &str,
-        session_id: &str,
+        user_id: i64,
+        session_id: Uuid,
         expires_in_seconds: i64,
     ) -> Result<String>;
     fn verify_access_token(&self, token: &str) -> Result<TokenClaims>;
@@ -75,15 +79,15 @@ impl<J: JwksService> JwtService<J> {
 }
 
 impl<J: JwksService> JwtHandler for JwtService<J> {
-    fn generate_access_token(&self, user_id: &str, session_id: &str) -> Result<String> {
+    fn generate_access_token(&self, user_id: i64, session_id: Uuid) -> Result<String> {
         let key_pair = self.jwks_service.get_active_key();
 
         let now = chrono::Utc::now().timestamp();
         let exp = now + self.access_token_expiration_seconds;
 
         let claims = TokenClaims {
-            sub: user_id.to_string(),
-            session_id: session_id.to_string(),
+            sub: user_id,
+            session_id: session_id,
             token_type: TokenType::Access,
             exp,
             iat: now,
@@ -94,8 +98,8 @@ impl<J: JwksService> JwtHandler for JwtService<J> {
 
     fn generate_refresh_token(
         &self,
-        user_id: &str,
-        session_id: &str,
+        user_id: i64,
+        session_id: Uuid,
         expires_in_seconds: i64,
     ) -> Result<String> {
         let key_pair = self.jwks_service.get_active_key();
@@ -104,8 +108,8 @@ impl<J: JwksService> JwtHandler for JwtService<J> {
         let exp = now + expires_in_seconds;
 
         let claims = TokenClaims {
-            sub: user_id.to_string(),
-            session_id: session_id.to_string(),
+            sub: user_id,
+            session_id: session_id,
             token_type: TokenType::Refresh,
             exp,
             iat: now,
