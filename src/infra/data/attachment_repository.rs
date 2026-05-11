@@ -19,7 +19,7 @@ struct AttachmentDb {
     filename: String,
     is_spoiler: bool,
     placeholder: Option<String>,
-    storage_key: Option<String>,
+    storage_key: String,
     size: i64,
     waveform: Option<String>,
     timestamp: DateTime<Utc>,
@@ -36,7 +36,7 @@ impl TryFrom<AttachmentDb> for Attachment {
             filename: value.filename,
             content_type: value.content_type,
             size: value.size,
-            storage_key: value.storage_key.unwrap_or_default(),
+            storage_key: value.storage_key,
             placeholder: value.placeholder,
             duration_secs: value.duration_secs,
             waveform: value.waveform,
@@ -66,8 +66,8 @@ impl AttachmentRepository for ScyllaAttachmentRepository {
         let query = "
             INSERT INTO attachments_by_message_id (
                 chat_id,
-                attachment_id,
                 message_id,
+                attachment_id,
                 content_type,
                 duration_secs,
                 filename,
@@ -85,8 +85,8 @@ impl AttachmentRepository for ScyllaAttachmentRepository {
                 query,
                 (
                     attachment.chat_id,
-                    attachment.id,
                     attachment.message_id,
+                    attachment.id,
                     attachment.content_type,
                     attachment.duration_secs,
                     attachment.filename,

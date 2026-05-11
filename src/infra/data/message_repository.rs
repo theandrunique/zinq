@@ -141,23 +141,14 @@ impl MessageRepository for ScyllaMessageRepository {
     }
 
     async fn get_lasts_from(&self, chat_ids: &[i64]) -> Result<Vec<Message>, anyhow::Error> {
-        let mut result = Vec::new();
-
-        for chat_id in chat_ids {
-            let query = "
-                SELECT *
-                FROM messages_by_chat_id
-                WHERE chat_id = ?
-                LIMIT 1
-            ";
-
-            let row: Option<MessageDb> = self.common.exec_first(query, (chat_id,)).await?;
-            if let Some(db) = row {
-                result.push(Message::try_from(db)?);
-            }
-        }
-
-        Ok(result)
+        let query = "
+            SELECT *
+            FROM messages_by_chat_id
+            WHERE chat_id IN ?
+            PER PARTITION LIMIT 1
+        ";
+        let rows: Vec<MessageDb> = self.common.exec_all(query, (chat_ids,)).await?;
+        rows.into_iter().map(Message::try_from).collect()
     }
 
     async fn get_messages(
@@ -166,25 +157,18 @@ impl MessageRepository for ScyllaMessageRepository {
         before: i64,
         limit: i32,
     ) -> Result<Vec<Message>, anyhow::Error> {
-        let rows: Vec<MessageDb> = if before <= 0 {
-            let query = "
-                SELECT *
-                FROM messages_by_chat_id
-                WHERE chat_id = ?
-                LIMIT ?
-            ";
-            self.common.exec_all(query, (chat_id, limit)).await?
-        } else {
-            let query = "
-                SELECT *
-                FROM messages_by_chat_id
-                WHERE chat_id = ? AND message_id < ?
-                LIMIT ?
-            ";
-            self.common
-                .exec_all(query, (chat_id, before, limit))
-                .await?
-        };
+        let query = "
+            SELECT *
+            FROM messages_by_chat_id
+            WHERE chat_id = ? AND message_id < ?
+            ORDER BY message_id DESC
+            LIMIT ?
+        ";
+
+        let rows: Vec<MessageDb> = self
+            .common
+            .exec_all(query, (chat_id, before, limit))
+            .await?;
 
         rows.into_iter().map(Message::try_from).collect()
     }

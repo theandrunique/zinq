@@ -39,16 +39,14 @@ impl ChatMemberRepository for ScyllaChatMemberRepository {
         let query = "
             SELECT chat_id, is_leave
             FROM chat_users_by_user_id
-            WHERE user_id = ? AND chat_id = ?
+            WHERE user_id = ? AND chat_id IN ?
         ";
 
+        let rows: Vec<ChatMemberStatus> = self.common.exec_all(query, (user_id, chat_ids)).await?;
+
         let mut result = HashMap::new();
-        for &chat_id in chat_ids {
-            let rows: Vec<ChatMemberStatus> =
-                self.common.exec_all(query, (user_id, chat_id)).await?;
-            for row in rows {
-                result.insert(row.chat_id, !row.is_leave);
-            }
+        for row in rows {
+            result.insert(row.chat_id, row.is_leave);
         }
 
         Ok(result)

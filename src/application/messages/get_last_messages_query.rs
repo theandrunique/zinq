@@ -41,28 +41,27 @@ impl RequestHandler for GetLastMessagesQueryHandler {
             return Ok(vec![]);
         }
 
+        let member_statuses = self
+            .chat_member_repository
+            .get_chat_ids_for_user(request.current_user_id, &request.chat_ids)
+            .await
+            .map_err(|e| Error::InternalServerError(e))?;
+
+        for &chat_id in &request.chat_ids {
+            if member_statuses.get(&chat_id).copied() != Some(false) {
+                return Err(Error::UserNotMember {
+                    user_id: request.current_user_id,
+                    chat_id,
+                });
+            }
+        }
+
         let messages = self
             .message_repository
             .get_lasts_from(&request.chat_ids)
             .await
             .map_err(|e| Error::InternalServerError(e))?;
 
-        if messages.is_empty() {
-            return Ok(vec![]);
-        }
-
-        let chat_ids: Vec<i64> = messages.iter().map(|m| m.chat_id).collect();
-        let member_statuses = self
-            .chat_member_repository
-            .get_chat_ids_for_user(request.current_user_id, &chat_ids)
-            .await
-            .map_err(|e| Error::InternalServerError(e))?;
-
-        let filtered: Vec<Message> = messages
-            .into_iter()
-            .filter(|m| member_statuses.get(&m.chat_id).copied() == Some(false))
-            .collect();
-
-        Ok(filtered)
+        Ok(messages)
     }
 }

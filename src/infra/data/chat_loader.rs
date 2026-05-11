@@ -76,11 +76,15 @@ impl TryFrom<ChatDb> for Chat {
 
 pub struct ScyllaChatLoader {
     session: Arc<Session>,
+    common: ScyllaCommon,
 }
 
 impl ScyllaChatLoader {
     pub fn new(session: Arc<Session>) -> Self {
-        Self { session }
+        Self {
+            session: Arc::clone(&session),
+            common: ScyllaCommon::new(session),
+        }
     }
 }
 
@@ -90,9 +94,8 @@ impl ChatLoader for ScyllaChatLoader {
         let chat_id = options
             .chat_id
             .ok_or_else(|| anyhow::anyhow!("chat_id is required"))?;
-        let common = ScyllaCommon::new(self.session.clone());
 
-        let chat_db: Option<ChatDb> = common
+        let chat_db: Option<ChatDb> = self.common
             .exec_first("SELECT * FROM chats_by_id WHERE chat_id = ?", (chat_id,))
             .await?;
 
@@ -104,7 +107,7 @@ impl ChatLoader for ScyllaChatLoader {
         let members: Vec<ChatMember> = if options.member_ids.is_empty() {
             Vec::new()
         } else {
-            let members_db: Vec<ChatMemberDb> = common
+            let members_db: Vec<ChatMemberDb> = self.common
                 .exec_all(
                     "SELECT * FROM chat_users_by_chat_id WHERE chat_id = ? AND user_id IN ?",
                     (chat_id, options.member_ids),

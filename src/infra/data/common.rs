@@ -20,7 +20,7 @@ impl ScyllaCommon {
         }
     }
 
-    async fn get_or_prepare(&self, query: &str) -> Result<Arc<PreparedStatement>, anyhow::Error> {
+    pub async fn get_or_prepare(&self, query: &str) -> Result<Arc<PreparedStatement>, anyhow::Error> {
         {
             let guard = self.prepared.read().await;
             if let Some(stmt) = guard.get(query) {
@@ -48,7 +48,7 @@ impl ScyllaCommon {
         query: &str,
         values: T,
     ) -> Result<QueryResult, anyhow::Error> {
-        let prepared = self.get_or_prepare(query).await?;
+        let prepared = Self::get_or_prepare(self, query).await?;
         self.session
             .execute_unpaged(&prepared, values)
             .await

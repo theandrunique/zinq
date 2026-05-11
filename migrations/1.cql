@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS attachments_by_message_id (
     chat_id bigint,
-    attachment_id bigint,
     message_id bigint,
+    attachment_id bigint,
     content_type text,
     duration_secs float,
     filename text,
