@@ -10,5 +10,11 @@ services:
       - scylla_data:/var/lib/scylla
     command: --smp 1
 
+  mailhog:
+    image: mailhog/mailhog
+    ports:
+      - 1025:1025
+      - 8025:8025
+
 volumes:
   scylla_data:
