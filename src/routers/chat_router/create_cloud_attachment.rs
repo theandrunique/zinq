@@ -28,7 +28,7 @@ pub struct AttachmentInput {
 
 #[derive(Deserialize)]
 pub struct CreateCloudAttachmentRequestSchema {
-    attachments: Vec<AttachmentInput>,
+    files: Vec<AttachmentInput>,
 }
 
 #[derive(Deserialize)]
@@ -49,7 +49,7 @@ pub async fn create_cloud_attachment(
         current_user_id: claims.sub,
         chat_id: chat_id,
         files: request
-            .attachments
+            .files
             .into_iter()
             .map(|attachment| UploadAttachmentDto {
                 id: attachment.id,
