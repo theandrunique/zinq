@@ -21,14 +21,6 @@ use crate::{
     state::AppState,
 };
 
-#[serde_as]
-#[derive(Deserialize)]
-pub struct CreateChatRequestSchema {
-    pub name: String,
-    #[serde_as(as = "Vec<DisplayFromStr>")]
-    pub members: Vec<i64>,
-}
-
 #[axum::debug_handler]
 pub async fn get_user_chats(
     State(state): State<AppState>,

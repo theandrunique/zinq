@@ -83,10 +83,11 @@ pub struct ChatSchema {
     pub name: Option<String>,
     pub description: Option<String>,
     pub image: Option<String>,
+    #[serde(rename = "type")]
     pub chat_type: ChatType,
     pub last_message_id: Option<String>,
     pub permissions: String,
-    pub timestamp: DateTime<Utc>,
+    pub created_at: DateTime<Utc>,
     pub members: Vec<ChatMemberSchema>,
 }
 
@@ -101,7 +102,7 @@ impl From<Chat> for ChatSchema {
             chat_type: value.chat_type,
             last_message_id: value.last_message_id.map(|id| id.to_string()),
             permissions: value.permissions.to_string(),
-            timestamp: value.timestamp,
+            created_at: value.timestamp,
             members: value
                 .members
                 .into_iter()

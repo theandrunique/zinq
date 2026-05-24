@@ -7,8 +7,7 @@ use crate::{
         RequestHandler,
         auth::{RegisterComandHandler, RegisterCommand},
         chats::{
-            CreateChatCommand, CreateChatCommandHandler, GetDMChannelCommand,
-            GetDMChannelCommandHandler,
+            CreateChatCommand, CreateChatCommandHandler, GetDMChatCommand, GetDMChatCommandHandler,
         },
         messages::{
             AddOrEditMessageCommand, AddOrEditMessageCommandHandler, AddOrEditMessageCommandResult,
@@ -198,12 +197,12 @@ impl TestContext {
     }
 
     pub async fn get_or_create_dm_chat(&self, user1_id: i64, user2_id: i64) -> Chat {
-        let cmd = GetDMChannelCommand {
+        let cmd = GetDMChatCommand {
             current_user_id: user1_id,
             user_id: user2_id,
         };
 
-        let handler = GetDMChannelCommandHandler::new(&self.app_state);
+        let handler = GetDMChatCommandHandler::new(&self.app_state);
         handler.handle(cmd).await.expect(&format!(
             "Failed to get DM chat between {} and {}",
             user1_id, user2_id

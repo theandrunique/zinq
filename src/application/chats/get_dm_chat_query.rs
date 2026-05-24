@@ -12,18 +12,18 @@ use crate::{
 };
 
 #[derive(Debug, Clone)]
-pub struct GetDMChannelCommand {
+pub struct GetDMChatCommand {
     pub current_user_id: i64,
     pub user_id: i64,
 }
 
-pub struct GetDMChannelCommandHandler {
+pub struct GetDMChatCommandHandler {
     id_gen: Arc<dyn IdGenerator>,
     user_repository: Arc<dyn UserRepository>,
     chat_repository: Arc<dyn ChatRepository>,
 }
 
-impl GetDMChannelCommandHandler {
+impl GetDMChatCommandHandler {
     pub fn new(state: &AppState) -> Self {
         Self {
             id_gen: Arc::clone(&state.id_gen),
@@ -33,8 +33,8 @@ impl GetDMChannelCommandHandler {
     }
 }
 
-impl RequestHandler for GetDMChannelCommandHandler {
-    type Request = GetDMChannelCommand;
+impl RequestHandler for GetDMChatCommandHandler {
+    type Request = GetDMChatCommand;
     type Output = Chat;
     type Error = Error;
 

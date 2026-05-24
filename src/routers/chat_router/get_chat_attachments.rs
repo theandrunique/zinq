@@ -6,8 +6,8 @@ use serde::Deserialize;
 
 use crate::{
     application::{
-        chats::{GetAttachmentsQuery, GetAttachmentsQueryHandler},
         RequestHandler,
+        chats::{GetAttachmentsQuery, GetAttachmentsQueryHandler},
     },
     error::Error,
     infra::AuthUser,

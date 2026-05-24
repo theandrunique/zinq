@@ -569,23 +569,19 @@ async fn test_add_message_with_attachments() {
     assert_eq!(result.attachments[1].filename, "image.png");
 
     assert_eq!(
-        result.message.id,
-        result.attachments[0].message_id,
+        result.message.id, result.attachments[0].message_id,
         "Message ID should match attachment message_id"
     );
     assert_eq!(
-        result.message.id,
-        result.attachments[1].message_id,
+        result.message.id, result.attachments[1].message_id,
         "Message ID should match attachment message_id"
     );
     assert_eq!(
-        result.message.chat_id,
-        result.attachments[0].chat_id,
+        result.message.chat_id, result.attachments[0].chat_id,
         "Message chat_id should match attachment chat_id"
     );
     assert_eq!(
-        result.message.chat_id,
-        result.attachments[1].chat_id,
+        result.message.chat_id, result.attachments[1].chat_id,
         "Message chat_id should match attachment chat_id"
     );
 }
