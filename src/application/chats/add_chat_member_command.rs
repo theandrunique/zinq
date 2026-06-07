@@ -102,6 +102,7 @@ impl RequestHandler for AddChatMemberCommandHandler {
             self.event_bus.publish(DomainEvent::ChatMemberAdded {
                 chat: chat.clone(),
                 member: updated_member,
+                initiator_id: request.current_user_id,
             });
 
             return Ok(());
@@ -124,6 +125,7 @@ impl RequestHandler for AddChatMemberCommandHandler {
         self.event_bus.publish(DomainEvent::ChatMemberAdded {
             chat: chat.clone(),
             member: new_member,
+            initiator_id: request.current_user_id,
         });
 
         Ok(())

@@ -78,7 +78,7 @@ impl RequestHandler for DeleteChatMemberCommandHandler {
             });
         }
 
-        let member = chat.members.iter().find(|m| m.user_id == request.user_id);
+        let member = chat.get_member(request.user_id);
 
         if let Some(member) = member {
             if member.is_leave {
@@ -92,17 +92,18 @@ impl RequestHandler for DeleteChatMemberCommandHandler {
                 .update_is_leave_status(request.user_id, request.chat_id, true)
                 .await
                 .map_err(Error::InternalServerError)?;
+
+            self.event_bus.publish(DomainEvent::ChatMemberRemoved {
+                chat: chat,
+                member: member,
+                initiator_id: request.current_user_id
+            });
         } else {
             return Err(Error::UserNotMember {
                 user_id: request.user_id,
                 chat_id: request.chat_id,
             });
         }
-
-        self.event_bus.publish(DomainEvent::ChatMemberRemoved {
-            chat_id: request.chat_id,
-            user_id: request.user_id,
-        });
 
         Ok(())
     }

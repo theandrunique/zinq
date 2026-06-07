@@ -1,4 +1,4 @@
 pub mod data;
 mod message;
 
-pub use message::{CreateMessageRequest, Message, MessageType};
+pub use message::{CreateMessageRequest, CreateMetaMessageRequest, Message, MessageType};

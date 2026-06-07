@@ -5,7 +5,10 @@ use super::schemas::common::UserPrivateSchema;
 use crate::{
     application::{
         RequestHandler,
-        auth::{LoginCommand, LoginCommandHandler, RegisterComandHandler, RegisterCommand},
+        auth::{
+            LoginCommand, LoginCommandHandler, RefreshTokenCommand, RefreshTokenCommandHandler,
+            RegisterComandHandler, RegisterCommand,
+        },
     },
     error::Error,
     state::AppState,
@@ -73,9 +76,34 @@ async fn login(
     }));
 }
 
+#[derive(Deserialize, Serialize)]
+struct RefreshTokenRequestSchema {
+    pub refresh_token: String,
+}
+
+async fn refresh_token(
+    State(state): State<AppState>,
+    Json(payload): Json<RefreshTokenRequestSchema>,
+) -> Result<Json<LoginResponseSchema>, Error> {
+    let handler = RefreshTokenCommandHandler::new(&state);
+
+    let command = RefreshTokenCommand {
+        refresh_token: payload.refresh_token,
+    };
+
+    let result = handler.handle(command).await?;
+
+    return Ok(Json(LoginResponseSchema {
+        access_token: result.access_token,
+        refresh_token: result.refresh_token,
+        expires_in: result.expires_in,
+    }));
+}
+
 pub fn auth_router(state: AppState) -> Router {
     Router::new()
         .route("/sign-up", post(register))
         .route("/sign-in", post(login))
+        .route("/refresh", post(refresh_token))
         .with_state(state)
 }

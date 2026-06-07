@@ -68,11 +68,12 @@ impl Chat {
         }
     }
 
-    pub fn get_member(&self, user_id: i64) -> Option<&ChatMember> {
+    pub fn get_member(&self, user_id: i64) -> Option<ChatMember> {
         match self
             .members
             .iter()
             .find(|m| m.user_id == user_id && !m.is_leave)
+            .cloned()
         {
             Some(m) => Some(m),
             None => return None,

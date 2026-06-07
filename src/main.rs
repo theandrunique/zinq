@@ -5,6 +5,7 @@ use tracing::info;
 use tracing_subscriber::{EnvFilter, layer::SubscriberExt, util::SubscriberInitExt};
 
 use crate::{
+    application::meta_messages::start_meta_message_worker,
     gateway::gateway,
     routers::{auth_router, chat_router, emoji_router, user_router, well_known_router},
     state::init_state,
@@ -45,6 +46,8 @@ async fn main() {
         .nest("/emoji-packs", emoji_router(app_state.clone()))
         .nest("/chats", chat_router(app_state.clone()))
         .layer(gateway(app_state.clone()));
+
+    start_meta_message_worker(app_state);
 
     let address = format!("0.0.0.0:{}", app_config.port);
     let socket_addr: SocketAddr = address.parse().expect("Unable to parse socket address");

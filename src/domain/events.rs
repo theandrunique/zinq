@@ -17,10 +17,12 @@ pub enum DomainEvent {
     ChatMemberAdded {
         chat: Chat,
         member: ChatMember,
+        initiator_id: i64,
     },
     ChatMemberRemoved {
-        chat_id: i64,
-        user_id: i64,
+        chat: Chat,
+        member: ChatMember,
+        initiator_id: i64,
     },
     MessageCreated {
         chat: Chat,
@@ -40,6 +42,7 @@ pub struct EventBus {
 
 impl EventBus {
     pub fn new() -> Self {
+        // may be we need to use unbounded_channel instead of broadcast::channel
         let (sender, _) = broadcast::channel(2048);
         Self { sender }
     }

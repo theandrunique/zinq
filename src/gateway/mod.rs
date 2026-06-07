@@ -58,8 +58,9 @@ async fn socket_event_loop(io: SocketIo, mut events: broadcast::Receiver<DomainE
 }
 
 pub fn gateway(app_state: AppState) -> SocketIoLayer {
-    let state = app_state.clone();
-    let (layer, io) = SocketIo::builder().with_state(app_state).build_layer();
+    let (layer, io) = SocketIo::builder()
+        .with_state(app_state.clone())
+        .build_layer();
 
     io.ns("/", move |socket: SocketRef| async move {
         info!("Socket.IO connected: {:?} {:?}", socket.ns(), socket.id);
@@ -88,7 +89,7 @@ pub fn gateway(app_state: AppState) -> SocketIoLayer {
 
         info!("Token (first 50 chars): {}", &token[..50.min(token.len())]);
 
-        let claims = match state.jwt_handler.verify_access_token(&token) {
+        let claims = match app_state.jwt_handler.verify_access_token(&token) {
             Ok(c) => c,
             Err(e) => {
                 info!("Token verification error: {}", e);
@@ -115,7 +116,10 @@ pub fn gateway(app_state: AppState) -> SocketIoLayer {
         socket.emit("hello", &hello).ok();
     });
 
-    tokio::spawn(socket_event_loop(io.clone(), state.event_bus.subscribe()));
+    tokio::spawn(socket_event_loop(
+        io.clone(),
+        app_state.event_bus.subscribe(),
+    ));
 
     return layer;
 }

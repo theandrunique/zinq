@@ -36,6 +36,13 @@ pub struct CreateMessageRequest {
     pub message_type: MessageType,
 }
 
+pub struct CreateMetaMessageRequest {
+    pub id: i64,
+    pub chat_id: i64,
+    pub author_id: i64,
+    pub message_type: MessageType,
+}
+
 impl Message {
     pub fn new(request: CreateMessageRequest) -> Self {
         Self {
@@ -43,6 +50,18 @@ impl Message {
             chat_id: request.chat_id,
             author_id: request.author_id,
             content: request.content,
+            created_at: Utc::now(),
+            edited_at: None,
+            message_type: request.message_type,
+        }
+    }
+
+    pub fn new_meta(request: CreateMetaMessageRequest) -> Self {
+        Self {
+            id: request.id,
+            chat_id: request.chat_id,
+            author_id: request.author_id,
+            content: "".to_string(),
             created_at: Utc::now(),
             edited_at: None,
             message_type: request.message_type,

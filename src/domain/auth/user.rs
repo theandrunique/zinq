@@ -6,21 +6,21 @@ use serde::Serialize;
 #[derive(Serialize, Clone, Debug)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum SessionLifetime {
-    WEEK,
-    MONTH,
-    MONTH3,
-    MONTH6,
-    MONTH12,
+    Week,
+    Month,
+    Month3,
+    Month6,
+    Month12,
 }
 
 impl std::fmt::Display for SessionLifetime {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let str = match self {
-            SessionLifetime::WEEK => "WEEK",
-            SessionLifetime::MONTH => "MONTH",
-            SessionLifetime::MONTH3 => "MONTH3",
-            SessionLifetime::MONTH6 => "MONTH6",
-            SessionLifetime::MONTH12 => "MONTH12",
+            SessionLifetime::Week => "WEEK",
+            SessionLifetime::Month => "MONTH",
+            SessionLifetime::Month3 => "MONTH3",
+            SessionLifetime::Month6 => "MONTH6",
+            SessionLifetime::Month12 => "MONTH12",
         };
         write!(f, "{}", str)
     }
@@ -31,11 +31,11 @@ impl FromStr for SessionLifetime {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
-            "WEEK" => Ok(SessionLifetime::WEEK),
-            "MONTH" => Ok(SessionLifetime::MONTH),
-            "MONTH3" => Ok(SessionLifetime::MONTH3),
-            "MONTH6" => Ok(SessionLifetime::MONTH6),
-            "MONTH12" => Ok(SessionLifetime::MONTH12),
+            "WEEK" => Ok(SessionLifetime::Week),
+            "MONTH" => Ok(SessionLifetime::Month),
+            "MONTH3" => Ok(SessionLifetime::Month3),
+            "MONTH6" => Ok(SessionLifetime::Month6),
+            "MONTH12" => Ok(SessionLifetime::Month12),
             _ => Err(format!("Unknown SessionLifetime: {}", s)),
         }
     }
@@ -80,7 +80,7 @@ impl User {
             password_hash: request.password_hash,
             password_updated_at: current_time,
             avatar: None,
-            sessions_lifetime: SessionLifetime::MONTH3,
+            sessions_lifetime: SessionLifetime::Month3,
             bio: None,
             display_name: request.display_name,
             is_active: true,
