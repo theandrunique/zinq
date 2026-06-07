@@ -96,7 +96,7 @@ impl RequestHandler for DeleteChatMemberCommandHandler {
             self.event_bus.publish(DomainEvent::ChatMemberRemoved {
                 chat: chat,
                 member: member,
-                initiator_id: request.current_user_id
+                initiator_id: request.current_user_id,
             });
         } else {
             return Err(Error::UserNotMember {
