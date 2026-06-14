@@ -1,6 +1,8 @@
+use serde::{Deserialize, Serialize};
+
 use crate::domain::{auth::User, chats::ChatPermissions};
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct ChatMember {
     pub user_id: i64,
     pub last_read_message_id: Option<i64>,

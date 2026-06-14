@@ -1,7 +1,8 @@
 use bitflags::bitflags;
+use serde::{Deserialize, Serialize};
 
 bitflags! {
-    #[derive(Clone, Debug)]
+    #[derive(Clone, Debug, Serialize, Deserialize)]
     pub struct ChatPermissions: i64 {
         const SEND_MESSAGES = 1 << 0;
         const ADD_MEMBERS = 1 << 1;

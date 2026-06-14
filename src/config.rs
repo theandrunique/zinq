@@ -34,6 +34,7 @@ pub struct Config {
     pub smtp: SmtpConfig,
     pub auth: AuthConfig,
     pub s3: S3Config,
+    pub nats_url: String,
 }
 
 pub static CONFIG: OnceCell<Config> = OnceCell::const_new();
@@ -64,6 +65,7 @@ async fn init_config() -> Config {
                 .expect("Failed to parse access token expiration"),
             keys_directory: env::var("KEYS_DIRECTORY").unwrap_or("keys".to_string()),
         },
+        nats_url: env::var("NATS_URL").unwrap_or("nats://127.0.0.1:4222".to_string()),
         s3: S3Config {
             access_key: env::var("AWS_ACCESS_KEY_ID").expect("AWS_ACCESS_KEY_ID required"),
             secret_key: env::var("AWS_SECRET_ACCESS_KEY").expect("AWS_SECRET_ACCESS_KEY required"),

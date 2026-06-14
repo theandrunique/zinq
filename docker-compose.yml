@@ -42,6 +42,16 @@ services:
       exit 0;
       "
 
+  nats:
+    image: nats:latest
+    ports:
+      - "8222:8222"
+      - "4222:4222"
+    command: "-js -sd /data"
+    volumes:
+      - nats_data:/data
+
 volumes:
   scylla_data:
   data-minio:
+  nats_data:

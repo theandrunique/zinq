@@ -1,12 +1,50 @@
 # Event Log
 
-## Event Types
+## Code
 
-- `MESSAGE_CREATE`
-- `MESSAGE_UPDATE`
-- `MESSAGE_DELETE`
-- `MESSAGE_REACTION` (only for DM/GROUP)
-- `CHANNEL_INFO_UPDATE`
+### Entities
+
+```rust
+#[derive(Clone, Serialize, Deserialize)]
+pub enum EventLogType {
+    MessageCreate { message: Message },
+    MessageUpdate { message: Message },
+    MessageDelete { message_id: i64 },
+    ChatCreate { chat: Chat },
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct EventLog {
+    pub user_id: i64,
+    pub event_id: i64,
+    pub event_type: EventLogType,
+    pub created_at: DateTime<Utc>,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct Event {
+    pub event_id: i64,
+    pub event_type: EventLogType,
+    pub created_at: DateTime<Utc>,
+    pub recipients: Vec<i64>,
+}
+```
+
+### Data
+
+```rust
+#[async_trait]
+pub trait EventLogRepository: Send + Sync {
+    async fn save(&self, event: EventLog) -> Result<(), anyhow::Error>;
+
+    async fn get_event_logs(
+        &self,
+        user_id: i64,
+        after_event_id: i64,
+        limit: i32,
+    ) -> Result<Vec<EventLog>, anyhow::Error>;
+}
+```
 
 ## Tables
 
@@ -14,29 +52,10 @@
 CREATE TABLE user_event_log (
     user_id bigint,
     event_id bigint,
-    event_type int,
-    event_data blob,
-    server_timestamp timestamp,
-    chat_id bigint,
-    message_id bigint,
-    PRIMARY KEY ((user_id), event_id)
-) WITH CLUSTERING ORDER BY (event_id ASC)
-    AND compaction = {
-        'class': 'TimeWindowCompactionStrategy',
-        'compaction_window_unit': 'DAYS',
-        'compaction_window_size': 1
-    }
-    AND default_time_to_live = 2592000; -- 30 days
+    event_type text,
+    timestamp timestamp,
 
-CREATE TABLE chat_event_log (
-    chat_id bigint,
-    event_id bigint,
-    event_type int,
-    event_data blob,
-    server_timestamp timestamp,
-    message_id bigint,
-    user_id bigint,
-    PRIMARY KEY ((chat_id), event_id)
+    PRIMARY KEY ((user_id), event_id)
 ) WITH CLUSTERING ORDER BY (event_id ASC)
     AND compaction = {
         'class': 'TimeWindowCompactionStrategy',
@@ -50,27 +69,28 @@ CREATE TABLE chat_event_log (
 
 - Request all the new logs from the last `event_id` client got
 - Update the current state with new logs
-- Request updates for `SUPER_GROUPS`
 
 ## Client full sync
 
 - Request current `event_id` from `user_event_log`
-- Request all user chats
-- Request `event_id` for all the chats type of `SUPER_GROUP`
+- Request all user chats and their last messages
 
 ## Chat Types
 
 - DM
 - GROUP
-- SUPER_GROUP
 
 ## Example use cases
 
 ### Write a message to `DM` / `GROUP` chat
 
+- Command pipeline:
+
 1. Send a request
 
-2. Insert message into the `messages_by_chat_id`
+2. Ensure idempotency
+
+3. Insert message into the `messages_by_chat_id`
 
 ```cql
 INSERT INTO messages_by_chat_id (
@@ -82,49 +102,23 @@ INSERT INTO messages_by_chat_id (
 ) VALUES (?, ?, ?, ?, ?)
 ```
 
-3. Create record into each chat user event log `user_event_log`
+4. Publish `Event` in `nats`
+
+5. Return the result
+
+- Worker pipeline:
+
+1. Get `Event` from `nats`
+
+2. For each recipient create a `user_event_log` record
 
 ```cql
 INSERT INTO user_event_log (
     user_id,
     event_id,
     event_type,
-    event_data,
-    server_timestamp,
-    chat_id,
-    message_id,
-) VALUES (?, ?, ?, ?, ?, ?, ?)
-```
-
-4. send MESSAGE_CREATE to socket.io for every online member
-
-### Write a message to `SUPER_GROUP` chat
-
-1. Send a request
-
-2. Insert message into the `messages_by_chat_id`
-
-```cql
-INSERT INTO messages_by_chat_id (
-    chat_id,
-    message_id,
-    author_id,
-    content,
     timestamp,
-) VALUES (?, ?, ?, ?, ?)
+) VALUES (?, ?, ?, ?)
 ```
 
-3. Create one record into the event log `chat_event_log`
-
-```cql
-INSERT INTO chat_event_log (
-    chat_id,
-    event_id,
-    event_type,
-    event_data,
-    server_timestamp,
-    message_id,
-) VALUES (?, ?, ?, ?, ?, ?, ?)
-```
-
-4. send MESSAGE_CREATE to socket.io for every online member
+3. send `Event` to socket.io for every online member

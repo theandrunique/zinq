@@ -17,7 +17,7 @@ pub enum MessageType {
     Forward,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Message {
     pub id: i64,
     pub chat_id: i64,

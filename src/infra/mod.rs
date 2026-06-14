@@ -4,6 +4,7 @@ pub mod id_generator;
 pub mod image;
 pub mod s3;
 pub mod smtp_client;
+pub mod event_bus;
 
 pub use auth::auth_extractor::AuthUser;
 #[allow(deprecated)]

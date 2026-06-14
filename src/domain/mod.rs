@@ -4,6 +4,7 @@ pub mod chats;
 pub mod emojis;
 pub mod event_log;
 pub mod events;
+pub mod event_handlers;
 pub mod message_acks;
 pub mod messages;
 pub mod reactions;

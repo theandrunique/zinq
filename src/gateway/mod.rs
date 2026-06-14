@@ -57,7 +57,7 @@ async fn socket_event_loop(io: SocketIo, mut events: broadcast::Receiver<DomainE
     }
 }
 
-pub fn gateway(app_state: AppState) -> SocketIoLayer {
+pub fn gateway(app_state: AppState) -> (SocketIoLayer, SocketIo) {
     let (layer, io) = SocketIo::builder()
         .with_state(app_state.clone())
         .build_layer();
@@ -104,8 +104,12 @@ pub fn gateway(app_state: AppState) -> SocketIoLayer {
             claims.sub, claims.session_id
         );
 
+        let user_id = claims.sub.to_string();
+
+        socket.join(format!("user:{}", user_id));
+
         let hello = HelloEvent {
-            user_id: claims.sub.to_string(),
+            user_id: user_id.clone(),
             session_id: claims.session_id.to_string(),
         };
 
@@ -121,5 +125,5 @@ pub fn gateway(app_state: AppState) -> SocketIoLayer {
         app_state.event_bus.subscribe(),
     ));
 
-    return layer;
+    return (layer, io);
 }

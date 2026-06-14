@@ -21,7 +21,7 @@ socketioxide = { version = "0.18.0", features = ["extensions", "msgpack", "state
 uuid = { version = "1.19.0", features = ["v4"] }
 rs-snowflake = "0.6.0"
 async-trait = "0.1.89"
-bitflags = "2.10.0"
+bitflags = { version = "2.10.0", features = ["serde"] }
 scylla = { version = "1.4.1", features = ["chrono-04"] }
 futures-util = "0.3.31"
 testcontainers = "0.26.3"
@@ -45,6 +45,7 @@ serde_with = "3.19.0"
 aws-config = "1.8.0"
 aws-sdk-s3 = "1.21.0"
 image = "0.25"
+async-nats = "0.49.1"
 
 [[bin]]
 name = "db"

@@ -18,6 +18,7 @@ use crate::{
     domain::{
         auth::User,
         chats::{Chat, ChatPermissions, data::ChatLoader},
+        event_log::data::EventLogRepository,
         events::EventBus,
         messages::{CreateMessageRequest, Message},
     },
@@ -29,7 +30,9 @@ use crate::{
         data::{
             attachment_repository::ScyllaAttachmentRepository, chat_loader::ScyllaChatLoader,
             chat_member_repository::ScyllaChatMemberRepository,
-            chat_repotisory::ScyllaChatRepository, message_repository::ScyllaMessageRepository,
+            chat_repotisory::ScyllaChatRepository,
+            event_log_repository::ScyllaEventLogRepository,
+            message_repository::ScyllaMessageRepository,
             user_repository::ScyllaUserRepository,
             user_session_repository::ScyllaUserSessionRepository,
         },
@@ -108,6 +111,7 @@ impl TestContext {
 
         let state = AppState {
             event_bus: Arc::new(EventBus::new()),
+            event_log_repository: Arc::new(ScyllaEventLogRepository::new(session.clone())),
             id_gen,
             user_repository: Arc::new(ScyllaUserRepository::new(session.clone())),
             user_session_repository: Arc::new(ScyllaUserSessionRepository::new(session.clone())),

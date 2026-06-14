@@ -112,28 +112,9 @@ CREATE TABLE IF NOT EXISTS private_chats (
 CREATE TABLE IF NOT EXISTS user_event_log (
     user_id bigint,
     event_id bigint,
-    event_type int,
-    event_data blob,
-    server_timestamp timestamp,
-    chat_id bigint,
-    message_id bigint,
+    event_type text,
+    timestamp timestamp,
     PRIMARY KEY ((user_id), event_id)
-) WITH CLUSTERING ORDER BY (event_id ASC)
-    AND compaction = {
-        'class': 'TimeWindowCompactionStrategy',
-        'compaction_window_unit': 'DAYS',
-        'compaction_window_size': 1
-    }
-    AND default_time_to_live = 2592000; -- 30 days
-
-CREATE TABLE IF NOT EXISTS chat_event_log (
-    chat_id bigint,
-    event_id bigint,
-    event_type int,
-    event_data blob,
-    server_timestamp timestamp,
-    message_id bigint,
-    PRIMARY KEY ((chat_id), event_id)
 ) WITH CLUSTERING ORDER BY (event_id ASC)
     AND compaction = {
         'class': 'TimeWindowCompactionStrategy',
