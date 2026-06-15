@@ -12,6 +12,9 @@ use crate::{
         messages::{
             AddOrEditMessageCommand, AddOrEditMessageCommandHandler, AddOrEditMessageCommandResult,
         },
+        meta_messages::{
+            ChatCreateMetaMessage, ChatMemberAddedMetaMessage, ChatMemberRemovedMetaMessage,
+        },
         services::{AttachmentService, AvatarService, ChannelImageService},
     },
     config::S3Config,
@@ -19,7 +22,7 @@ use crate::{
         auth::User,
         chats::{Chat, ChatPermissions, data::ChatLoader},
         event_log::data::EventLogRepository,
-        events::EventBus,
+        events::{EventBus, Mediator},
         messages::{CreateMessageRequest, Message},
     },
     infra::{
@@ -107,7 +110,7 @@ impl TestContext {
         let channel_image_service =
             Arc::new(ChannelImageService::new(s3_service.clone(), &s3_config));
 
-        let state = AppState {
+        let mut state = AppState {
             event_bus: Arc::new(EventBus::new()),
             event_log_repository: Arc::new(ScyllaEventLogRepository::new(session.clone())),
             id_gen,
@@ -133,7 +136,10 @@ impl TestContext {
             attachment_service,
             avatar_service,
             channel_image_service,
+            mediator: Arc::new(Mediator::new()),
         };
+
+        state.register_handlers();
 
         Self { app_state: state }
     }

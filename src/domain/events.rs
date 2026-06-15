@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use async_trait::async_trait;
-use tokio::sync::broadcast;
+use tokio::sync::RwLock;
 
 use crate::domain::{
     auth::User,
@@ -45,24 +45,27 @@ pub trait DomainEventHandler: Send + Sync {
 }
 
 pub struct Mediator {
-    handlers: Vec<Arc<dyn DomainEventHandler>>,
+    handlers: RwLock<Vec<Arc<dyn DomainEventHandler>>>,
 }
 
 impl Mediator {
     pub fn new() -> Self {
         Self {
-            handlers: Vec::new(),
+            handlers: RwLock::new(Vec::new()),
         }
     }
 
-    pub fn register<H: DomainEventHandler + 'static>(&mut self, handler: H) {
-        self.handlers.push(Arc::new(handler));
+    pub async fn register<H: DomainEventHandler + 'static>(&self, handler: H) {
+        self.handlers.write().await.push(Arc::new(handler));
     }
 
     pub async fn publish(&self, event: &DomainEvent) -> Result<(), anyhow::Error> {
-        for handler in self.handlers.iter() {
+        let handlers = self.handlers.read().await;
+
+        for handler in handlers.iter() {
             handler.handle(event).await?;
         }
+
         Ok(())
     }
 }

@@ -4,7 +4,10 @@ use scylla::client::session_builder::SessionBuilder;
 
 use crate::{
     application::{
-        meta_messages::ChatCreateMetaMessage,
+        events::EventPublisher,
+        meta_messages::{
+            ChatCreateMetaMessage, ChatMemberAddedMetaMessage, ChatMemberRemovedMetaMessage,
+        },
         services::{AttachmentService, AvatarService, ChannelImageService},
     },
     config,
@@ -63,6 +66,21 @@ pub struct AppState {
     pub mediator: Arc<Mediator>,
 }
 
+impl AppState {
+    pub async fn register_handlers(&mut self) {
+        self.mediator
+            .register(ChatCreateMetaMessage::new(self))
+            .await;
+        self.mediator
+            .register(ChatMemberAddedMetaMessage::new(self))
+            .await;
+        self.mediator
+            .register(ChatMemberRemovedMetaMessage::new(self))
+            .await;
+        self.mediator.register(EventPublisher::new(self)).await;
+    }
+}
+
 pub async fn init_state() -> AppState {
     let app_config = config::config().await;
 
@@ -100,7 +118,7 @@ pub async fn init_state() -> AppState {
     let client = async_nats::connect(&app_config.nats_url).await.unwrap();
     let jetstream = async_nats::jetstream::new(client);
 
-    AppState {
+    let mut app_state = AppState {
         event_bus: Arc::new(NatsEventBus::new(jetstream)),
         event_log_repository: Arc::new(ScyllaEventLogRepository::new(session.clone())),
         id_gen: id_gen.clone(),
@@ -130,5 +148,9 @@ pub async fn init_state() -> AppState {
         avatar_service,
         channel_image_service,
         mediator: Arc::new(Mediator::new()),
-    }
+    };
+
+    app_state.register_handlers().await;
+
+    app_state
 }

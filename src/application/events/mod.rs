@@ -1,3 +1,5 @@
+mod event_publisher;
+
 use std::sync::Arc;
 use std::time::Duration;
 
@@ -6,6 +8,8 @@ use futures_util::StreamExt;
 use socketioxide::SocketIo;
 
 use crate::domain::event_log::{Event, EventLog, data::EventLogRepository};
+
+pub use event_publisher::EventPublisher;
 
 pub async fn start_event_listener(
     jetstream: Context,
