@@ -30,10 +30,8 @@ use crate::{
         data::{
             attachment_repository::ScyllaAttachmentRepository, chat_loader::ScyllaChatLoader,
             chat_member_repository::ScyllaChatMemberRepository,
-            chat_repotisory::ScyllaChatRepository,
-            event_log_repository::ScyllaEventLogRepository,
-            message_repository::ScyllaMessageRepository,
-            user_repository::ScyllaUserRepository,
+            chat_repotisory::ScyllaChatRepository, event_log_repository::ScyllaEventLogRepository,
+            message_repository::ScyllaMessageRepository, user_repository::ScyllaUserRepository,
             user_session_repository::ScyllaUserSessionRepository,
         },
         id_generator::SnowflakeIdGenerator,

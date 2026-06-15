@@ -6,10 +6,9 @@ use crate::{
     domain::{
         chats::{
             ChatPermissions, ChatType,
-            data::ChatRepository,
-            data::{ChatLoadOptions, ChatLoader},
+            data::{ChatLoadOptions, ChatLoader, ChatRepository},
         },
-        events::{DomainEvent, EventBus},
+        events::{DomainEvent, Mediator},
     },
     error::Error,
     state::AppState,
@@ -23,7 +22,7 @@ pub struct DeleteChatMemberCommand {
 }
 
 pub struct DeleteChatMemberCommandHandler {
-    event_bus: Arc<EventBus>,
+    mediator: Arc<Mediator>,
     chat_repository: Arc<dyn ChatRepository>,
     chat_loader: Arc<dyn ChatLoader>,
 }
@@ -31,7 +30,7 @@ pub struct DeleteChatMemberCommandHandler {
 impl DeleteChatMemberCommandHandler {
     pub fn new(state: &AppState) -> Self {
         Self {
-            event_bus: Arc::clone(&state.event_bus),
+            mediator: Arc::clone(&state.mediator),
             chat_repository: Arc::clone(&state.chat_repository),
             chat_loader: Arc::clone(&state.chat_loader),
         }
@@ -93,11 +92,13 @@ impl RequestHandler for DeleteChatMemberCommandHandler {
                 .await
                 .map_err(Error::InternalServerError)?;
 
-            self.event_bus.publish(DomainEvent::ChatMemberRemoved {
-                chat: chat,
-                member: member,
-                initiator_id: request.current_user_id,
-            });
+            self.mediator
+                .publish(&DomainEvent::ChatMemberRemoved {
+                    chat: chat,
+                    member: member,
+                    initiator_id: request.current_user_id,
+                })
+                .await?;
         } else {
             return Err(Error::UserNotMember {
                 user_id: request.user_id,

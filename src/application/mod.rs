@@ -1,8 +1,8 @@
 pub mod auth;
 pub mod chats;
+pub mod events;
 pub mod messages;
 pub mod meta_messages;
-pub mod events;
 pub mod services;
 pub mod users;
 

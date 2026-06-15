@@ -6,7 +6,7 @@ use crate::{
     domain::{
         auth::data::user_repository::UserRepository,
         chats::{Chat, ChatMember, ChatPermissions, CreateGroupChatRequest, data::ChatRepository},
-        events::{DomainEvent, EventBus},
+        events::{DomainEvent, Mediator},
     },
     error::Error,
     infra::IdGenerator,
@@ -34,7 +34,7 @@ pub struct CreateChatCommand {
 
 pub struct CreateChatCommandHandler {
     id_gen: Arc<dyn IdGenerator>,
-    event_bus: Arc<EventBus>,
+    mediator: Arc<Mediator>,
     user_repository: Arc<dyn UserRepository>,
     chat_repository: Arc<dyn ChatRepository>,
 }
@@ -43,7 +43,7 @@ impl CreateChatCommandHandler {
     pub fn new(state: &AppState) -> Self {
         Self {
             id_gen: Arc::clone(&state.id_gen),
-            event_bus: Arc::clone(&state.event_bus),
+            mediator: Arc::clone(&state.mediator),
             user_repository: Arc::clone(&state.user_repository),
             chat_repository: Arc::clone(&state.chat_repository),
         }
@@ -88,9 +88,11 @@ impl RequestHandler for CreateChatCommandHandler {
 
         self.chat_repository.save(new_chat.clone()).await?;
 
-        self.event_bus.publish(DomainEvent::ChatCreate {
-            chat: new_chat.clone(),
-        });
+        self.mediator
+            .publish(&DomainEvent::ChatCreate {
+                chat: new_chat.clone(),
+            })
+            .await?;
 
         Ok(new_chat)
     }

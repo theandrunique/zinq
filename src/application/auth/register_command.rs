@@ -11,7 +11,7 @@ use crate::{
                 validate_email, validate_global_name, validate_password, validate_username,
             },
         },
-        events::{DomainEvent, EventBus},
+        events::{DomainEvent, Mediator},
     },
     error::Error,
     infra::{auth::hash_handler::HashHandler, id_generator::IdGenerator},
@@ -34,7 +34,7 @@ pub struct RegisterCommand {
 }
 
 pub struct RegisterComandHandler {
-    event_bus: Arc<EventBus>,
+    mediator: Arc<Mediator>,
     id_gen: Arc<dyn IdGenerator>,
     user_repository: Arc<dyn UserRepository>,
     hash_handler: Arc<dyn HashHandler>,
@@ -43,7 +43,7 @@ pub struct RegisterComandHandler {
 impl RegisterComandHandler {
     pub fn new(state: &AppState) -> Self {
         Self {
-            event_bus: Arc::clone(&state.event_bus),
+            mediator: Arc::clone(&state.mediator),
             id_gen: Arc::clone(&state.id_gen),
             user_repository: Arc::clone(&state.user_repository),
             hash_handler: Arc::clone(&state.hash_handler),
@@ -76,9 +76,11 @@ impl RequestHandler for RegisterComandHandler {
                 AddUserError::InternalError(e) => Error::InternalServerError(e),
             })?;
 
-        self.event_bus.publish(DomainEvent::UserCreate {
-            user: new_user.clone(),
-        });
+        self.mediator
+            .publish(&DomainEvent::UserCreate {
+                user: new_user.clone(),
+            })
+            .await?;
 
         return Ok(new_user);
     }

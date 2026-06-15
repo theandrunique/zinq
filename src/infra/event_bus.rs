@@ -1,5 +1,11 @@
+use async_nats::{
+    HeaderMap,
+    jetstream::{
+        Context,
+        stream::{Config, DiscardPolicy},
+    },
+};
 use async_trait::async_trait;
-use async_nats::{HeaderMap, jetstream::{Context, stream::{Config, DiscardPolicy}}};
 
 use crate::domain::event_log::Event;
 
@@ -14,9 +20,7 @@ pub struct NatsEventBus {
 
 impl NatsEventBus {
     pub fn new(jetstream: Context) -> Self {
-        Self {
-            jetstream,
-        }
+        Self { jetstream }
     }
 
     pub async fn initialize_stream(&self) -> Result<(), anyhow::Error> {

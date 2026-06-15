@@ -5,10 +5,7 @@ use tracing::info;
 use tracing_subscriber::{EnvFilter, layer::SubscriberExt, util::SubscriberInitExt};
 
 use crate::{
-    application::{
-        events::start_event_listener,
-        meta_messages::start_meta_message_worker,
-    },
+    application::events::start_event_listener,
     gateway::gateway,
     infra::event_bus::NatsEventBus,
     routers::{auth_router, chat_router, emoji_router, user_router, well_known_router},
@@ -57,13 +54,9 @@ async fn main() {
 
     let (socket_layer, io) = gateway(app_state.clone());
 
-    start_event_listener(
-        jetstream,
-        app_state.event_log_repository.clone(),
-        io,
-    )
-    .await
-    .expect("Failed to start event listener");
+    start_event_listener(jetstream, app_state.event_log_repository.clone(), io)
+        .await
+        .expect("Failed to start event listener");
 
     let app = Router::new()
         .nest("/.well-known", well_known_router(app_state.clone()))
@@ -72,8 +65,6 @@ async fn main() {
         .nest("/emoji-packs", emoji_router(app_state.clone()))
         .nest("/chats", chat_router(app_state.clone()))
         .layer(socket_layer);
-
-    start_meta_message_worker(app_state);
 
     let address = format!("0.0.0.0:{}", app_config.port);
     let socket_addr: SocketAddr = address.parse().expect("Unable to parse socket address");

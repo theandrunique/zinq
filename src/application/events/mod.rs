@@ -76,11 +76,7 @@ async fn event_listener(
                 };
 
                 if let Err(e) = event_log_repository.save(event_log).await {
-                    tracing::error!(
-                        "Failed to save event log for user {}: {:#}",
-                        user_id,
-                        e
-                    );
+                    tracing::error!("Failed to save event log for user {}: {:#}", user_id, e);
                     continue;
                 }
             }

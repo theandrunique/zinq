@@ -11,7 +11,7 @@ use crate::{
             ChatPermissions, ChatType,
             data::{ChatLoadOptions, ChatLoader},
         },
-        events::DomainEvent,
+        events::{DomainEvent, Mediator},
         messages::{CreateMessageRequest, Message, MessageType, data::MessageRepository},
     },
     error::Error,
@@ -46,7 +46,7 @@ pub struct AddOrEditMessageCommandHandler {
     attachment_repository: Arc<dyn AttachmentRepository>,
     attachment_service: Arc<AttachmentService>,
     id_gen: Arc<dyn crate::infra::IdGenerator>,
-    event_bus: Arc<crate::domain::events::EventBus>,
+    mediator: Arc<Mediator>,
 }
 
 impl AddOrEditMessageCommandHandler {
@@ -57,7 +57,7 @@ impl AddOrEditMessageCommandHandler {
             attachment_repository: Arc::clone(&state.attachment_repository),
             attachment_service: Arc::clone(&state.attachment_service),
             id_gen: Arc::clone(&state.id_gen),
-            event_bus: Arc::clone(&state.event_bus),
+            mediator: Arc::clone(&state.mediator),
         }
     }
 }
@@ -155,11 +155,13 @@ impl RequestHandler for AddOrEditMessageCommandHandler {
                 .await
                 .map_err(Error::InternalServerError)?;
 
-            self.event_bus.publish(DomainEvent::MessageUpdated {
-                chat: chat.clone(),
-                message: message.clone(),
-                member: initiator.clone(),
-            });
+            self.mediator
+                .publish(&DomainEvent::MessageUpdated {
+                    chat: chat.clone(),
+                    message: message.clone(),
+                    member: initiator.clone(),
+                })
+                .await?;
 
             Ok(AddOrEditMessageCommandResult {
                 message,
@@ -193,15 +195,18 @@ impl RequestHandler for AddOrEditMessageCommandHandler {
                 .map_err(Error::InternalServerError)?;
 
             if chat.last_message_id.is_none() && chat.chat_type == ChatType::Dm {
-                self.event_bus
-                    .publish(DomainEvent::ChatCreate { chat: chat.clone() });
+                self.mediator
+                    .publish(&DomainEvent::ChatCreate { chat: chat.clone() })
+                    .await?;
             }
 
-            self.event_bus.publish(DomainEvent::MessageCreated {
-                chat: chat.clone(),
-                message: message.clone(),
-                member: initiator.clone(),
-            });
+            self.mediator
+                .publish(&DomainEvent::MessageCreated {
+                    chat: chat.clone(),
+                    message: message.clone(),
+                    member: initiator.clone(),
+                })
+                .await?;
 
             Ok(AddOrEditMessageCommandResult {
                 message,

@@ -1,6 +1,6 @@
-mod event_log;
-mod event;
 pub mod data;
+mod event;
+mod event_log;
 
+pub use event::Event;
 pub use event_log::{EventLog, EventLogType};
-pub use event::{Event};

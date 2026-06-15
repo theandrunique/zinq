@@ -7,10 +7,9 @@ use crate::{
         auth::data::user_repository::UserRepository,
         chats::{
             Chat, ChatMember, ChatPermissions, ChatType,
-            data::ChatRepository,
-            data::{ChatLoadOptions, ChatLoader},
+            data::{ChatLoadOptions, ChatLoader, ChatRepository},
         },
-        events::{DomainEvent, EventBus},
+        events::{DomainEvent, Mediator},
     },
     error::Error,
     state::AppState,
@@ -24,7 +23,7 @@ pub struct AddChatMemberCommand {
 }
 
 pub struct AddChatMemberCommandHandler {
-    event_bus: Arc<EventBus>,
+    mediator: Arc<Mediator>,
     user_repository: Arc<dyn UserRepository>,
     chat_repository: Arc<dyn ChatRepository>,
     chat_loader: Arc<dyn ChatLoader>,
@@ -33,7 +32,7 @@ pub struct AddChatMemberCommandHandler {
 impl AddChatMemberCommandHandler {
     pub fn new(state: &AppState) -> Self {
         Self {
-            event_bus: Arc::clone(&state.event_bus),
+            mediator: Arc::clone(&state.mediator),
             user_repository: Arc::clone(&state.user_repository),
             chat_repository: Arc::clone(&state.chat_repository),
             chat_loader: Arc::clone(&state.chat_loader),
@@ -99,11 +98,13 @@ impl RequestHandler for AddChatMemberCommandHandler {
                 .await
                 .map_err(Error::InternalServerError)?;
 
-            self.event_bus.publish(DomainEvent::ChatMemberAdded {
-                chat: chat.clone(),
-                member: updated_member,
-                initiator_id: request.current_user_id,
-            });
+            self.mediator
+                .publish(&DomainEvent::ChatMemberAdded {
+                    chat: chat.clone(),
+                    member: updated_member,
+                    initiator_id: request.current_user_id,
+                })
+                .await?;
 
             return Ok(());
         }
@@ -122,11 +123,13 @@ impl RequestHandler for AddChatMemberCommandHandler {
             .await
             .map_err(Error::InternalServerError)?;
 
-        self.event_bus.publish(DomainEvent::ChatMemberAdded {
-            chat: chat.clone(),
-            member: new_member,
-            initiator_id: request.current_user_id,
-        });
+        self.mediator
+            .publish(&DomainEvent::ChatMemberAdded {
+                chat: chat.clone(),
+                member: new_member,
+                initiator_id: request.current_user_id,
+            })
+            .await?;
 
         Ok(())
     }

@@ -1,3 +1,6 @@
+use std::sync::Arc;
+
+use async_trait::async_trait;
 use tokio::sync::broadcast;
 
 use crate::domain::{
@@ -36,22 +39,30 @@ pub enum DomainEvent {
     },
 }
 
-pub struct EventBus {
-    sender: broadcast::Sender<DomainEvent>,
+#[async_trait]
+pub trait DomainEventHandler: Send + Sync {
+    async fn handle(&self, event: &DomainEvent) -> Result<(), anyhow::Error>;
 }
 
-impl EventBus {
+pub struct Mediator {
+    handlers: Vec<Arc<dyn DomainEventHandler>>,
+}
+
+impl Mediator {
     pub fn new() -> Self {
-        // may be we need to use unbounded_channel instead of broadcast::channel
-        let (sender, _) = broadcast::channel(2048);
-        Self { sender }
+        Self {
+            handlers: Vec::new(),
+        }
     }
 
-    pub fn publish(&self, event: DomainEvent) {
-        let _ = self.sender.send(event);
+    pub fn register<H: DomainEventHandler + 'static>(&mut self, handler: H) {
+        self.handlers.push(Arc::new(handler));
     }
 
-    pub fn subscribe(&self) -> broadcast::Receiver<DomainEvent> {
-        self.sender.subscribe()
+    pub async fn publish(&self, event: &DomainEvent) -> Result<(), anyhow::Error> {
+        for handler in self.handlers.iter() {
+            handler.handle(event).await?;
+        }
+        Ok(())
     }
 }

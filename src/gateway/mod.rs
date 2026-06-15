@@ -11,50 +11,9 @@ use crate::{
 };
 
 #[derive(Serialize, Debug)]
-pub struct UserPublicSchema {
-    pub id: String,
-    pub username: String,
-    pub global_name: String,
-    pub bio: Option<String>,
-    pub avatar: Option<String>,
-    pub timestamp: DateTime<Utc>,
-}
-
-impl UserPublicSchema {
-    pub fn from(user: User) -> Self {
-        Self {
-            id: user.id.to_string(),
-            username: user.username,
-            global_name: user.display_name,
-            bio: user.bio,
-            avatar: user.avatar,
-            timestamp: user.created_at,
-        }
-    }
-}
-
-#[derive(Serialize, Debug)]
 pub struct HelloEvent {
     pub user_id: String,
     pub session_id: String,
-}
-
-async fn socket_event_loop(io: SocketIo, mut events: broadcast::Receiver<DomainEvent>) {
-    while let Ok(event) = events.recv().await {
-        match event {
-            DomainEvent::UserCreate { user } => {
-                io.broadcast()
-                    .emit("user:create", &UserPublicSchema::from(user))
-                    .await
-                    .ok();
-            }
-            DomainEvent::ChatCreate { chat: _chat } => {}
-            DomainEvent::ChatMemberAdded { .. } => {}
-            DomainEvent::ChatMemberRemoved { .. } => {}
-            DomainEvent::MessageCreated { .. } => {}
-            DomainEvent::MessageUpdated { .. } => {}
-        }
-    }
 }
 
 pub fn gateway(app_state: AppState) -> (SocketIoLayer, SocketIo) {
@@ -119,11 +78,6 @@ pub fn gateway(app_state: AppState) -> (SocketIoLayer, SocketIo) {
         );
         socket.emit("hello", &hello).ok();
     });
-
-    tokio::spawn(socket_event_loop(
-        io.clone(),
-        app_state.event_bus.subscribe(),
-    ));
 
     return (layer, io);
 }
