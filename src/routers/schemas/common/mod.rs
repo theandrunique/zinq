@@ -6,7 +6,7 @@ use crate::{
     domain::{
         attachments::Attachment,
         auth::{SessionLifetime, User},
-        chats::{Chat, ChatPermissions, ChatType},
+        chats::{Chat, ChatMember, ChatPermissions, ChatType},
         messages::{Message, MessageType},
     },
 };
@@ -76,6 +76,19 @@ pub struct ChatMemberSchema {
     pub permissions: Option<String>,
 }
 
+impl From<ChatMember> for ChatMemberSchema {
+    fn from(value: ChatMember) -> Self {
+        Self {
+            user_id: value.user_id.to_string(),
+            username: value.username,
+            global_name: value.global_name,
+            avatar: value.avatar,
+            is_leave: value.is_leave,
+            permissions: value.permissions.map(|p| p.to_string()),
+        }
+    }
+}
+
 #[derive(Serialize)]
 pub struct ChatSchema {
     pub id: String,
@@ -106,14 +119,7 @@ impl From<Chat> for ChatSchema {
             members: value
                 .members
                 .into_iter()
-                .map(|m| ChatMemberSchema {
-                    user_id: m.user_id.to_string(),
-                    username: m.username,
-                    global_name: m.global_name,
-                    avatar: m.avatar,
-                    is_leave: m.is_leave,
-                    permissions: m.permissions.map(|p| p.to_string()),
-                })
+                .map(|m| m.into())
                 .collect(),
         }
     }
@@ -175,9 +181,8 @@ pub enum MessageMetadataSchema {
     Forward,
 }
 
-impl From<AddOrEditMessageCommandResult> for MessageSchema {
-    fn from(result: AddOrEditMessageCommandResult) -> Self {
-        let message = result.message;
+impl From<(Message, Vec<Attachment>)> for MessageSchema {
+    fn from((message, attachments): (Message, Vec<Attachment>)) -> Self {
         let (msg_type, metadata) = match message.message_type {
             MessageType::Default => ("DEFAULT".to_string(), None),
 
@@ -241,7 +246,7 @@ impl From<AddOrEditMessageCommandResult> for MessageSchema {
             edited_at: message.edited_at,
             msg_type,
             metadata,
-            attachments: result.attachments.into_iter().map(|a| a.into()).collect(),
+            attachments: attachments.into_iter().map(|a| a.into()).collect(),
         }
     }
 }

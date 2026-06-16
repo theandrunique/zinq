@@ -5,10 +5,9 @@ use tracing::info;
 use tracing_subscriber::{EnvFilter, layer::SubscriberExt, util::SubscriberInitExt};
 
 use crate::{
-    application::events::start_event_listener,
     gateway::gateway,
     infra::event_bus::NatsEventBus,
-    routers::{auth_router, chat_router, emoji_router, user_router, well_known_router},
+    routers::{auth_router, chat_router, emoji_router, start_event_listener, user_router, well_known_router},
     state::init_state,
 };
 

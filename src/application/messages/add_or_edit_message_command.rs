@@ -160,6 +160,7 @@ impl RequestHandler for AddOrEditMessageCommandHandler {
                     chat: chat.clone(),
                     message: message.clone(),
                     member: initiator.clone(),
+                    attachments: attachments.clone(),
                 })
                 .await?;
 
@@ -205,6 +206,7 @@ impl RequestHandler for AddOrEditMessageCommandHandler {
                     chat: chat.clone(),
                     message: message.clone(),
                     member: initiator.clone(),
+                    attachments: attachments.clone(),
                 })
                 .await?;
 

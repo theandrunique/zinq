@@ -68,6 +68,7 @@ impl DomainEventHandler for ChatCreateMetaMessage {
                 chat: chat.clone(),
                 message: meta_message,
                 member,
+                attachments: vec![],
             })
             .await?;
 

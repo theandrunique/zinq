@@ -70,6 +70,7 @@ impl DomainEventHandler for ChatMemberRemovedMetaMessage {
                 chat: chat.clone(),
                 message: meta_message,
                 member: initiator,
+                attachments: vec![],
             })
             .await?;
 
