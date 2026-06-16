@@ -58,7 +58,7 @@ impl RequestHandler for GetAttachmentsQueryHandler {
 
         let attachments = self
             .attachment_repository
-            .get_channel_attachments(request.chat_id, request.before, request.limit)
+            .get_chat_attachments(request.chat_id, request.before, request.limit)
             .await
             .map_err(|e| Error::InternalServerError(e))?;
 

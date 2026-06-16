@@ -76,7 +76,7 @@ impl RequestHandler for LoginCommandHandler {
             location: "".to_string(),
         });
 
-        self.session_repository.save(session.clone()).await?;
+        self.session_repository.save(&session).await?;
 
         let access_token = self
             .jwt_handler

@@ -47,7 +47,7 @@ impl ScyllaEventLogRepository {
 
 #[async_trait]
 impl EventLogRepository for ScyllaEventLogRepository {
-    async fn save(&self, event: EventLog) -> Result<(), anyhow::Error> {
+    async fn save(&self, event: &EventLog) -> Result<(), anyhow::Error> {
         let query = "INSERT INTO user_event_log (user_id, event_id, event_type, timestamp) VALUES (?, ?, ?, ?)";
 
         let event_type = serde_json::to_string(&event.event_type)?;

@@ -112,8 +112,7 @@ impl ScyllaChatRepository {
 
 #[async_trait]
 impl ChatRepository for ScyllaChatRepository {
-    async fn save(&self, chat: Chat) -> Result<(), anyhow::Error> {
-        // Insert chat row
+    async fn save(&self, chat: &Chat) -> Result<(), anyhow::Error> {
         let query_chat = "
             INSERT INTO chats_by_id (
                 chat_id,
@@ -136,9 +135,9 @@ impl ChatRepository for ScyllaChatRepository {
                         ChatType::Dm => 0,
                         ChatType::GroupDm => 1,
                     },
-                    chat.name.clone(),
+                    &chat.name,
                     chat.owner_id,
-                    chat.image.clone(),
+                    &chat.image,
                     chat.last_message_id,
                     chat.permissions.bits(),
                     chat.timestamp,
@@ -189,9 +188,9 @@ impl ChatRepository for ScyllaChatRepository {
                         member.user_id,
                         chat.id,
                         member.last_read_message_id,
-                        member.username.clone(),
-                        member.global_name.clone(),
-                        member.avatar.clone(),
+                        &member.username,
+                        &member.global_name,
+                        &member.avatar,
                         member.permissions.as_ref().map(|p| p.bits()),
                         member.is_leave,
                     ),
@@ -310,7 +309,7 @@ impl ChatRepository for ScyllaChatRepository {
     async fn upsert_channel_member(
         &self,
         chat_id: i64,
-        member: ChatMember,
+        member: &ChatMember,
     ) -> Result<(), anyhow::Error> {
         let query = "
             INSERT INTO chat_users_by_user_id (
@@ -331,10 +330,10 @@ impl ChatRepository for ScyllaChatRepository {
                     member.user_id,
                     chat_id,
                     member.last_read_message_id,
-                    member.username,
-                    member.global_name,
-                    member.avatar,
-                    member.permissions.map(|v| v.bits()),
+                    &member.username,
+                    &member.global_name,
+                    &member.avatar,
+                    member.permissions.as_ref().map(|v| v.bits()),
                     member.is_leave,
                 ),
             )

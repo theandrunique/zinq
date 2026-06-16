@@ -86,7 +86,7 @@ impl RequestHandler for CreateChatCommandHandler {
             permissions: request.permissions,
         });
 
-        self.chat_repository.save(new_chat.clone()).await?;
+        self.chat_repository.save(&new_chat).await?;
 
         self.mediator
             .publish(&DomainEvent::ChatCreate {

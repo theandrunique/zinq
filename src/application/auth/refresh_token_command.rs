@@ -39,7 +39,7 @@ impl RequestHandler for RefreshTokenCommandHandler {
 
         let sessions = self
             .user_session_repository
-            .get_sessions_by_user_id(claims.sub)
+            .get_user_sessions(claims.sub)
             .await
             .map_err(|e| Error::InternalServerError(e))?;
 

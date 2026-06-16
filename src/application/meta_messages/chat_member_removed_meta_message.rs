@@ -63,7 +63,7 @@ impl DomainEventHandler for ChatMemberRemovedMetaMessage {
             message_type: message_type,
         });
 
-        self.message_repository.upsert(meta_message.clone()).await?;
+        self.message_repository.upsert(&meta_message).await?;
 
         self.mediator
             .publish(&DomainEvent::MessageCreated {

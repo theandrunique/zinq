@@ -4,7 +4,7 @@ use crate::domain::messages::Message;
 
 #[async_trait]
 pub trait MessageRepository: Send + Sync {
-    async fn upsert(&self, message: Message) -> Result<(), anyhow::Error>;
+    async fn upsert(&self, message: &Message) -> Result<(), anyhow::Error>;
     async fn bulk_upsert(&self, messages: &[Message]) -> Result<(), anyhow::Error>;
 
     async fn get_by_id(

@@ -119,7 +119,7 @@ impl RequestHandler for AddChatMemberCommandHandler {
         let new_member = ChatMember::from(user);
 
         self.chat_repository
-            .upsert_channel_member(request.chat_id, new_member.clone())
+            .upsert_channel_member(request.chat_id, &new_member)
             .await
             .map_err(Error::InternalServerError)?;
 

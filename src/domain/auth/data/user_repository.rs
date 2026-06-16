@@ -21,7 +21,7 @@ pub enum UpdateEmailError {
 
 #[async_trait]
 pub trait UserRepository: Send + Sync {
-    async fn save(&self, user: User) -> Result<(), AddUserError>;
+    async fn save(&self, user: &User) -> Result<(), AddUserError>;
 
     async fn get_by_id(&self, user_id: i64) -> Result<Option<User>, anyhow::Error>;
     async fn get_by_email(&self, email: &str) -> Result<Option<User>, anyhow::Error>;
@@ -36,7 +36,7 @@ pub trait UserRepository: Send + Sync {
         user_id: i64,
         email: &str,
         old_email: &str,
-        email_updated_timestamp: DateTime<Utc>,
+        email_updated_at: DateTime<Utc>,
         verified: bool,
     ) -> Result<(), UpdateEmailError>;
 
@@ -45,6 +45,6 @@ pub trait UserRepository: Send + Sync {
         user_id: i64,
         username: &str,
         old_username: &str,
-        username_updated_timestamp: DateTime<Utc>,
+        username_updated_at: DateTime<Utc>,
     ) -> Result<(), UpdateUsernameError>;
 }

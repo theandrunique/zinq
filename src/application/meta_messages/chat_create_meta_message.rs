@@ -62,7 +62,7 @@ impl DomainEventHandler for ChatCreateMetaMessage {
             },
         });
 
-        self.message_repository.upsert(meta_message.clone()).await?;
+        self.message_repository.upsert(&meta_message).await?;
         self.mediator
             .publish(&DomainEvent::MessageCreated {
                 chat: chat.clone(),

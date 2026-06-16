@@ -54,7 +54,7 @@ impl ScyllaUserSessionRepository {
 
 #[async_trait]
 impl UserSessionRepository for ScyllaUserSessionRepository {
-    async fn save(&self, session: UserSession) -> Result<(), anyhow::Error> {
+    async fn save(&self, session: &UserSession) -> Result<(), anyhow::Error> {
         let query = "
             INSERT INTO sessions (
                 user_id,
@@ -74,11 +74,11 @@ impl UserSessionRepository for ScyllaUserSessionRepository {
                 (
                     session.user_id,
                     session.id,
-                    session.client_name,
+                    &session.client_name,
                     session.created_at,
-                    session.device_name,
+                    &session.device_name,
                     session.last_refresh_at,
-                    session.location,
+                    &session.location,
                     session.token_id,
                 ),
             )
@@ -102,7 +102,7 @@ impl UserSessionRepository for ScyllaUserSessionRepository {
         row.map(UserSession::try_from).transpose()
     }
 
-    async fn get_sessions_by_user_id(
+    async fn get_user_sessions(
         &self,
         user_id: i64,
     ) -> Result<Vec<UserSession>, anyhow::Error> {
@@ -114,7 +114,7 @@ impl UserSessionRepository for ScyllaUserSessionRepository {
         user_dbs.into_iter().map(UserSession::try_from).collect()
     }
 
-    async fn update_token_id(&self, session: UserSession) -> Result<(), anyhow::Error> {
+    async fn update_token_id(&self, session: &UserSession) -> Result<(), anyhow::Error> {
         self.common
             .exec(
                 "UPDATE sessions SET last_used_timestamp = ?, token_id = ? WHERE user_id = ? AND session_id = ?",

@@ -149,7 +149,7 @@ impl ScyllaUserRepository {
 
 #[async_trait]
 impl UserRepository for ScyllaUserRepository {
-    async fn save(&self, user: User) -> Result<(), AddUserError> {
+    async fn save(&self, user: &User) -> Result<(), AddUserError> {
         if !self
             .insert_unique("users_by_username", "username", &user.username, user.id)
             .await

@@ -62,7 +62,7 @@ impl ScyllaAttachmentRepository {
 
 #[async_trait]
 impl AttachmentRepository for ScyllaAttachmentRepository {
-    async fn save(&self, attachment: Attachment) -> Result<(), anyhow::Error> {
+    async fn save(&self, attachment: &Attachment) -> Result<(), anyhow::Error> {
         let query = "
             INSERT INTO attachments_by_message_id (
                 chat_id,
@@ -87,14 +87,14 @@ impl AttachmentRepository for ScyllaAttachmentRepository {
                     attachment.chat_id,
                     attachment.message_id,
                     attachment.id,
-                    attachment.content_type,
+                    &attachment.content_type,
                     attachment.duration_secs,
-                    attachment.filename,
+                    &attachment.filename,
                     attachment.is_spoiler,
-                    attachment.placeholder,
-                    attachment.storage_key,
+                    &attachment.placeholder,
+                    &attachment.storage_key,
                     attachment.size,
-                    attachment.waveform,
+                    &attachment.waveform,
                     attachment.created_at,
                 ),
             )
@@ -105,7 +105,7 @@ impl AttachmentRepository for ScyllaAttachmentRepository {
 
     async fn bulk_save(&self, attachments: &[Attachment]) -> Result<(), anyhow::Error> {
         for attachment in attachments {
-            self.save(attachment.clone()).await?;
+            self.save(attachment).await?;
         }
         Ok(())
     }
@@ -129,7 +129,7 @@ impl AttachmentRepository for ScyllaAttachmentRepository {
         row.map(Attachment::try_from).transpose()
     }
 
-    async fn get_channel_attachments(
+    async fn get_chat_attachments(
         &self,
         chat_id: i64,
         before_message_id: i64,

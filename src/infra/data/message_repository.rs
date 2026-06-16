@@ -62,7 +62,7 @@ impl ScyllaMessageRepository {
 
 #[async_trait]
 impl MessageRepository for ScyllaMessageRepository {
-    async fn upsert(&self, message: Message) -> Result<(), anyhow::Error> {
+    async fn upsert(&self, message: &Message) -> Result<(), anyhow::Error> {
         let query = "
             INSERT INTO messages_by_chat_id (
                 chat_id,
@@ -82,10 +82,10 @@ impl MessageRepository for ScyllaMessageRepository {
                     message.chat_id,
                     message.id,
                     message.author_id,
-                    message.content,
+                    &message.content,
                     message.created_at,
                     message.edited_at,
-                    message_type_to_string(&message.message_type),
+                    serde_json::to_string(&message.message_type)?,
                 ),
             )
             .await?;
@@ -100,7 +100,7 @@ impl MessageRepository for ScyllaMessageRepository {
 
     async fn bulk_upsert(&self, messages: &[Message]) -> Result<(), anyhow::Error> {
         for message in messages {
-            self.upsert(message.clone()).await?;
+            self.upsert(message).await?;
         }
         Ok(())
     }

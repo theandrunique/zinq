@@ -76,7 +76,7 @@ impl RequestHandler for GetDMChatCommandHandler {
         let chat = Chat::create_dm(new_chat_id, members);
 
         self.chat_repository
-            .save(chat.clone())
+            .save(&chat)
             .await
             .map_err(|e| Error::InternalServerError(e))?;
 

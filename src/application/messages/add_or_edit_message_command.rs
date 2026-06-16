@@ -146,7 +146,7 @@ impl RequestHandler for AddOrEditMessageCommandHandler {
             message.edited_at = Some(Utc::now());
 
             self.message_repository
-                .upsert(message.clone())
+                .upsert(&message)
                 .await
                 .map_err(Error::InternalServerError)?;
 
@@ -186,7 +186,7 @@ impl RequestHandler for AddOrEditMessageCommandHandler {
             });
 
             self.message_repository
-                .upsert(message.clone())
+                .upsert(&message)
                 .await
                 .map_err(Error::InternalServerError)?;
 

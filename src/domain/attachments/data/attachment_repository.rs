@@ -4,7 +4,7 @@ use crate::domain::attachments::Attachment;
 
 #[async_trait]
 pub trait AttachmentRepository: Send + Sync {
-    async fn save(&self, attachment: Attachment) -> Result<(), anyhow::Error>;
+    async fn save(&self, attachment: &Attachment) -> Result<(), anyhow::Error>;
     async fn bulk_save(&self, attachments: &[Attachment]) -> Result<(), anyhow::Error>;
 
     async fn get_by_id(
@@ -13,7 +13,7 @@ pub trait AttachmentRepository: Send + Sync {
         attachment_id: i64,
     ) -> Result<Option<Attachment>, anyhow::Error>;
 
-    async fn get_channel_attachments(
+    async fn get_chat_attachments(
         &self,
         chat_id: i64,
         before_message_id: i64,

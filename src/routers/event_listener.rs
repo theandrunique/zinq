@@ -156,7 +156,7 @@ async fn event_listener(
                     created_at: event.created_at,
                 };
 
-                if let Err(e) = event_log_repository.save(event_log.clone()).await {
+                if let Err(e) = event_log_repository.save(&event_log).await {
                     tracing::error!("Failed to save event log for user {}: {:#}", user_id, e);
                     continue;
                 }

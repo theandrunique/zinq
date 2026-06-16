@@ -55,7 +55,7 @@ impl DomainEventHandler for ChatMemberAddedMetaMessage {
             },
         });
 
-        self.message_repository.upsert(meta_message.clone()).await?;
+        self.message_repository.upsert(&meta_message).await?;
 
         self.mediator
             .publish(&DomainEvent::MessageCreated {

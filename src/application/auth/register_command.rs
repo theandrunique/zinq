@@ -68,7 +68,7 @@ impl RequestHandler for RegisterComandHandler {
         });
 
         self.user_repository
-            .save(new_user.clone())
+            .save(&new_user)
             .await
             .map_err(|e| match e {
                 AddUserError::UsernameTaken => Error::UsernameAlreadyInUse,
