@@ -33,7 +33,7 @@ async fn test_get_attachments_success() {
 
     ctx.app_state
         .attachment_repository
-        .save(attachment)
+        .save(&attachment)
         .await
         .expect("Failed to save attachment");
 

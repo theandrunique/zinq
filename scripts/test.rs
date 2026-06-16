@@ -2,6 +2,7 @@ use std::process::{Command, ExitCode};
 
 use testcontainers::{ImageExt, runners::AsyncRunner};
 use testcontainers_modules::minio::MinIO;
+use testcontainers_modules::nats::{Nats, NatsServerCmd};
 use testcontainers_modules::scylladb::ScyllaDB;
 
 #[tokio::main]
@@ -34,6 +35,23 @@ async fn main() -> ExitCode {
 
     let minio_url = format!("http://{}:{}", minio_host, minio_port);
 
+    let nats = match Nats::default()
+        .with_cmd(&NatsServerCmd::default().with_jetstream())
+        .start()
+        .await
+    {
+        Ok(n) => n,
+        Err(e) => {
+            eprintln!("Failed to start NATS: {}", e);
+            return ExitCode::FAILURE;
+        }
+    };
+
+    let nats_host = nats.get_host().await.unwrap().to_string();
+    let nats_port = nats.get_host_port_ipv4(4222).await.unwrap();
+
+    let nats_url = format!("nats://{}:{}", nats_host, nats_port);
+
     let status = Command::new("cargo")
         .arg("test")
         .env("TEST_SCYLLA_HOST", scylla_host)
@@ -43,6 +61,7 @@ async fn main() -> ExitCode {
         .env("TEST_S3_SECRET_KEY", "minioadmin")
         .env("TEST_S3_BUCKET", "test-bucket")
         .env("TEST_S3_REGION", "us-east-1")
+        .env("TEST_NATS_URL", nats_url)
         .spawn()
         .expect("Failed to start cargo test")
         .wait()

@@ -6,3 +6,5 @@ pub const S3_ACCESS_KEY_ENV: &str = "TEST_S3_ACCESS_KEY";
 pub const S3_SECRET_KEY_ENV: &str = "TEST_S3_SECRET_KEY";
 pub const S3_BUCKET_ENV: &str = "TEST_S3_BUCKET";
 pub const S3_REGION_ENV: &str = "TEST_S3_REGION";
+
+pub const NATS_URL_ENV: &str = "TEST_NATS_URL";

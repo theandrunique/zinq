@@ -22,7 +22,7 @@ use crate::{
         auth::User,
         chats::{Chat, ChatPermissions, data::ChatLoader},
         event_log::data::EventLogRepository,
-        events::{EventBus, Mediator},
+        events::{Mediator},
         messages::{CreateMessageRequest, Message},
     },
     infra::{
@@ -37,14 +37,15 @@ use crate::{
             message_repository::ScyllaMessageRepository, user_repository::ScyllaUserRepository,
             user_session_repository::ScyllaUserSessionRepository,
         },
+        event_bus::NatsEventBus,
         id_generator::SnowflakeIdGenerator,
         s3::AwsS3Service,
         smtp_client::SmtpService,
     },
     state::AppState,
     tests::common::test_config::{
-        S3_ACCESS_KEY_ENV, S3_BUCKET_ENV, S3_ENDPOINT_ENV, S3_REGION_ENV, S3_SECRET_KEY_ENV,
-        SCYLLA_HOST_ENV, SCYLLA_PORT_ENV,
+        NATS_URL_ENV, S3_ACCESS_KEY_ENV, S3_BUCKET_ENV, S3_ENDPOINT_ENV, S3_REGION_ENV,
+        S3_SECRET_KEY_ENV, SCYLLA_HOST_ENV, SCYLLA_PORT_ENV,
     },
 };
 
@@ -110,8 +111,15 @@ impl TestContext {
         let channel_image_service =
             Arc::new(ChannelImageService::new(s3_service.clone(), &s3_config));
 
+        let nats_url = std::env::var(NATS_URL_ENV).expect("TEST_NATS_URL not set");
+        let nats_client = async_nats::connect(&nats_url).await.unwrap();
+        let jetstream = async_nats::jetstream::new(nats_client);
+
+        let event_bus = Arc::new(NatsEventBus::new(jetstream.clone()));
+        event_bus.initialize_stream().await.unwrap();
+
         let mut state = AppState {
-            event_bus: Arc::new(EventBus::new()),
+            event_bus,
             event_log_repository: Arc::new(ScyllaEventLogRepository::new(session.clone())),
             id_gen,
             user_repository: Arc::new(ScyllaUserRepository::new(session.clone())),

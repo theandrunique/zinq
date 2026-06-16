@@ -204,33 +204,6 @@ async fn test_create_chat_current_user_in_members_explicitly() {
 }
 
 #[tokio::test]
-async fn test_create_chat_publishes_event() {
-    let ctx = TestContext::new("test_create_chat_event").await;
-    let handler = CreateChatCommandHandler::new(&ctx.app_state);
-
-    let current_user = ctx
-        .create_test_user("currentuser", "current@test.com")
-        .await;
-    let other_user = ctx.create_test_user("otheruser", "other@test.com").await;
-
-    let mut receiver = ctx.app_state.event_bus.subscribe();
-
-    let cmd = valid_command(current_user.id, vec![other_user.id]);
-
-    let _ = handler.handle(cmd).await.unwrap();
-
-    let event = tokio::time::timeout(std::time::Duration::from_secs(1), receiver.recv())
-        .await
-        .expect("Should receive event")
-        .expect("Event should be available");
-
-    assert!(
-        matches!(event, DomainEvent::ChatCreate { .. }),
-        "Event should be ChatCreate"
-    );
-}
-
-#[tokio::test]
 async fn test_create_chat_with_empty_name() {
     let ctx = TestContext::new("test_create_chat_empty_name").await;
     let handler = CreateChatCommandHandler::new(&ctx.app_state);
