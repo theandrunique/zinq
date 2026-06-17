@@ -14,7 +14,7 @@ pub enum TokenType {
 }
 
 #[serde_as]
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct TokenClaims {
     #[serde_as(as = "DisplayFromStr")]
     pub sub: i64,

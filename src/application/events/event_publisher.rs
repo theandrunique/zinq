@@ -48,14 +48,24 @@ impl DomainEventHandler for EventPublisher {
                 },
                 chat.members.iter().map(|m| m.user_id).collect(),
             ),
-            DomainEvent::MessageCreated { chat, message, attachments, .. } => (
+            DomainEvent::MessageCreated {
+                chat,
+                message,
+                attachments,
+                ..
+            } => (
                 EventLogType::MessageCreate {
                     message: message.clone(),
                     attachments: attachments.clone(),
                 },
                 chat.members.iter().map(|m| m.user_id).collect(),
             ),
-            DomainEvent::MessageUpdated { chat, message, attachments, .. } => (
+            DomainEvent::MessageUpdated {
+                chat,
+                message,
+                attachments,
+                ..
+            } => (
                 EventLogType::MessageUpdate {
                     message: message.clone(),
                     attachments: attachments.clone(),

@@ -116,11 +116,7 @@ impl From<Chat> for ChatSchema {
             last_message_id: value.last_message_id.map(|id| id.to_string()),
             permissions: value.permissions.to_string(),
             created_at: value.timestamp,
-            members: value
-                .members
-                .into_iter()
-                .map(|m| m.into())
-                .collect(),
+            members: value.members.into_iter().map(|m| m.into()).collect(),
         }
     }
 }

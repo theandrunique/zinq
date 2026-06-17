@@ -12,10 +12,7 @@ pub trait UserSessionRepository: Send + Sync {
         session_id: i64,
     ) -> Result<Option<UserSession>, anyhow::Error>;
 
-    async fn get_user_sessions(
-        &self,
-        user_id: i64,
-    ) -> Result<Vec<UserSession>, anyhow::Error>;
+    async fn get_user_sessions(&self, user_id: i64) -> Result<Vec<UserSession>, anyhow::Error>;
 
     async fn update_token_id(&self, session: &UserSession) -> Result<(), anyhow::Error>;
     async fn remove_by_id(&self, user_id: i64, session_id: i64) -> Result<(), anyhow::Error>;

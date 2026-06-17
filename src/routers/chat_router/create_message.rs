@@ -69,5 +69,8 @@ pub async fn create_message(
 
     let result = handler.handle(command).await?;
 
-    return Ok(Json(MessageSchema::from((result.message, result.attachments))));
+    return Ok(Json(MessageSchema::from((
+        result.message,
+        result.attachments,
+    ))));
 }

@@ -4,7 +4,10 @@ use async_trait::async_trait;
 use tokio::sync::RwLock;
 
 use crate::domain::{
-    attachments::Attachment, auth::User, chats::{Chat, ChatMember}, messages::Message
+    attachments::Attachment,
+    auth::User,
+    chats::{Chat, ChatMember},
+    messages::Message,
 };
 
 #[derive(Clone, Debug)]

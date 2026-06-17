@@ -59,15 +59,21 @@ enum EventLogTypeSchema {
 impl From<EventLogType> for EventLogTypeSchema {
     fn from(event_type: EventLogType) -> Self {
         match event_type {
-            EventLogType::MessageCreate { message, attachments } => EventLogTypeSchema::MessageCreate {
+            EventLogType::MessageCreate {
+                message,
+                attachments,
+            } => EventLogTypeSchema::MessageCreate {
                 message: (message, attachments).into(),
             },
-            EventLogType::MessageUpdate { message, attachments } => EventLogTypeSchema::MessageUpdate {
+            EventLogType::MessageUpdate {
+                message,
+                attachments,
+            } => EventLogTypeSchema::MessageUpdate {
                 message: (message, attachments).into(),
             },
-            EventLogType::MessageDelete { message_id } => {
-                EventLogTypeSchema::MessageDelete { message_id: message_id.to_string() }
-            }
+            EventLogType::MessageDelete { message_id } => EventLogTypeSchema::MessageDelete {
+                message_id: message_id.to_string(),
+            },
             EventLogType::ChatCreate { chat } => {
                 EventLogTypeSchema::ChatCreate { chat: chat.into() }
             }

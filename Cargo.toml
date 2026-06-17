@@ -17,7 +17,7 @@ validator = { version = "0.20.0", features = ["derive"] }
 tracing = "0.1.41"
 tracing-subscriber = { version = "0.3.19", features = ["env-filter"] }
 dotenvy = "0.15.7"
-socketioxide = { version = "0.18.0", features = ["extensions", "msgpack", "state"] }
+socketioxide = { version = "0.18.0", features = ["extensions", "msgpack", "state", "tracing"] }
 uuid = { version = "1.19.0", features = ["v4"] }
 rs-snowflake = "0.6.0"
 async-trait = "0.1.89"

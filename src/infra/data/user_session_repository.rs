@@ -102,10 +102,7 @@ impl UserSessionRepository for ScyllaUserSessionRepository {
         row.map(UserSession::try_from).transpose()
     }
 
-    async fn get_user_sessions(
-        &self,
-        user_id: i64,
-    ) -> Result<Vec<UserSession>, anyhow::Error> {
+    async fn get_user_sessions(&self, user_id: i64) -> Result<Vec<UserSession>, anyhow::Error> {
         let user_dbs: Vec<UserSessionDb> = self
             .common
             .exec_all("SELECT * FROM sessions WHERE user_id = ?", (user_id,))

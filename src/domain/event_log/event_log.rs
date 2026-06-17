@@ -2,17 +2,35 @@ use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 
 use crate::domain::{
-    attachments::Attachment, chats::{Chat, ChatMember}, messages::Message
+    attachments::Attachment,
+    chats::{Chat, ChatMember},
+    messages::Message,
 };
 
 #[derive(Clone, Serialize, Deserialize)]
 pub enum EventLogType {
-    MessageCreate { message: Message, attachments: Vec<Attachment> },
-    MessageUpdate { message: Message, attachments: Vec<Attachment> },
-    MessageDelete { message_id: i64 },
-    ChatCreate { chat: Chat },
-    ChatMemberAdded { chat_id: i64, member: ChatMember },
-    ChatMemberRemoved { chat_id: i64, member: ChatMember },
+    MessageCreate {
+        message: Message,
+        attachments: Vec<Attachment>,
+    },
+    MessageUpdate {
+        message: Message,
+        attachments: Vec<Attachment>,
+    },
+    MessageDelete {
+        message_id: i64,
+    },
+    ChatCreate {
+        chat: Chat,
+    },
+    ChatMemberAdded {
+        chat_id: i64,
+        member: ChatMember,
+    },
+    ChatMemberRemoved {
+        chat_id: i64,
+        member: ChatMember,
+    },
 }
 
 #[derive(Clone, Serialize, Deserialize)]

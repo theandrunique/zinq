@@ -22,7 +22,7 @@ use crate::{
         auth::User,
         chats::{Chat, ChatPermissions, data::ChatLoader},
         event_log::data::EventLogRepository,
-        events::{Mediator},
+        events::Mediator,
         messages::{CreateMessageRequest, Message},
     },
     infra::{
