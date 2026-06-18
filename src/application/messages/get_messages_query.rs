@@ -23,7 +23,7 @@ pub struct GetMessagesQuery {
 #[derive(Debug, Clone)]
 pub struct GetMessagesQueryResult {
     pub messages: Vec<Message>,
-    pub attachments: HashMap<i64, Vec<crate::domain::attachments::Attachment>>,
+    pub attachments: HashMap<i64, Vec<Attachment>>,
 }
 
 pub struct GetMessagesQueryHandler {

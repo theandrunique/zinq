@@ -55,7 +55,7 @@ async fn main() -> ExitCode {
     let status = Command::new("cargo")
         .arg("test")
         .env("TEST_SCYLLA_HOST", scylla_host)
-        .env("TEST_SCYLLA_PORT", scylla_port.to_string())
+        .env("TEST_SCYLLA_PORT", &scylla_port)
         .env("TEST_S3_ENDPOINT", minio_url)
         .env("TEST_S3_ACCESS_KEY", "minioadmin")
         .env("TEST_S3_SECRET_KEY", "minioadmin")

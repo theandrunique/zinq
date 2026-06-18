@@ -86,9 +86,9 @@ impl RequestHandler for LoginCommandHandler {
                 .generate_refresh_token(user.id, session.token_id, 604800)?;
 
         return Ok(LoginCommandResult {
-            access_token: access_token,
+            access_token,
+            refresh_token,
             expires_in: 604800,
-            refresh_token: refresh_token,
         });
     }
 }
