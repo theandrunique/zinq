@@ -37,38 +37,36 @@ async fn event_listener(
     io: SocketIo,
 ) {
     loop {
-        let stream = match consumer.messages().await {
+        let mut stream = match consumer.messages().await {
             Ok(stream) => stream,
             Err(e) => {
-                tracing::error!("Failed to fetch messages: {}", e);
-                tokio::time::sleep(Duration::from_secs(1)).await;
+                tracing::error!("Failed to get events stream: {}", e);
+                tokio::time::sleep(Duration::from_secs(5)).await;
                 continue;
             }
         };
 
-        let mut messages = stream.take(10);
-
-        while let Some(event_result) = messages.next().await {
-            let jetstream_msg = match event_result {
-                Ok(msg) => msg,
+        while let Some(stream_message_result) = stream.next().await {
+            let stream_message = match stream_message_result {
+                Ok(m) => m,
                 Err(e) => {
                     tracing::error!("Error receiving message: {}", e);
                     continue;
                 }
             };
 
-            let msg_id = jetstream_msg
+            let msg_id = stream_message
                 .headers
                 .as_ref()
                 .and_then(|h| h.get("Nats-Msg-Id"))
                 .map(|v| v.to_string())
                 .unwrap_or_else(|| "unknown".to_string());
 
-            let event: Event = match serde_json::from_slice(&jetstream_msg.payload) {
+            let event: Event = match serde_json::from_slice(&stream_message.payload) {
                 Ok(event) => event,
                 Err(e) => {
                     tracing::error!("Failed to deserialize message {}: {}", msg_id, e);
-                    let _ = jetstream_msg.ack().await;
+                    let _ = stream_message.ack().await;
                     continue;
                 }
             };
@@ -86,19 +84,23 @@ async fn event_listener(
                     continue;
                 }
 
-                io.to(format!("user:{}", user_id))
+                if let Err(e) = io.to(format!("user:{}", user_id))
                     .emit("event", &EventLogSchema::from(event_log))
                     .await
-                    .ok();
+                {
+                    tracing::error!("Failed to emit event to user {}: {}", user_id, e);
+                    continue;
+                }
             }
 
-            if let Err(e) = jetstream_msg.ack().await {
+            if let Err(e) = stream_message.ack().await {
                 tracing::error!("Failed to ack message {}: {}", msg_id, e);
             } else {
                 tracing::info!("Processed and acked event: {}", event.event_id);
             }
         }
 
-        tokio::time::sleep(Duration::from_millis(100)).await;
+        tracing::warn!("Event stream closed, reconnecting...");
+        tokio::time::sleep(Duration::from_secs(1)).await;
     }
 }

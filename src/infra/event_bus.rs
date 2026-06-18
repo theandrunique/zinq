@@ -28,7 +28,7 @@ impl NatsEventBus {
             .create_or_update_stream(Config {
                 name: "events".to_string(),
                 discard: DiscardPolicy::New,
-                subjects: vec!["events".to_string()],
+                subjects: vec!["events.>".to_string()],
                 ..Default::default()
             })
             .await?;
