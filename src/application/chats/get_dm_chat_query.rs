@@ -43,7 +43,7 @@ impl RequestHandler for GetDMChatCommandHandler {
             .chat_repository
             .get_dm_channel(request.current_user_id, request.user_id)
             .await
-            .map_err(|e| Error::InternalServerError(e))?;
+            .map_err(Error::InternalServerError)?;
 
         if let Some(dm) = existing_dm {
             return Ok(dm);
@@ -59,7 +59,7 @@ impl RequestHandler for GetDMChatCommandHandler {
             .user_repository
             .get_by_ids(&user_ids_to_find)
             .await
-            .map_err(|e| Error::InternalServerError(e))?;
+            .map_err(Error::InternalServerError)?;
 
         if users.len() != user_ids_to_find.len() {
             let found_ids: Vec<i64> = users.iter().map(|u| u.id).collect();
@@ -78,7 +78,7 @@ impl RequestHandler for GetDMChatCommandHandler {
         self.chat_repository
             .save(&chat)
             .await
-            .map_err(|e| Error::InternalServerError(e))?;
+            .map_err(Error::InternalServerError)?;
 
         Ok(chat)
     }

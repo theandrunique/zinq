@@ -30,10 +30,10 @@ pub async fn get_dm_chat(
 
     let command = GetDMChatCommand {
         current_user_id: claims.sub,
-        user_id: user_id,
+        user_id,
     };
 
     let result = handler.handle(command).await?;
 
-    return Ok(Json(result.into()));
+    Ok(Json(result.into()))
 }

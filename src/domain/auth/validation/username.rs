@@ -14,7 +14,7 @@ pub fn validate_username(value: &str) -> Result<(), ValidationError> {
     }
 
     let chars_count = trimmed.chars().count();
-    if chars_count < 5 || chars_count > 32 {
+    if !(5..=32).contains(&chars_count) {
         let e = ValidationError::new("invalid_length")
             .with_message("Username must be between 5 and 32 characters.".into());
         return Err(e);

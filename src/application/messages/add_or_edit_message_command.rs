@@ -119,7 +119,7 @@ impl RequestHandler for AddOrEditMessageCommandHandler {
             }
         }
 
-        let mut referenced_message: Option<Message> = None;
+        let mut _referenced_message: Option<Message> = None;
         if let Some(ref_msg_id) = request.referenced_message_id {
             let msg = self
                 .message_repository
@@ -127,7 +127,7 @@ impl RequestHandler for AddOrEditMessageCommandHandler {
                 .await
                 .map_err(Error::InternalServerError)?
                 .ok_or(Error::MessageNotFound(ref_msg_id))?;
-            referenced_message = Some(msg);
+            _referenced_message = Some(msg);
         }
 
         if request.message_id.is_some() {

@@ -47,7 +47,7 @@ pub async fn create_cloud_attachment(
 
     let command = CreateCloudAttachmentsCommand {
         current_user_id: claims.sub,
-        chat_id: chat_id,
+        chat_id,
         files: request
             .files
             .into_iter()
@@ -61,5 +61,5 @@ pub async fn create_cloud_attachment(
 
     let result = handler.handle(command).await?;
 
-    return Ok(Json(result));
+    Ok(Json(result))
 }

@@ -28,9 +28,9 @@ pub async fn refresh_token(
 
     let result = handler.handle(command).await?;
 
-    return Ok(Json(TokensResponseSchema {
+    Ok(Json(TokensResponseSchema {
         access_token: result.access_token,
         refresh_token: result.refresh_token,
         expires_in: result.expires_in,
-    }));
+    }))
 }

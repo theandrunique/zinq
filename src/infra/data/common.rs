@@ -35,7 +35,7 @@ impl ScyllaCommon {
             .session
             .prepare(query)
             .await
-            .map_err(|e| anyhow::Error::new(e))?;
+            .map_err(anyhow::Error::new)?;
         let prepared = Arc::new(prepared);
 
         let mut guard = self.prepared.write().await;
@@ -55,7 +55,7 @@ impl ScyllaCommon {
         self.session
             .execute_unpaged(&prepared, values)
             .await
-            .map_err(|e| anyhow::Error::new(e))
+            .map_err(anyhow::Error::new)
     }
 
     pub async fn exec_first<R, T>(&self, query: &str, values: T) -> Result<Option<R>, anyhow::Error>
@@ -64,9 +64,9 @@ impl ScyllaCommon {
         for<'frame, 'meta> R: DeserializeRow<'frame, 'meta>,
     {
         let res = self.exec(query, values).await?;
-        let rows = res.into_rows_result().map_err(|e| anyhow::Error::new(e))?;
+        let rows = res.into_rows_result().map_err(anyhow::Error::new)?;
         rows.maybe_first_row::<R>()
-            .map_err(|e| anyhow::Error::new(e))
+            .map_err(anyhow::Error::new)
     }
 
     pub async fn exec_all<R, T>(&self, query: &str, values: T) -> Result<Vec<R>, anyhow::Error>
@@ -75,12 +75,13 @@ impl ScyllaCommon {
         for<'frame, 'meta> R: DeserializeRow<'frame, 'meta>,
     {
         let res = self.exec(query, values).await?;
-        let rows = res.into_rows_result().map_err(|e| anyhow::Error::new(e))?;
+        let rows = res.into_rows_result().map_err(anyhow::Error::new)?;
 
         let mut vec = Vec::new();
-        let mut iter = rows.rows::<R>().map_err(|e| anyhow::Error::new(e))?;
-        while let Some(row_result) = iter.next() {
-            let row = row_result.map_err(|e| anyhow::Error::new(e))?;
+        let iter = rows.rows::<R>().map_err(anyhow::Error::new)?;
+
+        for row_result in iter {
+            let row = row_result.map_err(anyhow::Error::new)?;
             vec.push(row);
         }
 

@@ -40,7 +40,7 @@ pub struct CreateGroupChatRequest {
 impl Chat {
     pub fn create_dm(id: i64, members: Vec<ChatMember>) -> Self {
         Self {
-            id: id,
+            id,
             owner_id: None,
             name: None,
             image: None,
@@ -48,7 +48,7 @@ impl Chat {
             last_message_id: None,
             permissions: ChatPermissions::DM_CHAT,
             timestamp: Utc::now(),
-            members: members,
+            members,
         }
     }
 
@@ -69,15 +69,11 @@ impl Chat {
     }
 
     pub fn get_member(&self, user_id: i64) -> Option<ChatMember> {
-        match self
+        self
             .members
             .iter()
             .find(|m| m.user_id == user_id && !m.is_leave)
-            .cloned()
-        {
-            Some(m) => Some(m),
-            None => return None,
-        }
+            .cloned().map(|m| m)
     }
 
     pub fn has_member(&self, user_id: i64) -> bool {

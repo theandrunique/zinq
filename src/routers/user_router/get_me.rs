@@ -24,5 +24,5 @@ pub async fn get_me(
 
     let result = handler.handle(query).await?;
 
-    return Ok(Json(result.into()));
+    Ok(Json(result.into()))
 }

@@ -34,7 +34,7 @@ impl TryFrom<ChatMemberDb> for ChatMember {
             is_leave: value.is_leave,
             permissions: value
                 .permission_overwrites
-                .map(|v| ChatPermissions::from_bits_truncate(v)),
+                .map(ChatPermissions::from_bits_truncate),
         })
     }
 }
@@ -91,7 +91,7 @@ impl TryFrom<(ChatDb, Vec<ChatMember>)> for Chat {
             last_message_id: db.last_message_id,
             timestamp: db.timestamp,
             permissions: ChatPermissions::from_bits_truncate(db.permissions),
-            members: members,
+            members,
         })
     }
 }

@@ -34,7 +34,7 @@ impl RequestHandler for GetUserChatsQueryHandler {
             .chat_repository
             .get_user_chats(request.current_user_id)
             .await
-            .map_err(|e| Error::InternalServerError(e))?;
+            .map_err(Error::InternalServerError)?;
 
         chats.retain(|chat| {
             let is_dm_without_message =

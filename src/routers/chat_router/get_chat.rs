@@ -30,10 +30,10 @@ pub async fn get_chat(
 
     let command = GetChatQuery {
         current_user_id: claims.sub,
-        chat_id: chat_id,
+        chat_id,
     };
 
     let result = handler.handle(command).await?;
 
-    return Ok(Json(ChatSchema::from(result)));
+    Ok(Json(ChatSchema::from(result)))
 }

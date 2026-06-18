@@ -21,9 +21,9 @@ impl VerificationCode {
         expires_at: DateTime<Utc>,
     ) -> Self {
         Self {
-            id: id,
-            scenario: scenario,
-            code_hash: code_hash,
+            id,
+            scenario,
+            code_hash,
             created_at: Utc::now(),
             expires_at,
             attempts: 0,

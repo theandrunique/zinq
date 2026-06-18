@@ -36,8 +36,8 @@ pub async fn get_user_chats(
 
     let chats = result
         .into_iter()
-        .map(|chat| ChatSchema::from(chat))
+        .map(ChatSchema::from)
         .collect::<Vec<ChatSchema>>();
 
-    return Ok(Json(chats));
+    Ok(Json(chats))
 }

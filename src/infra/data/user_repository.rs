@@ -169,7 +169,7 @@ impl UserRepository for ScyllaUserRepository {
             return Err(AddUserError::EmailTaken);
         }
 
-        if let Err(e) = self.insert_user(&user).await {
+        if let Err(e) = self.insert_user(user).await {
             let _ = self
                 .delete_index("users_by_username", "username", &user.username)
                 .await;
@@ -265,7 +265,7 @@ impl UserRepository for ScyllaUserRepository {
         verified: bool,
     ) -> Result<(), UpdateEmailError> {
         if !self
-            .insert_unique("users_by_email", "email", &email, user_id)
+            .insert_unique("users_by_email", "email", email, user_id)
             .await
             .map_err(UpdateEmailError::InternalError)?
         {
@@ -278,7 +278,7 @@ impl UserRepository for ScyllaUserRepository {
             .exec(query, (email, ts, verified, user_id))
             .await
             .map_err(UpdateEmailError::InternalError)?;
-        self.delete_index("users_by_email", "email", &old_email)
+        self.delete_index("users_by_email", "email", old_email)
             .await
             .map_err(UpdateEmailError::InternalError)?;
 
@@ -293,7 +293,7 @@ impl UserRepository for ScyllaUserRepository {
         ts: DateTime<Utc>,
     ) -> Result<(), UpdateUsernameError> {
         if !self
-            .insert_unique("users_by_username", "username", &username, user_id)
+            .insert_unique("users_by_username", "username", username, user_id)
             .await
             .map_err(UpdateUsernameError::InternalError)?
         {
@@ -307,7 +307,7 @@ impl UserRepository for ScyllaUserRepository {
             .exec(query, (username, ts, user_id))
             .await
             .map_err(UpdateUsernameError::InternalError)?;
-        self.delete_index("users_by_username", "username", &old_username)
+        self.delete_index("users_by_username", "username", old_username)
             .await
             .map_err(UpdateUsernameError::InternalError)?;
 

@@ -30,8 +30,8 @@ pub async fn remove_chat_member(
 
     let command = DeleteChatMemberCommand {
         current_user_id: claims.sub,
-        chat_id: chat_id,
-        user_id: user_id,
+        chat_id,
+        user_id,
     };
 
     handler.handle(command).await

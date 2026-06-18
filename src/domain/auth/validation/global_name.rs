@@ -15,7 +15,7 @@ pub fn validate_global_name(value: &str) -> Result<(), ValidationError> {
     }
 
     let chars_count = trimmed.chars().count();
-    if chars_count < 1 || chars_count > 64 {
+    if !(1..=64).contains(&chars_count) {
         let e = ValidationError::new("invalid_length")
             .with_message("Global name must be between 1 and 64 characters.".into());
         return Err(e);

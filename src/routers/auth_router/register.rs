@@ -35,5 +35,5 @@ pub async fn register(
 
     let user = handler.handle(command).await?;
 
-    return Ok(Json(UserPrivateSchema::from(user)));
+    Ok(Json(UserPrivateSchema::from(user)))
 }

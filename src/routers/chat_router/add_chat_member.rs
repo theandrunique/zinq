@@ -30,8 +30,8 @@ pub async fn add_chat_member(
 
     let command = AddChatMemberCommand {
         current_user_id: claims.sub,
-        chat_id: chat_id,
-        user_id: user_id,
+        chat_id,
+        user_id,
     };
 
     handler.handle(command).await

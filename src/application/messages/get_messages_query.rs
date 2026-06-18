@@ -56,7 +56,7 @@ impl RequestHandler for GetMessagesQueryHandler {
                     .with_member(request.current_user_id),
             )
             .await
-            .map_err(|e| Error::InternalServerError(e))?
+            .map_err(Error::InternalServerError)?
             .ok_or(Error::ChatNotFound(request.chat_id))?;
 
         if !chat.has_member(request.current_user_id) {
@@ -72,7 +72,7 @@ impl RequestHandler for GetMessagesQueryHandler {
             .message_repository
             .get_messages(request.chat_id, before, request.limit)
             .await
-            .map_err(|e| Error::InternalServerError(e))?;
+            .map_err(Error::InternalServerError)?;
 
         if messages.is_empty() {
             return Ok(GetMessagesQueryResult {
@@ -86,13 +86,13 @@ impl RequestHandler for GetMessagesQueryHandler {
             .attachment_repository
             .get_by_message_ids(request.chat_id, &message_ids)
             .await
-            .map_err(|e| Error::InternalServerError(e))?;
+            .map_err(Error::InternalServerError)?;
 
         let mut attachments_by_message: HashMap<i64, Vec<Attachment>> = HashMap::new();
         for attachment in attachments {
             attachments_by_message
                 .entry(attachment.message_id)
-                .or_insert_with(Vec::new)
+                .or_default()
                 .push(attachment);
         }
 

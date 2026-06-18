@@ -14,7 +14,7 @@ use crate::{
 };
 use validator::ValidationError;
 
-fn unique_members(members: &Vec<i64>) -> Result<(), ValidationError> {
+fn unique_members(members: &[i64]) -> Result<(), ValidationError> {
     let mut seen = std::collections::HashSet::new();
     if members.iter().any(|id| !seen.insert(*id)) {
         return Err(ValidationError::new("members_must_be_unique")
@@ -67,7 +67,7 @@ impl RequestHandler for CreateChatCommandHandler {
             .user_repository
             .get_by_ids(&request.members)
             .await
-            .map_err(|e| Error::InternalServerError(e))?;
+            .map_err(Error::InternalServerError)?;
 
         let found_ids: HashSet<i64> = users.iter().map(|u| u.id).collect();
         let requested_ids: HashSet<i64> = request.members.iter().cloned().collect();
@@ -82,7 +82,7 @@ impl RequestHandler for CreateChatCommandHandler {
             id: self.id_gen.gen_id().await,
             owner_id: request.current_user_id,
             name: request.name,
-            members: users.into_iter().map(|u| ChatMember::from(u)).collect(),
+            members: users.into_iter().map(ChatMember::from).collect(),
             permissions: request.permissions,
         });
 

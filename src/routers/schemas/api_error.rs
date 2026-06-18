@@ -73,7 +73,7 @@ impl IntoResponse for ApiError {
             _ => StatusCode::BAD_REQUEST,
         };
 
-        return (status, Json(self)).into_response();
+        (status, Json(self)).into_response()
     }
 }
 
@@ -169,6 +169,6 @@ impl IntoResponse for Error {
             ),
         };
 
-        return e.into_response();
+        e.into_response()
     }
 }

@@ -42,5 +42,5 @@ pub async fn create_chat(
 
     let result = handler.handle(command).await?;
 
-    return Ok(Json(ChatSchema::from(result)));
+    Ok(Json(ChatSchema::from(result)))
 }

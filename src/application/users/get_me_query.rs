@@ -34,7 +34,7 @@ impl RequestHandler for GetMeQueryHandler {
             .user_repository
             .get_by_id(request.current_user_id)
             .await
-            .map_err(|e| Error::InternalServerError(e))?
+            .map_err(Error::InternalServerError)?
             .ok_or(Error::UserNotFound(request.current_user_id))?;
 
         Ok(user)

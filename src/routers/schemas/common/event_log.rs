@@ -20,7 +20,7 @@ impl From<EventLog> for EventLogSchema {
             user_id: event_log.user_id.to_string(),
             event_id: event_log.event_id.to_string(),
             event_type: event_log.event_type.into(),
-            created_at: event_log.created_at.clone(),
+            created_at: event_log.created_at,
         }
     }
 }

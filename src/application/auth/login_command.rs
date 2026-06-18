@@ -57,7 +57,7 @@ impl RequestHandler for LoginCommandHandler {
             .user_repository
             .get_by_username(&request.username)
             .await
-            .map_err(|e| Error::InternalServerError(e))?
+            .map_err(Error::InternalServerError)?
             .ok_or(Error::AuthInvalidCredentials)?;
 
         if !self
@@ -85,10 +85,10 @@ impl RequestHandler for LoginCommandHandler {
             self.jwt_handler
                 .generate_refresh_token(user.id, session.token_id, 604800)?;
 
-        return Ok(LoginCommandResult {
+        Ok(LoginCommandResult {
             access_token,
             refresh_token,
             expires_in: 604800,
-        });
+        })
     }
 }

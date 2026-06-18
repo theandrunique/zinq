@@ -86,11 +86,11 @@ impl AttachmentService {
 
         Ok(Attachment::new(CreateAttachmentRequest {
             id: parsed.attachment_id,
-            message_id: message_id,
+            message_id,
             chat_id: parsed.chat_id,
             filename: filename.to_string(),
-            content_type: content_type,
-            size: size,
+            content_type,
+            size,
             storage_key: uploaded_filename.to_string(),
         }))
     }

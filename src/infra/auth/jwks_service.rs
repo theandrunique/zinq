@@ -94,7 +94,7 @@ fn compute_jwk_thumbprint(n: &[u8], e: &[u8]) -> String {
     hasher.update(canonical.as_bytes());
     let result = hasher.finalize();
 
-    base64::Engine::encode(&base64::engine::general_purpose::URL_SAFE_NO_PAD, &result)
+    base64::Engine::encode(&base64::engine::general_purpose::URL_SAFE_NO_PAD, result)
 }
 
 impl FileJwksService {

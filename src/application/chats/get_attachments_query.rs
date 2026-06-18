@@ -46,7 +46,7 @@ impl RequestHandler for GetAttachmentsQueryHandler {
                     .with_member(request.current_user_id),
             )
             .await
-            .map_err(|e| Error::InternalServerError(e))?
+            .map_err(Error::InternalServerError)?
             .ok_or(Error::ChatNotFound(request.chat_id))?;
 
         if !chat.has_member(request.current_user_id) {
@@ -60,7 +60,7 @@ impl RequestHandler for GetAttachmentsQueryHandler {
             .attachment_repository
             .get_chat_attachments(request.chat_id, request.before, request.limit)
             .await
-            .map_err(|e| Error::InternalServerError(e))?;
+            .map_err(Error::InternalServerError)?;
 
         Ok(attachments)
     }

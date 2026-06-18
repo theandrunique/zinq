@@ -7,7 +7,7 @@ pub fn validate_password(value: &str) -> Result<(), ValidationError> {
     }
 
     let chars_count = value.chars().count();
-    if chars_count < 8 || chars_count > 50 {
+    if !(8..=50).contains(&chars_count) {
         let e = ValidationError::new("invalid_length")
             .with_message("Password must be between 8 and 50 characters.".into());
         return Err(e);

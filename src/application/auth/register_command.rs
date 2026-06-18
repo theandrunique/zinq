@@ -82,6 +82,6 @@ impl RequestHandler for RegisterComandHandler {
             })
             .await?;
 
-        return Ok(new_user);
+        Ok(new_user)
     }
 }

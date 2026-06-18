@@ -51,7 +51,7 @@ pub async fn create_message(
         current_user_id: claims.sub,
         message_id: None,
         referenced_message_id: request.referenced_message_id,
-        chat_id: chat_id,
+        chat_id,
         content: request.content,
         attachments: request
             .attachments
@@ -69,8 +69,8 @@ pub async fn create_message(
 
     let result = handler.handle(command).await?;
 
-    return Ok(Json(MessageSchema::from((
+    Ok(Json(MessageSchema::from((
         result.message,
         result.attachments,
-    ))));
+    ))))
 }

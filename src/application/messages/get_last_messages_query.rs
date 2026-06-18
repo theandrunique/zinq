@@ -45,7 +45,7 @@ impl RequestHandler for GetLastMessagesQueryHandler {
             .chat_member_repository
             .get_chat_ids_for_user(request.current_user_id, &request.chat_ids)
             .await
-            .map_err(|e| Error::InternalServerError(e))?;
+            .map_err(Error::InternalServerError)?;
 
         for &chat_id in &request.chat_ids {
             if member_statuses.get(&chat_id).copied() != Some(false) {
@@ -60,7 +60,7 @@ impl RequestHandler for GetLastMessagesQueryHandler {
             .message_repository
             .get_lasts_from(&request.chat_ids)
             .await
-            .map_err(|e| Error::InternalServerError(e))?;
+            .map_err(Error::InternalServerError)?;
 
         Ok(messages)
     }

@@ -41,7 +41,7 @@ impl RequestHandler for RefreshTokenCommandHandler {
             .user_session_repository
             .get_user_sessions(claims.sub)
             .await
-            .map_err(|e| Error::InternalServerError(e))?;
+            .map_err(Error::InternalServerError)?;
 
         let session = sessions
             .into_iter()
@@ -51,12 +51,12 @@ impl RequestHandler for RefreshTokenCommandHandler {
         let access_token = self
             .jwt_handler
             .generate_access_token(session.user_id, session.token_id)
-            .map_err(|e| Error::InternalServerError(e))?;
+            .map_err(Error::InternalServerError)?;
 
         let refresh_token = self
             .jwt_handler
             .generate_refresh_token(session.user_id, session.token_id, 604800)
-            .map_err(|e| Error::InternalServerError(e))?;
+            .map_err(Error::InternalServerError)?;
 
         Ok(LoginCommandResult {
             access_token,

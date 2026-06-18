@@ -35,7 +35,7 @@ impl RequestHandler for GetChatQueryHandler {
             .chat_repository
             .get_by_id(request.chat_id)
             .await
-            .map_err(|e| Error::InternalServerError(e))?
+            .map_err(Error::InternalServerError)?
             .ok_or(Error::ChatNotFound(request.chat_id))?;
 
         if !chat.has_member(request.current_user_id) {

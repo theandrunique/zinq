@@ -181,7 +181,7 @@ impl S3Service for AwsS3Service {
                     .map(|s| s.to_string())
                     .unwrap_or_else(|| "application/octet-stream".to_string());
 
-                let content_length = response.content_length().unwrap_or(0) as i64;
+                let content_length = response.content_length().unwrap_or(0);
 
                 Ok(Some(S3ObjectMetadata {
                     key: key.to_string(),

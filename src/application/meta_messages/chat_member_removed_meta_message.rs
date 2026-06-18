@@ -60,7 +60,7 @@ impl DomainEventHandler for ChatMemberRemovedMetaMessage {
             id: self.id_gen.gen_id().await,
             chat_id: chat.id,
             author_id: initiator_id_val,
-            message_type: message_type,
+            message_type,
         });
 
         self.message_repository.upsert(&meta_message).await?;

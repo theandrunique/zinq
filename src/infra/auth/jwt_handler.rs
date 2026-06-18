@@ -87,7 +87,7 @@ impl<J: JwksService> JwtHandler for JwtService<J> {
 
         let claims = TokenClaims {
             sub: user_id,
-            session_id: session_id,
+            session_id,
             token_type: TokenType::Access,
             exp,
             iat: now,
@@ -109,7 +109,7 @@ impl<J: JwksService> JwtHandler for JwtService<J> {
 
         let claims = TokenClaims {
             sub: user_id,
-            session_id: session_id,
+            session_id,
             token_type: TokenType::Refresh,
             exp,
             iat: now,
