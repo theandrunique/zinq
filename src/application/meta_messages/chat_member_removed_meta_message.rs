@@ -32,7 +32,7 @@ impl ChatMemberRemovedMetaMessage {
 impl DomainEventHandler for ChatMemberRemovedMetaMessage {
     async fn handle(&self, event: &DomainEvent) -> Result<(), anyhow::Error> {
         let DomainEvent::ChatMemberRemoved {
-            chat,
+            chat_id,
             member,
             initiator_id,
         } = event
@@ -41,10 +41,6 @@ impl DomainEventHandler for ChatMemberRemovedMetaMessage {
         };
 
         let initiator_id_val = *initiator_id;
-
-        let initiator = chat
-            .get_member(initiator_id_val)
-            .with_context(|| format!("Chat member not found for owner_id {}", initiator_id))?;
 
         let message_type = if member.user_id == initiator_id_val {
             MessageType::MemberLeave {
@@ -58,7 +54,7 @@ impl DomainEventHandler for ChatMemberRemovedMetaMessage {
 
         let meta_message = Message::new_meta(CreateMetaMessageRequest {
             id: self.id_gen.gen_id().await,
-            chat_id: chat.id,
+            chat_id: *chat_id,
             author_id: initiator_id_val,
             message_type,
         });
@@ -67,10 +63,9 @@ impl DomainEventHandler for ChatMemberRemovedMetaMessage {
 
         self.mediator
             .publish(&DomainEvent::MessageCreated {
-                chat: chat.clone(),
                 message: meta_message,
-                member: initiator,
                 attachments: vec![],
+                initiator_id: initiator_id_val,
             })
             .await?;
 

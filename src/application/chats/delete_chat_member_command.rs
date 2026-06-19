@@ -94,8 +94,8 @@ impl RequestHandler for DeleteChatMemberCommandHandler {
 
             self.mediator
                 .publish(&DomainEvent::ChatMemberRemoved {
-                    chat,
                     member,
+                    chat_id: chat.id,
                     initiator_id: request.current_user_id,
                 })
                 .await?;

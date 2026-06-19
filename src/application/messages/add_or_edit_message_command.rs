@@ -157,10 +157,9 @@ impl RequestHandler for AddOrEditMessageCommandHandler {
 
             self.mediator
                 .publish(&DomainEvent::MessageUpdated {
-                    chat: chat.clone(),
                     message: message.clone(),
-                    member: initiator.clone(),
                     attachments: attachments.clone(),
+                    initiator_id: initiator.user_id,
                 })
                 .await?;
 
@@ -203,10 +202,9 @@ impl RequestHandler for AddOrEditMessageCommandHandler {
 
             self.mediator
                 .publish(&DomainEvent::MessageCreated {
-                    chat: chat.clone(),
                     message: message.clone(),
-                    member: initiator.clone(),
                     attachments: attachments.clone(),
+                    initiator_id: initiator.user_id,
                 })
                 .await?;
 

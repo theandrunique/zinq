@@ -100,8 +100,8 @@ impl RequestHandler for AddChatMemberCommandHandler {
 
             self.mediator
                 .publish(&DomainEvent::ChatMemberAdded {
-                    chat: chat.clone(),
                     member: updated_member,
+                    chat_id: chat.id,
                     initiator_id: request.current_user_id,
                 })
                 .await?;
@@ -125,8 +125,8 @@ impl RequestHandler for AddChatMemberCommandHandler {
 
         self.mediator
             .publish(&DomainEvent::ChatMemberAdded {
-                chat: chat.clone(),
                 member: new_member,
+                chat_id: chat.id,
                 initiator_id: request.current_user_id,
             })
             .await?;

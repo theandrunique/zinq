@@ -73,7 +73,6 @@ impl Chat {
             .iter()
             .find(|m| m.user_id == user_id && !m.is_leave)
             .cloned()
-            .map(|m| m)
     }
 
     pub fn has_member(&self, user_id: i64) -> bool {

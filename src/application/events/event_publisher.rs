@@ -36,22 +36,21 @@ impl DomainEventHandler for EventPublisher {
             DomainEvent::ChatCreate { chat } => {
                 (EventLogType::ChatCreate { chat: chat.clone() }, chat.id)
             }
-            DomainEvent::ChatMemberAdded { chat, member, .. } => (
+            DomainEvent::ChatMemberAdded { chat_id, member, .. } => (
                 EventLogType::ChatMemberAdded {
-                    chat_id: chat.id,
+                    chat_id: *chat_id,
                     member: member.clone(),
                 },
-                chat.id,
+                *chat_id,
             ),
-            DomainEvent::ChatMemberRemoved { chat, member, .. } => (
+            DomainEvent::ChatMemberRemoved { chat_id, member, .. } => (
                 EventLogType::ChatMemberRemoved {
-                    chat_id: chat.id,
+                    chat_id: *chat_id,
                     member: member.clone(),
                 },
-                chat.id,
+                *chat_id,
             ),
             DomainEvent::MessageCreated {
-                chat,
                 message,
                 attachments,
                 ..
@@ -60,10 +59,9 @@ impl DomainEventHandler for EventPublisher {
                     message: message.clone(),
                     attachments: attachments.clone(),
                 },
-                chat.id,
+                message.chat_id,
             ),
             DomainEvent::MessageUpdated {
-                chat,
                 message,
                 attachments,
                 ..
@@ -72,7 +70,7 @@ impl DomainEventHandler for EventPublisher {
                     message: message.clone(),
                     attachments: attachments.clone(),
                 },
-                chat.id,
+                message.chat_id,
             ),
             _ => return Ok(()),
         };

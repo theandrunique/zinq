@@ -49,10 +49,6 @@ impl DomainEventHandler for ChatCreateMetaMessage {
             .owner_id
             .with_context(|| format!("Chat owner_id was None for {}", chat.id))?;
 
-        let member = chat
-            .get_member(owner_id)
-            .with_context(|| format!("Chat member not found for owner_id {}", owner_id))?;
-
         let meta_message = Message::new_meta(CreateMetaMessageRequest {
             id: self.id_gen.gen_id().await,
             chat_id: chat.id,
@@ -65,10 +61,9 @@ impl DomainEventHandler for ChatCreateMetaMessage {
         self.message_repository.upsert(&meta_message).await?;
         self.mediator
             .publish(&DomainEvent::MessageCreated {
-                chat: chat.clone(),
                 message: meta_message,
-                member,
                 attachments: vec![],
+                initiator_id: owner_id,
             })
             .await?;
 
