@@ -65,8 +65,7 @@ impl ScyllaCommon {
     {
         let res = self.exec(query, values).await?;
         let rows = res.into_rows_result().map_err(anyhow::Error::new)?;
-        rows.maybe_first_row::<R>()
-            .map_err(anyhow::Error::new)
+        rows.maybe_first_row::<R>().map_err(anyhow::Error::new)
     }
 
     pub async fn exec_all<R, T>(&self, query: &str, values: T) -> Result<Vec<R>, anyhow::Error>

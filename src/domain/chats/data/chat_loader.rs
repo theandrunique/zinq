@@ -2,8 +2,7 @@ use async_trait::async_trait;
 
 use crate::domain::chats::Chat;
 
-#[derive(Clone)]
-#[derive(Default)]
+#[derive(Clone, Default)]
 pub struct ChatLoadOptions {
     pub chat_id: Option<i64>,
     pub member_ids: Vec<i64>,
@@ -25,7 +24,6 @@ impl ChatLoadOptions {
         self
     }
 }
-
 
 #[async_trait]
 pub trait ChatLoader: Send + Sync {

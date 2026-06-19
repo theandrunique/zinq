@@ -9,7 +9,7 @@ use socketioxide::SocketIo;
 
 use crate::{
     domain::event_log::{Event, EventLog, EventLogType, data::EventLogRepository},
-    routers::schemas::common::{EventLogSchema},
+    routers::schemas::common::EventLogSchema,
 };
 
 pub async fn start_event_listener(
@@ -84,7 +84,8 @@ async fn event_listener(
                     continue;
                 }
 
-                if let Err(e) = io.to(format!("user:{}", user_id))
+                if let Err(e) = io
+                    .to(format!("user:{}", user_id))
                     .emit("event", &EventLogSchema::from(event_log))
                     .await
                 {
