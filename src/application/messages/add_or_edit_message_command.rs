@@ -156,7 +156,7 @@ impl RequestHandler for AddOrEditMessageCommandHandler {
                 .map_err(Error::InternalServerError)?;
 
             self.mediator
-                .publish(&DomainEvent::MessageUpdated {
+                .publish(&DomainEvent::MessageUpdate {
                     message: message.clone(),
                     attachments: attachments.clone(),
                     initiator_id: initiator.user_id,
@@ -201,7 +201,7 @@ impl RequestHandler for AddOrEditMessageCommandHandler {
             }
 
             self.mediator
-                .publish(&DomainEvent::MessageCreated {
+                .publish(&DomainEvent::MessageCreate {
                     message: message.clone(),
                     attachments: attachments.clone(),
                     initiator_id: initiator.user_id,

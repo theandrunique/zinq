@@ -60,7 +60,7 @@ impl DomainEventHandler for ChatCreateMetaMessage {
 
         self.message_repository.upsert(&meta_message).await?;
         self.mediator
-            .publish(&DomainEvent::MessageCreated {
+            .publish(&DomainEvent::MessageCreate {
                 message: meta_message,
                 attachments: vec![],
                 initiator_id: owner_id,

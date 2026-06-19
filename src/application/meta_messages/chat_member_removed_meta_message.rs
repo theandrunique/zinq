@@ -31,7 +31,7 @@ impl ChatMemberRemovedMetaMessage {
 #[async_trait]
 impl DomainEventHandler for ChatMemberRemovedMetaMessage {
     async fn handle(&self, event: &DomainEvent) -> Result<(), anyhow::Error> {
-        let DomainEvent::ChatMemberRemoved {
+        let DomainEvent::ChatMemberRemove {
             chat_id,
             member,
             initiator_id,
@@ -62,7 +62,7 @@ impl DomainEventHandler for ChatMemberRemovedMetaMessage {
         self.message_repository.upsert(&meta_message).await?;
 
         self.mediator
-            .publish(&DomainEvent::MessageCreated {
+            .publish(&DomainEvent::MessageCreate {
                 message: meta_message,
                 attachments: vec![],
                 initiator_id: initiator_id_val,

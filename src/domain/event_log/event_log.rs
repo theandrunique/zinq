@@ -23,11 +23,11 @@ pub enum EventLogType {
     ChatCreate {
         chat: Chat,
     },
-    ChatMemberAdded {
+    ChatMemberAdd {
         chat_id: i64,
         member: ChatMember,
     },
-    ChatMemberRemoved {
+    ChatMemberRemove {
         chat_id: i64,
         member: ChatMember,
     },

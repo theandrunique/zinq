@@ -99,7 +99,7 @@ impl RequestHandler for AddChatMemberCommandHandler {
                 .map_err(Error::InternalServerError)?;
 
             self.mediator
-                .publish(&DomainEvent::ChatMemberAdded {
+                .publish(&DomainEvent::ChatMemberAdd {
                     member: updated_member,
                     chat_id: chat.id,
                     initiator_id: request.current_user_id,
@@ -124,7 +124,7 @@ impl RequestHandler for AddChatMemberCommandHandler {
             .map_err(Error::InternalServerError)?;
 
         self.mediator
-            .publish(&DomainEvent::ChatMemberAdded {
+            .publish(&DomainEvent::ChatMemberAdd {
                 member: new_member,
                 chat_id: chat.id,
                 initiator_id: request.current_user_id,

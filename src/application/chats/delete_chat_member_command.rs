@@ -93,7 +93,7 @@ impl RequestHandler for DeleteChatMemberCommandHandler {
                 .map_err(Error::InternalServerError)?;
 
             self.mediator
-                .publish(&DomainEvent::ChatMemberRemoved {
+                .publish(&DomainEvent::ChatMemberRemove {
                     member,
                     chat_id: chat.id,
                     initiator_id: request.current_user_id,

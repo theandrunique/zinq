@@ -18,22 +18,22 @@ pub enum DomainEvent {
     ChatCreate {
         chat: Chat,
     },
-    ChatMemberAdded {
+    ChatMemberAdd {
         member: ChatMember,
         chat_id: i64,
         initiator_id: i64,
     },
-    ChatMemberRemoved {
+    ChatMemberRemove {
         member: ChatMember,
         chat_id: i64,
         initiator_id: i64,
     },
-    MessageCreated {
+    MessageCreate {
         message: Message,
         attachments: Vec<Attachment>,
         initiator_id: i64,
     },
-    MessageUpdated {
+    MessageUpdate {
         message: Message,
         attachments: Vec<Attachment>,
         initiator_id: i64,

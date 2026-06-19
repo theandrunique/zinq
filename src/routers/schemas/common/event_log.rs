@@ -71,13 +71,13 @@ impl From<EventLogType> for EventLogTypeSchema {
             EventLogType::ChatCreate { chat } => {
                 EventLogTypeSchema::ChatCreate { chat: chat.into() }
             }
-            EventLogType::ChatMemberAdded { chat_id, member } => {
+            EventLogType::ChatMemberAdd { chat_id, member } => {
                 EventLogTypeSchema::ChatMemberAdded {
                     chat_id: chat_id.to_string(),
                     member: member.into(),
                 }
             }
-            EventLogType::ChatMemberRemoved { chat_id, member } => {
+            EventLogType::ChatMemberRemove { chat_id, member } => {
                 EventLogTypeSchema::ChatMemberRemoved {
                     chat_id: chat_id.to_string(),
                     member: member.into(),
