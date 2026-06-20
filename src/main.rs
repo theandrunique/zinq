@@ -8,8 +8,7 @@ use crate::{
     gateway::gateway,
     infra::event_bus::NatsEventBus,
     routers::{
-        auth_router, chat_router, emoji_router, start_event_listener, user_router,
-        well_known_router,
+        auth_router, chat_router, emoji_router, start_event_listener, sync_router, user_router, well_known_router
     },
     state::init_state,
 };
@@ -66,6 +65,7 @@ async fn main() {
         .nest("/auth", auth_router(app_state.clone()))
         .nest("/emoji-packs", emoji_router(app_state.clone()))
         .nest("/chats", chat_router(app_state.clone()))
+        .merge(sync_router(app_state.clone()))
         .layer(socket_layer);
 
     let address = format!("0.0.0.0:{}", app_config.port);

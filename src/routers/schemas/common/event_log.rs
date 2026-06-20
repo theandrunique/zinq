@@ -40,11 +40,11 @@ pub enum EventLogTypeSchema {
     ChatCreate {
         chat: ChatSchema,
     },
-    ChatMemberAdded {
+    ChatMemberAdd {
         chat_id: String,
         member: ChatMemberSchema,
     },
-    ChatMemberRemoved {
+    ChatMemberRemove {
         chat_id: String,
         member: ChatMemberSchema,
     },
@@ -72,13 +72,13 @@ impl From<EventLogType> for EventLogTypeSchema {
                 EventLogTypeSchema::ChatCreate { chat: chat.into() }
             }
             EventLogType::ChatMemberAdd { chat_id, member } => {
-                EventLogTypeSchema::ChatMemberAdded {
+                EventLogTypeSchema::ChatMemberAdd {
                     chat_id: chat_id.to_string(),
                     member: member.into(),
                 }
             }
             EventLogType::ChatMemberRemove { chat_id, member } => {
-                EventLogTypeSchema::ChatMemberRemoved {
+                EventLogTypeSchema::ChatMemberRemove {
                     chat_id: chat_id.to_string(),
                     member: member.into(),
                 }

@@ -206,3 +206,64 @@ impl From<GetMessagesQueryResult> for Vec<MessageSchema> {
             .collect()
     }
 }
+
+impl From<Message> for MessageSchema {
+    fn from(val: Message) -> Self {
+        let (msg_type, metadata) = match val.message_type {
+            MessageType::Default => ("DEFAULT".to_string(), None),
+            MessageType::Reply {
+                referenced_message_id,
+            } => (
+                "REPLY".to_string(),
+                Some(MessageMetadataSchema::Reply {
+                    referenced_message_id: referenced_message_id.to_string(),
+                }),
+            ),
+            MessageType::MemberAdd { user_id } => (
+                "MEMBER_ADD".to_string(),
+                Some(MessageMetadataSchema::MemberAdd {
+                    user_id: user_id.to_string(),
+                }),
+            ),
+            MessageType::MemberRemove { user_id } => (
+                "MEMBER_REMOVE".to_string(),
+                Some(MessageMetadataSchema::MemberRemove {
+                    user_id: user_id.to_string(),
+                }),
+            ),
+            MessageType::MemberLeave { user_id } => (
+                "MEMBER_LEAVE".to_string(),
+                Some(MessageMetadataSchema::MemberLeave {
+                    user_id: user_id.to_string(),
+                }),
+            ),
+            MessageType::ChatNameUpdate { new_name } => (
+                "CHAT_NAME_UPDATE".to_string(),
+                Some(MessageMetadataSchema::ChatNameUpdate { new_name }),
+            ),
+            MessageType::ChatImageUpdate { new_image } => (
+                "CHAT_IMAGE_UPDATE".to_string(),
+                Some(MessageMetadataSchema::ChatImageUpdate { new_image }),
+            ),
+            MessageType::ChatPinnedMessage => ("CHAT_PINNED_MESSAGE".to_string(), None),
+            MessageType::ChatUnpinMessage => ("CHAT_UNPIN_MESSAGE".to_string(), None),
+            MessageType::ChatCreate { chat_name } => (
+                "CHAT_CREATE".to_string(),
+                Some(MessageMetadataSchema::ChatCreate { chat_name }),
+            ),
+            MessageType::Forward => ("FORWARD".to_string(), None),
+        };
+
+        MessageSchema {
+            id: val.id.to_string(),
+            chat_id: val.chat_id.to_string(),
+            author_id: val.author_id.to_string(),
+            content: val.content,
+            created_at: val.created_at,
+            edited_at: val.edited_at,
+            msg_type,
+            metadata,
+            attachments: vec![],
+        }
+    }
+}

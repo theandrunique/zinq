@@ -13,6 +13,7 @@ mod get_chat;
 mod get_chat_attachments;
 mod get_chat_messages;
 mod remove_chat_member;
+mod get_last_messages;
 
 use add_chat_member::add_chat_member;
 use create_cloud_attachment::create_cloud_attachment;
@@ -22,6 +23,7 @@ use get_chat::get_chat;
 use get_chat_attachments::get_chat_attachments;
 use get_chat_messages::get_chat_messages;
 use remove_chat_member::remove_chat_member;
+use get_last_messages::get_last_messages;
 
 pub fn chat_router(state: AppState) -> Router {
     Router::new()
@@ -29,6 +31,7 @@ pub fn chat_router(state: AppState) -> Router {
         .route("/{chat_id}/attachments", get(get_chat_attachments))
         .route("/{chat_id}/attachments", post(create_cloud_attachment))
         .route("/{chat_id}/messages", get(get_chat_messages))
+        .route("/messages", get(get_last_messages))
         .route("/{chat_id}/messages", post(create_message))
         .route("/{chat_id}/messages/{message_id}", put(edit_message))
         .route("/{chat_id}/members/{user_id}", put(add_chat_member))

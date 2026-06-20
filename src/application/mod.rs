@@ -1,10 +1,12 @@
 pub mod auth;
 pub mod chats;
-pub mod events;
+pub mod event_logs;
 pub mod messages;
+pub mod users;
+
+pub mod events;
 pub mod meta_messages;
 pub mod services;
-pub mod users;
 
 pub trait RequestHandler {
     type Request;
