@@ -93,13 +93,13 @@ CREATE TABLE IF NOT EXISTS messages_by_chat_id (
 
 CREATE TABLE IF NOT EXISTS message_acks (
     chat_id bigint,
+    message_id bigint,
     user_id bigint,
-    to_message_id bigint,
-    from_message_id bigint,
     timestamp timestamp,
 
-    PRIMARY KEY ((chat_id), to_message_id)
-) WITH CLUSTERING ORDER BY (to_message_id DESC);
+    PRIMARY KEY ((chat_id), message_id, user_id)
+) WITH CLUSTERING ORDER BY (message_id DESC)
+    AND default_time_to_live = 604800; -- 7 days
 
 CREATE TABLE IF NOT EXISTS private_chats (
     user_id1 bigint,

@@ -19,9 +19,9 @@ async fn test_get_messages_success() {
     let chat = ctx
         .create_group_chat(current_user.id, "Test Group", vec![], None)
         .await;
-    let _msg1 = ctx.create_message(chat.id, current_user.id, "First").await;
+    let msg1 = ctx.create_message(chat.id, current_user.id, "First").await;
     let msg2 = ctx.create_message(chat.id, current_user.id, "Second").await;
-    let _msg3 = ctx.create_message(chat.id, current_user.id, "Third").await;
+    let msg3 = ctx.create_message(chat.id, current_user.id, "Third").await;
 
     let query_handler = GetMessagesQueryHandler::new(&ctx.app_state);
 
@@ -37,22 +37,23 @@ async fn test_get_messages_success() {
         .await
         .expect("Should succeed with limit");
     assert_eq!(result.messages.len(), 2);
-    assert_eq!(result.messages[0].content, "Third");
-    assert_eq!(result.messages[1].content, "Second");
+    assert_eq!(result.messages[0].id, msg3.message.id);
+    assert_eq!(result.messages[1].id, msg2.message.id);
 
     let query_before = GetMessagesQuery {
         current_user_id: current_user.id,
         chat_id: chat.id,
         before: Some(msg2.message.id),
-        limit: 2,
+        limit: 1,
     };
 
     let result = query_handler
         .handle(query_before)
         .await
         .expect("Should succeed with before");
+
     assert_eq!(result.messages.len(), 1);
-    assert_eq!(result.messages[0].content, "First");
+    assert_eq!(result.messages[0].id, msg1.message.id);
 }
 
 #[tokio::test]

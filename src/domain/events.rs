@@ -38,6 +38,11 @@ pub enum DomainEvent {
         attachments: Vec<Attachment>,
         initiator_id: i64,
     },
+    MessageAck {
+        user_id: i64,
+        chat_id: i64,
+        last_read_message_id: i64,
+    },
 }
 
 #[async_trait]

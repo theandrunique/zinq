@@ -1,3 +1,0 @@
-- [ ] Refactor gateway layer
-- [ ] Refactor routers
-- [ ] Fix tests

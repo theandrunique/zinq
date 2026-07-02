@@ -34,6 +34,7 @@ use crate::{
             attachment_repository::ScyllaAttachmentRepository, chat_loader::ScyllaChatLoader,
             chat_member_repository::ScyllaChatMemberRepository,
             chat_repotisory::ScyllaChatRepository, event_log_repository::ScyllaEventLogRepository,
+            message_ack_repository::ScyllaMessageAckRepository,
             message_repository::ScyllaMessageRepository, user_repository::ScyllaUserRepository,
             user_session_repository::ScyllaUserSessionRepository,
         },
@@ -129,6 +130,7 @@ impl TestContext {
             chat_repository: Arc::new(ScyllaChatRepository::new(session.clone())),
             message_repository: Arc::new(ScyllaMessageRepository::new(session.clone())),
             attachment_repository: Arc::new(ScyllaAttachmentRepository::new(session.clone())),
+            message_ack_repository: Arc::new(ScyllaMessageAckRepository::new(session.clone())),
             hash_handler: Arc::new(BcryptHandler::new()),
             jwks_service: Arc::new(jwks_service),
             jwt_handler: Arc::new(JwtService::new(jwks_service_clone, 3600)),
@@ -147,7 +149,7 @@ impl TestContext {
             mediator: Arc::new(Mediator::new()),
         };
 
-        state.register_handlers();
+        state.register_handlers().await;
 
         Self { app_state: state }
     }

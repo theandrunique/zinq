@@ -11,7 +11,10 @@ use serde_with::{DisplayFromStr, Map, serde_as};
 use crate::{
     application::{
         RequestHandler,
-        messages::{GetLastMessagesQuery, GetLastMessagesQueryHandler, GetMessagesQuery, GetMessagesQueryHandler},
+        messages::{
+            GetLastMessagesQuery, GetLastMessagesQueryHandler, GetMessagesQuery,
+            GetMessagesQueryHandler,
+        },
     },
     error::Error,
     infra::AuthUser,

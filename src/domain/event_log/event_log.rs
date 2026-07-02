@@ -31,6 +31,11 @@ pub enum EventLogType {
         chat_id: i64,
         member: ChatMember,
     },
+    MessageAck {
+        chat_id: i64,
+        user_id: i64,
+        last_read_message_id: i64,
+    },
 }
 
 #[derive(Clone, Serialize, Deserialize)]

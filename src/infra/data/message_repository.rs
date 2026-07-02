@@ -178,4 +178,47 @@ impl MessageRepository for ScyllaMessageRepository {
         self.common.exec(query, (chat_id, message_id)).await?;
         Ok(())
     }
+
+    async fn count_messages(
+        &self,
+        chat_id: i64,
+        from_message_id: i64,
+        to_message_id: i64,
+    ) -> Result<i64, anyhow::Error> {
+        let query = "
+            SELECT COUNT(*)
+            FROM messages_by_chat_id
+            WHERE chat_id = ?
+                AND message_id >= ?
+                AND message_id <= ?
+            ";
+
+        let result: Option<(i64,)> = self
+            .common
+            .exec_first(query, (chat_id, from_message_id, to_message_id))
+            .await?;
+        Ok(result.map(|(count,)| count).unwrap_or(0))
+    }
+
+    async fn get_message_ids_in_range(
+        &self,
+        chat_id: i64,
+        from_message_id: i64,
+        to_message_id: i64,
+    ) -> Result<Vec<i64>, anyhow::Error> {
+        let query = "
+            SELECT message_id
+            FROM messages_by_chat_id
+            WHERE chat_id = ?
+                AND message_id >= ?
+                AND message_id <= ?
+            ";
+
+        let rows: Vec<(i64,)> = self
+            .common
+            .exec_all(query, (chat_id, from_message_id, to_message_id))
+            .await?;
+
+        Ok(rows.into_iter().map(|(message_id,)| message_id).collect())
+    }
 }

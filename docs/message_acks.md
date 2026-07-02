@@ -18,15 +18,16 @@ CREATE TABLE message_acks (
     user_id bigint,
     timestamp timestamp,
 
-    PRIMARY KEY (chat_id, message_id)
-) WITH default_time_to_live = 604800; -- 7 days
+    PRIMARY KEY ((chat_id), message_id, user_id)
+) WITH CLUSTERING ORDER BY (message_id DESC)
+    AND default_time_to_live = 604800; -- 7 days
 
 CREATE TABLE message_views (
     chat_id bigint,
     message_id bigint,
     views counter,
 
-    PRIMARY KEY (chat_id, message_id)
+    PRIMARY KEY ((chat_id), message_id)
 );
 ```
 
@@ -41,7 +42,6 @@ CREATE TABLE message_views (
 UPDATE chat_users_by_user_id
 SET last_read_message_id = ?
 WHERE user_id = ? AND chat_id = ?;
-
 
 -- определить сообщения за последние 7 дней, которые еще не были прочитаны и обновить их прочтения
 INSERT INTO message_acks (
