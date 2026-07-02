@@ -19,6 +19,7 @@ use crate::{
         chats::data::{ChatLoader, ChatMemberRepository, ChatRepository},
         event_log::data::EventLogRepository,
         events::Mediator,
+        message_acks::data::MessageAckRepository,
         messages::data::MessageRepository,
     },
     infra::{
@@ -32,6 +33,7 @@ use crate::{
             attachment_repository::ScyllaAttachmentRepository, chat_loader::ScyllaChatLoader,
             chat_member_repository::ScyllaChatMemberRepository,
             chat_repotisory::ScyllaChatRepository, event_log_repository::ScyllaEventLogRepository,
+            message_ack_repository::ScyllaMessageAckRepository,
             message_repository::ScyllaMessageRepository, user_repository::ScyllaUserRepository,
             user_session_repository::ScyllaUserSessionRepository,
         },
@@ -54,6 +56,7 @@ pub struct AppState {
     pub chat_repository: Arc<dyn ChatRepository>,
     pub message_repository: Arc<dyn MessageRepository>,
     pub attachment_repository: Arc<dyn AttachmentRepository>,
+    pub message_ack_repository: Arc<dyn MessageAckRepository>,
     pub hash_handler: Arc<dyn HashHandler>,
     pub jwks_service: Arc<FileJwksService>,
     pub jwt_handler: Arc<dyn JwtHandler>,
@@ -129,6 +132,7 @@ pub async fn init_state() -> AppState {
         chat_repository: Arc::new(ScyllaChatRepository::new(session.clone())),
         message_repository: Arc::new(ScyllaMessageRepository::new(session.clone())),
         attachment_repository: Arc::new(ScyllaAttachmentRepository::new(session.clone())),
+        message_ack_repository: Arc::new(ScyllaMessageAckRepository::new(session.clone())),
         hash_handler: Arc::new(BcryptHandler::new()),
         jwks_service: Arc::new(jwks_service.clone()),
         jwt_handler: Arc::new(JwtService::new(

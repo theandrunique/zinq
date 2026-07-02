@@ -76,6 +76,19 @@ impl DomainEventHandler for EventPublisher {
                 },
                 message.chat_id,
             ),
+            DomainEvent::MessageAck {
+                user_id,
+                chat_id,
+                last_read_message_id,
+                ..
+            } => (
+                EventLogType::MessageAck {
+                    user_id: *user_id,
+                    chat_id: *chat_id,
+                    last_read_message_id: *last_read_message_id,
+                },
+                *chat_id,
+            ),
             _ => return Ok(()),
         };
 

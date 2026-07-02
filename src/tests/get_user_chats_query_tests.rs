@@ -72,8 +72,8 @@ async fn test_get_user_chats_returns_chats() {
         match chat.chat_type {
             ChatType::GroupDm => {
                 assert!(
-                    chat.members.is_empty(),
-                    "GroupDm chat should NOT have members loaded"
+                    chat.members.len() == 1 && chat.members[0].user_id == current_user.id,
+                    "GroupDm chat should have loaded only current user"
                 );
             }
             ChatType::Dm => {

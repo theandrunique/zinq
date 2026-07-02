@@ -5,5 +5,5 @@ mod user;
 
 pub use chat::{ChatMemberSchema, ChatSchema};
 pub use event_log::{EventLogSchema, EventLogTypeSchema};
-pub use message::{AttachmentSchema, MessageMetadataSchema, MessageSchema};
+pub use message::{AttachmentSchema, MessageSchema, MessageTypeSchema};
 pub use user::{UserPrivateSchema, UserPublicSchema};

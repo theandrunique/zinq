@@ -24,6 +24,12 @@ pub trait ChatRepository: Send + Sync {
         chat_id: i64,
         is_leave: bool,
     ) -> Result<(), anyhow::Error>;
+    async fn update_last_read_message_id(
+        &self,
+        user_id: i64,
+        chat_id: i64,
+        message_id: i64,
+    ) -> Result<(), anyhow::Error>;
     async fn update_channel_info(&self, chat_id: i64) -> Result<(), anyhow::Error>;
     async fn update_owner_id(&self, chat_id: i64, owner_id: i64) -> Result<(), anyhow::Error>;
     async fn update_last_message_id(

@@ -1,3 +1,4 @@
+use async_nats::rustls::client;
 use axum::{
     Json, Router,
     extract::{Path, Query, State},
@@ -36,7 +37,7 @@ pub async fn get_user_chats(
 
     let chats = result
         .into_iter()
-        .map(ChatSchema::from)
+        .map(|chat| ChatSchema::from_chat_for_user(chat, claims.sub))
         .collect::<Vec<ChatSchema>>();
 
     Ok(Json(chats))

@@ -4,6 +4,7 @@ pub mod chat_member_repository;
 pub mod chat_repotisory;
 pub mod common;
 pub mod event_log_repository;
+pub mod message_ack_repository;
 pub mod message_repository;
 pub mod user_repository;
 pub mod user_session_repository;

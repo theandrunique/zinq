@@ -28,4 +28,18 @@ pub trait MessageRepository: Send + Sync {
     ) -> Result<Vec<Message>, anyhow::Error>;
 
     async fn delete_by_id(&self, chat_id: i64, message_id: i64) -> Result<(), anyhow::Error>;
+
+    async fn count_messages(
+        &self,
+        chat_id: i64,
+        from_message_id: i64,
+        to_message_id: i64,
+    ) -> Result<i64, anyhow::Error>;
+
+    async fn get_message_ids_in_range(
+        &self,
+        chat_id: i64,
+        from_message_id: i64,
+        to_message_id: i64,
+    ) -> Result<Vec<i64>, anyhow::Error>;
 }

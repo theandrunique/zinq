@@ -8,7 +8,8 @@ use crate::{
     gateway::gateway,
     infra::event_bus::NatsEventBus,
     routers::{
-        auth_router, chat_router, emoji_router, start_event_listener, sync_router, user_router, well_known_router
+        auth_router, chat_router, emoji_router, start_event_listener, sync_router, user_router,
+        well_known_router,
     },
     state::init_state,
 };

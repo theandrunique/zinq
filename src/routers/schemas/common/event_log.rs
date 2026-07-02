@@ -8,8 +8,8 @@ use crate::{
 
 #[derive(Serialize)]
 pub struct EventLogSchema {
-    pub user_id: String,
     pub event_id: String,
+    #[serde(rename = "type")]
     pub event_type: EventLogTypeSchema,
     pub created_at: DateTime<Utc>,
 }
@@ -17,7 +17,6 @@ pub struct EventLogSchema {
 impl From<EventLog> for EventLogSchema {
     fn from(event_log: EventLog) -> Self {
         EventLogSchema {
-            user_id: event_log.user_id.to_string(),
             event_id: event_log.event_id.to_string(),
             event_type: event_log.event_type.into(),
             created_at: event_log.created_at,
@@ -48,6 +47,11 @@ pub enum EventLogTypeSchema {
         chat_id: String,
         member: ChatMemberSchema,
     },
+    MessageAck {
+        user_id: String,
+        chat_id: String,
+        last_read_message_id: String,
+    },
 }
 
 impl From<EventLogType> for EventLogTypeSchema {
@@ -71,18 +75,25 @@ impl From<EventLogType> for EventLogTypeSchema {
             EventLogType::ChatCreate { chat } => {
                 EventLogTypeSchema::ChatCreate { chat: chat.into() }
             }
-            EventLogType::ChatMemberAdd { chat_id, member } => {
-                EventLogTypeSchema::ChatMemberAdd {
-                    chat_id: chat_id.to_string(),
-                    member: member.into(),
-                }
-            }
+            EventLogType::ChatMemberAdd { chat_id, member } => EventLogTypeSchema::ChatMemberAdd {
+                chat_id: chat_id.to_string(),
+                member: member.into(),
+            },
             EventLogType::ChatMemberRemove { chat_id, member } => {
                 EventLogTypeSchema::ChatMemberRemove {
                     chat_id: chat_id.to_string(),
                     member: member.into(),
                 }
             }
+            EventLogType::MessageAck {
+                user_id,
+                chat_id,
+                last_read_message_id,
+            } => EventLogTypeSchema::MessageAck {
+                user_id: user_id.to_string(),
+                chat_id: chat_id.to_string(),
+                last_read_message_id: last_read_message_id.to_string(),
+            },
         }
     }
 }

@@ -264,9 +264,9 @@ impl ChatRepository for ScyllaChatRepository {
     }
 
     async fn get_user_chats(&self, user_id: i64) -> Result<Vec<Chat>, anyhow::Error> {
-        let query = "SELECT chat_id FROM chat_users_by_user_id WHERE user_id = ?";
-        let result: Vec<(i64,)> = self.common.exec_all(query, (user_id,)).await?;
-        let chat_ids: Vec<i64> = result.into_iter().map(|v| v.0).collect();
+        let query = "SELECT * FROM chat_users_by_user_id WHERE user_id = ?";
+        let result: Vec<ChatMemberDb> = self.common.exec_all(query, (user_id,)).await?;
+        let chat_ids: Vec<i64> = result.iter().map(|v| v.chat_id).collect();
 
         if chat_ids.is_empty() {
             return Ok(vec![]);
@@ -283,11 +283,21 @@ impl ChatRepository for ScyllaChatRepository {
 
         let mut members_by_chat: HashMap<i64, Vec<ChatMember>> = HashMap::new();
 
+        for chat_user in result {
+            members_by_chat
+                .entry(chat_user.chat_id)
+                .or_default()
+                .push(ChatMember::try_from(chat_user)?);
+        }
+
         if !dm_chat_ids.is_empty() {
             let query = "SELECT * FROM chat_users_by_chat_id WHERE chat_id IN ?";
             let members_db: Vec<ChatMemberDb> = self.common.exec_all(query, (dm_chat_ids,)).await?;
 
             for member in members_db {
+                if member.user_id == user_id {
+                    continue;
+                }
                 members_by_chat
                     .entry(member.chat_id)
                     .or_default()
@@ -375,6 +385,19 @@ impl ChatRepository for ScyllaChatRepository {
     ) -> Result<(), anyhow::Error> {
         let query = "UPDATE chats_by_id SET last_message_id = ? WHERE chat_id = ?";
         self.common.exec(query, (last_message_id, chat_id)).await?;
+        Ok(())
+    }
+
+    async fn update_last_read_message_id(
+        &self,
+        user_id: i64,
+        chat_id: i64,
+        message_id: i64,
+    ) -> Result<(), anyhow::Error> {
+        let query = "UPDATE chat_users_by_user_id SET last_read_message_id = ? WHERE user_id = ? AND chat_id = ?";
+        self.common
+            .exec(query, (message_id, user_id, chat_id))
+            .await?;
         Ok(())
     }
 }
