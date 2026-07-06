@@ -11,5 +11,5 @@ mod get_dm_chat_command_tests;
 mod get_last_messages_query_tests;
 mod get_messages_query_tests;
 mod get_user_chats_query_tests;
-mod register_command_tests;
 mod message_ack_command_tests;
+mod register_command_tests;

@@ -11,6 +11,7 @@ use crate::{
         messages::data::MessageRepository,
     },
     error::Error,
+    infra::IdGenerator,
     state::AppState,
 };
 
@@ -31,6 +32,7 @@ pub struct MessageAckCommandHandler {
     chat_repository: Arc<dyn ChatRepository>,
     message_ack_repository: Arc<dyn MessageAckRepository>,
     message_repository: Arc<dyn MessageRepository>,
+    id_gen: Arc<dyn IdGenerator>,
     mediator: Arc<Mediator>,
 }
 
@@ -41,6 +43,7 @@ impl MessageAckCommandHandler {
             chat_repository: Arc::clone(&app_state.chat_repository),
             message_ack_repository: Arc::clone(&app_state.message_ack_repository),
             message_repository: Arc::clone(&app_state.message_repository),
+            id_gen: Arc::clone(&app_state.id_gen),
             mediator: Arc::clone(&app_state.mediator),
         }
     }
@@ -85,9 +88,7 @@ impl RequestHandler for MessageAckCommandHandler {
 
         let mut acks: Vec<MessageAck> = Vec::new();
         let now = Utc::now();
-        let epoch = Utc.with_ymd_and_hms(2005, 5, 20, 0, 0, 0).unwrap();
-        let cutoff_millis = (Utc::now() - Duration::days(7) - epoch).num_milliseconds();
-        let min_id = cutoff_millis << 22;
+        let min_id = self.id_gen.min_id_for_days_ago(7);
         let range_start = cmp::max(current_last_read + 1, min_id);
 
         if range_start <= request.last_read_message_id {
