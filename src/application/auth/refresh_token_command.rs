@@ -1,11 +1,7 @@
 use std::sync::Arc;
 
 use crate::{
-    application::{RequestHandler, auth::login_command::LoginCommandResult},
-    domain::auth::data::user_session_repository::UserSessionRepository,
-    error::Error,
-    infra::JwtHandler,
-    state::AppState,
+    application::{RequestHandler, auth::login_command::LoginCommandResult}, config::config, domain::auth::data::user_session_repository::UserSessionRepository, error::Error, infra::JwtHandler, state::AppState,
 };
 
 pub struct RefreshTokenCommand {
@@ -61,7 +57,7 @@ impl RequestHandler for RefreshTokenCommandHandler {
         Ok(LoginCommandResult {
             access_token,
             refresh_token,
-            expires_in: 604800,
+            expires_in: config().auth.access_token_expiration_seconds,
         })
     }
 }

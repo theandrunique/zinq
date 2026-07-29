@@ -1,7 +1,6 @@
 use dotenvy::dotenv;
+use once_cell::sync::OnceCell;
 use std::env;
-
-use tokio::sync::OnceCell;
 
 #[derive(Clone)]
 pub struct SmtpConfig {
@@ -14,7 +13,7 @@ pub struct SmtpConfig {
 
 #[derive(Clone)]
 pub struct AuthConfig {
-    pub access_token_expiration_seconds: usize,
+    pub access_token_expiration_seconds: u64,
     pub keys_directory: String,
 }
 
@@ -28,6 +27,7 @@ pub struct S3Config {
     pub region: String,
 }
 
+#[derive(Clone)]
 pub struct Config {
     pub port: u16,
     pub scylla_node: String,
@@ -37,9 +37,9 @@ pub struct Config {
     pub nats_url: String,
 }
 
-pub static CONFIG: OnceCell<Config> = OnceCell::const_new();
+pub static CONFIG: OnceCell<Config> = OnceCell::new();
 
-async fn init_config() -> Config {
+fn init_config() -> Config {
     dotenv().ok();
 
     Config {
@@ -80,6 +80,6 @@ async fn init_config() -> Config {
     }
 }
 
-pub async fn config() -> &'static Config {
-    CONFIG.get_or_init(init_config).await
+pub fn config() -> &'static Config {
+    CONFIG.get_or_init(init_config)
 }

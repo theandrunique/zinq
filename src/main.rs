@@ -5,13 +5,9 @@ use tracing::info;
 use tracing_subscriber::{EnvFilter, layer::SubscriberExt, util::SubscriberInitExt};
 
 use crate::{
-    gateway::gateway,
-    infra::event_bus::NatsEventBus,
-    routers::{
-        auth_router, chat_router, emoji_router, start_event_listener, sync_router, user_router,
-        well_known_router,
-    },
-    state::init_state,
+    gateway::gateway, infra::event_bus::NatsEventBus, routers::{
+        auth_router, chat_router, emoji_router, ping_router, start_event_listener, sync_router, user_router, well_known_router,
+    }, state::init_state,
 };
 
 #[cfg(test)]
@@ -38,7 +34,7 @@ async fn main() {
 
     info!("Initializing server");
 
-    let app_config = config::config().await;
+    let app_config = config::config();
 
     let app_state = init_state().await;
 
@@ -66,6 +62,7 @@ async fn main() {
         .nest("/auth", auth_router(app_state.clone()))
         .nest("/emoji-packs", emoji_router(app_state.clone()))
         .nest("/chats", chat_router(app_state.clone()))
+        .nest("/ping", ping_router())
         .merge(sync_router(app_state.clone()))
         .layer(socket_layer);
 

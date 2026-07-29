@@ -9,9 +9,7 @@ use crate::{
             ChatCreateMetaMessage, ChatMemberAddedMetaMessage, ChatMemberRemovedMetaMessage,
         },
         services::{AttachmentService, AvatarService, ChannelImageService},
-    },
-    config,
-    domain::{
+    }, config::{self, Config}, domain::{
         attachments::data::AttachmentRepository,
         auth::data::{
             user_repository::UserRepository, user_session_repository::UserSessionRepository,
@@ -21,8 +19,7 @@ use crate::{
         events::Mediator,
         message_acks::data::MessageAckRepository,
         messages::data::MessageRepository,
-    },
-    infra::{
+    }, infra::{
         auth::{
             hash_handler::{BcryptHandler, HashHandler},
             jwks_service::FileJwksService,
@@ -85,7 +82,7 @@ impl AppState {
 }
 
 pub async fn init_state() -> AppState {
-    let app_config = config::config().await;
+    let app_config = config::config();
 
     let session = Arc::new(
         SessionBuilder::new()

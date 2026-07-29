@@ -1,17 +1,13 @@
 use std::sync::Arc;
 
 use crate::{
-    application::RequestHandler,
-    domain::auth::{
+    application::RequestHandler, config, domain::auth::{
         UserSession, UserSessionCreateRequest,
         data::{user_repository::UserRepository, user_session_repository::UserSessionRepository},
-    },
-    error::Error,
-    infra::{
+    }, error::Error, infra::{
         auth::{hash_handler::HashHandler, jwt_handler::JwtHandler},
         id_generator::IdGenerator,
-    },
-    state::AppState,
+    }, state::AppState,
 };
 
 #[derive(Debug, validator::Validate, Clone)]
@@ -81,6 +77,7 @@ impl RequestHandler for LoginCommandHandler {
         let access_token = self
             .jwt_handler
             .generate_access_token(user.id, session.token_id)?;
+
         let refresh_token =
             self.jwt_handler
                 .generate_refresh_token(user.id, session.token_id, 604800)?;
@@ -88,7 +85,7 @@ impl RequestHandler for LoginCommandHandler {
         Ok(LoginCommandResult {
             access_token,
             refresh_token,
-            expires_in: 604800,
+            expires_in: config::config().auth.access_token_expiration_seconds,
         })
     }
 }
