@@ -79,4 +79,5 @@ async fn test_get_dm_chat_same_user() {
 
     let result = handler.handle(cmd).await.expect("Should succeed");
     assert_eq!(result.chat_type, ChatType::Dm);
+    assert_eq!(result.members.len(), 1);
 }

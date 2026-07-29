@@ -52,11 +52,13 @@ async fn test_get_attachments_success() {
 
 #[tokio::test]
 async fn test_get_attachments_chat_not_found() {
-    let ctx = TestContext::new("test_get_attachments_not_found").await;
+    let ctx = TestContext::new("test_get_attachments_chat_not_found").await;
+
+    let current_user = ctx.create_test_user("currentuser", "currentuser@test.com").await;
 
     let query_handler = GetAttachmentsQueryHandler::new(&ctx.app_state);
     let query = GetAttachmentsQuery {
-        current_user_id: 1,
+        current_user_id: current_user.id,
         chat_id: 99999,
         before: i64::MAX,
         limit: 50,

@@ -97,7 +97,7 @@ async fn test_get_user_chats_returns_chats() {
 
 #[tokio::test]
 async fn test_get_user_chats_dm_without_message_filtered() {
-    let ctx = TestContext::new("test_get_user_chats_dm_no_msg").await;
+    let ctx = TestContext::new("test_get_user_chats_dm_without_message_filtered").await;
 
     let user1 = ctx.create_test_user("user1", "user1@test.com").await;
     let user2 = ctx.create_test_user("user2", "user2@test.com").await;

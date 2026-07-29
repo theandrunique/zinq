@@ -1,0 +1,6 @@
+mod add_or_edit_message_command_tests;
+mod create_cloud_attachment_command_tests;
+mod delete_cloud_attachment_command_tests;
+mod get_last_messages_query_tests;
+mod get_messages_query_tests;
+mod message_ack_command_tests;

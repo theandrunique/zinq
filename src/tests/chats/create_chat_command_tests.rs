@@ -9,48 +9,49 @@ use crate::{
     tests::common::TestContext,
 };
 
-fn valid_command(current_user_id: i64, other_user_ids: Vec<i64>) -> CreateChatCommand {
-    CreateChatCommand {
-        current_user_id,
-        name: "Test Chat".to_string(),
-        members: other_user_ids,
-        permissions: None,
-    }
-}
-
 #[tokio::test]
 async fn test_create_chat_command_success() {
-    let ctx = TestContext::new("test_create_chat_success").await;
-    let handler = CreateChatCommandHandler::new(&ctx.app_state);
+    let ctx = TestContext::new("test_create_chat_command_success").await;
 
     let current_user = ctx
-        .create_test_user("currentuser", "current@test.com")
+        .create_test_user("currentuser", "currentuser@test.com")
         .await;
-    let other_user = ctx.create_test_user("otheruser", "other@test.com").await;
+    let member = ctx.create_test_user("member", "member@test.com").await;
 
-    let cmd = valid_command(current_user.id, vec![other_user.id]);
+    let handler = CreateChatCommandHandler::new(&ctx.app_state);
+    let cmd = CreateChatCommand {
+        current_user_id: current_user.id,
+        name: "Test Chat".to_string(),
+        members: vec![member.id],
+        permissions: None,
+    };
 
     let chat = handler
         .handle(cmd)
         .await
-        .unwrap_or_else(|e| panic!("Create chat failed: {:?}", e));
+        .expect("Create chat should succeed");
 
     assert_eq!(chat.name, Some("Test Chat".to_string()));
     assert!(chat.has_member(current_user.id));
-    assert!(chat.has_member(other_user.id));
+    assert!(chat.has_member(member.id));
 }
 
 #[tokio::test]
 async fn test_create_chat_duplicate_members() {
     let ctx = TestContext::new("test_create_chat_duplicate_members").await;
-    let handler = CreateChatCommandHandler::new(&ctx.app_state);
 
     let current_user = ctx
         .create_test_user("currentuser", "current@test.com")
         .await;
-    let other_user = ctx.create_test_user("otheruser", "other@test.com").await;
+    let member = ctx.create_test_user("member", "member@test.com").await;
 
-    let cmd = valid_command(current_user.id, vec![other_user.id, other_user.id]);
+    let handler = CreateChatCommandHandler::new(&ctx.app_state);
+    let cmd = CreateChatCommand {
+        current_user_id: current_user.id,
+        name: "Test Chat".to_string(),
+        members: vec![member.id, member.id],
+        permissions: None,
+    };
 
     let err = handler
         .handle(cmd)
@@ -63,17 +64,16 @@ async fn test_create_chat_duplicate_members() {
 #[tokio::test]
 async fn test_create_chat_missing_users() {
     let ctx = TestContext::new("test_create_chat_missing_users").await;
-    let handler = CreateChatCommandHandler::new(&ctx.app_state);
 
     let current_user = ctx
         .create_test_user("currentuser", "current@test.com")
         .await;
 
-    let nonexistent_id = 99999i64;
+    let handler = CreateChatCommandHandler::new(&ctx.app_state);
     let cmd = CreateChatCommand {
         current_user_id: current_user.id,
         name: "Test Chat".to_string(),
-        members: vec![nonexistent_id],
+        members: vec![99999],
         permissions: None,
     };
 
@@ -87,38 +87,49 @@ async fn test_create_chat_missing_users() {
 
 #[tokio::test]
 async fn test_create_chat_saved_in_repository() {
-    let ctx = TestContext::new("test_create_chat_saved").await;
-    let handler = CreateChatCommandHandler::new(&ctx.app_state);
+    let ctx = TestContext::new("test_create_chat_saved_in_repository").await;
 
     let current_user = ctx
-        .create_test_user("currentuser", "current@test.com")
+        .create_test_user("currentuser", "currentuser@test.com")
         .await;
-    let other_user = ctx.create_test_user("otheruser", "other@test.com").await;
+    let member = ctx.create_test_user("member", "member@test.com").await;
 
-    let cmd = valid_command(current_user.id, vec![other_user.id]);
+    let handler = CreateChatCommandHandler::new(&ctx.app_state);
+    let cmd = CreateChatCommand {
+        current_user_id: current_user.id,
+        name: "Test Chat".to_string(),
+        members: vec![member.id],
+        permissions: None,
+    };
 
-    let chat = handler.handle(cmd).await.unwrap();
+    let chat = handler
+        .handle(cmd)
+        .await
+        .expect("Create chat should succeed");
 
     let stored_chat = ctx
         .app_state
         .chat_repository
         .get_by_id(chat.id)
         .await
-        .unwrap_or_else(|e| panic!("Failed to get chat by id: {:?}", e))
+        .expect("Failed to get chat by id")
         .expect("Chat should exist in repository");
+
     assert_eq!(stored_chat.id, chat.id);
 }
 
 #[tokio::test]
 async fn test_create_chat_current_user_not_in_members() {
-    let ctx = TestContext::new("test_create_chat_auto_add").await;
-    let handler = CreateChatCommandHandler::new(&ctx.app_state);
+    let ctx = TestContext::new("test_create_chat_current_user_not_in_members").await;
 
     let current_user = ctx
-        .create_test_user("currentuser", "current@test.com")
+        .create_test_user("currentuser", "currentuser@test.com")
         .await;
-    let other_user = ctx.create_test_user("otheruser", "other@test.com").await;
+    let other_user = ctx
+        .create_test_user("otheruser", "otheruser@test.com")
+        .await;
 
+    let handler = CreateChatCommandHandler::new(&ctx.app_state);
     let cmd = CreateChatCommand {
         current_user_id: current_user.id,
         name: "Test Chat".to_string(),
@@ -126,7 +137,10 @@ async fn test_create_chat_current_user_not_in_members() {
         permissions: None,
     };
 
-    let chat = handler.handle(cmd).await.unwrap();
+    let chat = handler
+        .handle(cmd)
+        .await
+        .expect("Create chat should succeed");
 
     assert!(chat.has_member(current_user.id));
     assert!(chat.has_member(other_user.id));
@@ -135,12 +149,12 @@ async fn test_create_chat_current_user_not_in_members() {
 #[tokio::test]
 async fn test_create_chat_empty_members() {
     let ctx = TestContext::new("test_create_chat_empty_members").await;
-    let handler = CreateChatCommandHandler::new(&ctx.app_state);
 
     let current_user = ctx
         .create_test_user("currentuser", "current@test.com")
         .await;
 
+    let handler = CreateChatCommandHandler::new(&ctx.app_state);
     let cmd = CreateChatCommand {
         current_user_id: current_user.id,
         name: "Test Chat".to_string(),
@@ -151,45 +165,47 @@ async fn test_create_chat_empty_members() {
     let chat = handler
         .handle(cmd)
         .await
-        .unwrap_or_else(|e| panic!("Empty members should create chat with self: {:?}", e));
+        .expect("Create chat should succeed");
 
     assert!(chat.has_member(current_user.id));
 }
 
 #[tokio::test]
 async fn test_create_chat_only_current_user() {
-    let ctx = TestContext::new("test_create_chat_only_self").await;
-    let handler = CreateChatCommandHandler::new(&ctx.app_state);
+    let ctx = TestContext::new("test_create_chat_only_current_user").await;
 
     let current_user = ctx
         .create_test_user("currentuser", "current@test.com")
         .await;
 
+    let handler = CreateChatCommandHandler::new(&ctx.app_state);
     let cmd = CreateChatCommand {
         current_user_id: current_user.id,
-        name: "Solo Chat".to_string(),
-        members: vec![],
+        name: "Test Chat".to_string(),
+        members: vec![current_user.id],
         permissions: None,
     };
 
     let chat = handler
         .handle(cmd)
         .await
-        .unwrap_or_else(|e| panic!("Create chat with only self failed: {:?}", e));
+        .expect("Create chat should succeed");
 
     assert!(chat.has_member(current_user.id));
 }
 
 #[tokio::test]
-async fn test_create_chat_current_user_in_members_explicitly() {
-    let ctx = TestContext::new("test_create_chat_explicit_self").await;
-    let handler = CreateChatCommandHandler::new(&ctx.app_state);
+async fn test_create_chat_current_user_in_members() {
+    let ctx = TestContext::new("test_create_chat_current_user_in_members").await;
 
     let current_user = ctx
-        .create_test_user("currentuser", "current@test.com")
+        .create_test_user("currentuser", "currentuser@test.com")
         .await;
-    let other_user = ctx.create_test_user("otheruser", "other@test.com").await;
+    let other_user = ctx
+        .create_test_user("otheruser", "otheruser@test.com")
+        .await;
 
+    let handler = CreateChatCommandHandler::new(&ctx.app_state);
     let cmd = CreateChatCommand {
         current_user_id: current_user.id,
         name: "Test Chat".to_string(),
@@ -197,7 +213,10 @@ async fn test_create_chat_current_user_in_members_explicitly() {
         permissions: None,
     };
 
-    let chat = handler.handle(cmd).await.unwrap();
+    let chat = handler
+        .handle(cmd)
+        .await
+        .expect("Create chat should succeed");
 
     assert!(chat.has_member(current_user.id));
     assert!(chat.has_member(other_user.id));
@@ -205,14 +224,16 @@ async fn test_create_chat_current_user_in_members_explicitly() {
 
 #[tokio::test]
 async fn test_create_chat_with_empty_name() {
-    let ctx = TestContext::new("test_create_chat_empty_name").await;
-    let handler = CreateChatCommandHandler::new(&ctx.app_state);
+    let ctx = TestContext::new("test_create_chat_with_empty_name").await;
 
     let current_user = ctx
-        .create_test_user("currentuser", "current@test.com")
+        .create_test_user("currentuser", "currentuser@test.com")
         .await;
-    let other_user = ctx.create_test_user("otheruser", "other@test.com").await;
+    let other_user = ctx
+        .create_test_user("otheruser", "otheruser@test.com")
+        .await;
 
+    let handler = CreateChatCommandHandler::new(&ctx.app_state);
     let cmd = CreateChatCommand {
         current_user_id: current_user.id,
         name: "".to_string(),
@@ -223,7 +244,7 @@ async fn test_create_chat_with_empty_name() {
     let chat = handler
         .handle(cmd)
         .await
-        .unwrap_or_else(|e| panic!("Empty name should work: {:?}", e));
+        .expect("Create chat should succeed");
 
     assert_eq!(chat.name, Some("".to_string()));
 }
@@ -239,12 +260,15 @@ async fn test_create_chat_multiple_users() {
 
     let cmd = CreateChatCommand {
         current_user_id: current_user.id,
-        name: "Group Chat".to_string(),
+        name: "Test Group".to_string(),
         members: vec![user2.id, user3.id],
         permissions: None,
     };
 
-    let chat = handler.handle(cmd).await.unwrap();
+    let chat = handler
+        .handle(cmd)
+        .await
+        .expect("Create chat should succeed");
 
     assert!(chat.has_member(current_user.id));
     assert!(chat.has_member(user2.id));

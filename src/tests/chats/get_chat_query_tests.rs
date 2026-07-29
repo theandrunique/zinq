@@ -50,9 +50,11 @@ async fn test_get_chat_success() {
 async fn test_get_chat_not_found() {
     let ctx = TestContext::new("test_get_chat_not_found").await;
 
+    let current_user = ctx.create_test_user("currentuser", "currentuser@test.com").await;
+
     let query_handler = GetChatQueryHandler::new(&ctx.app_state);
     let query = GetChatQuery {
-        current_user_id: 1,
+        current_user_id: current_user.id,
         chat_id: 99999,
     };
 

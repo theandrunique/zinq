@@ -12,23 +12,15 @@ use crate::{
 
 #[tokio::test]
 async fn test_delete_chat_member_success() {
-    let ctx = TestContext::new("test_delete_member_success").await;
-    let handler = DeleteChatMemberCommandHandler::new(&ctx.app_state);
+    let ctx = TestContext::new("test_delete_chat_member_success").await;
 
     let owner = ctx.create_test_user("owner", "owner@test.com").await;
     let member = ctx.create_test_user("member", "member@test.com").await;
+    let chat = ctx
+        .create_group_chat(owner.id, "Test Group", vec![member.id], None)
+        .await;
 
-    let chat_handler = CreateChatCommandHandler::new(&ctx.app_state);
-    let chat = chat_handler
-        .handle(CreateChatCommand {
-            current_user_id: owner.id,
-            name: "Test Group".to_string(),
-            members: vec![member.id],
-            permissions: None,
-        })
-        .await
-        .expect("Failed to create chat");
-
+    let handler = DeleteChatMemberCommandHandler::new(&ctx.app_state);
     let cmd = DeleteChatMemberCommand {
         current_user_id: owner.id,
         chat_id: chat.id,
@@ -40,25 +32,17 @@ async fn test_delete_chat_member_success() {
 
 #[tokio::test]
 async fn test_delete_chat_member_not_member() {
-    let ctx = TestContext::new("test_delete_member_not_member").await;
-    let handler = DeleteChatMemberCommandHandler::new(&ctx.app_state);
+    let ctx = TestContext::new("ttest_delete_chat_member_not_member").await;
 
     let owner = ctx.create_test_user("owner", "owner@test.com").await;
     let member = ctx.create_test_user("member", "member@test.com").await;
+    let chat = ctx
+        .create_group_chat(owner.id, "Test Group", vec![member.id], None)
+        .await;
 
-    let chat_handler = CreateChatCommandHandler::new(&ctx.app_state);
-    let chat = chat_handler
-        .handle(CreateChatCommand {
-            current_user_id: owner.id,
-            name: "Test Group".to_string(),
-            members: vec![member.id],
-            permissions: None,
-        })
-        .await
-        .expect("Failed to create chat");
-
+    let handler = DeleteChatMemberCommandHandler::new(&ctx.app_state);
     let cmd = DeleteChatMemberCommand {
-        current_user_id: 99999i64,
+        current_user_id: 99999,
         chat_id: chat.id,
         user_id: member.id,
     };
@@ -73,13 +57,13 @@ async fn test_delete_chat_member_not_member() {
 
 #[tokio::test]
 async fn test_delete_chat_member_dm_not_supported() {
-    let ctx = TestContext::new("test_delete_member_dm").await;
-    let handler = DeleteChatMemberCommandHandler::new(&ctx.app_state);
+    let ctx = TestContext::new("test_delete_chat_member_dm_not_supported").await;
 
     let user1 = ctx.create_test_user("user1", "user1@test.com").await;
     let user2 = ctx.create_test_user("user2", "user2@test.com").await;
     let dm_chat = ctx.get_or_create_dm_chat(user1.id, user2.id).await;
 
+    let handler = DeleteChatMemberCommandHandler::new(&ctx.app_state);
     let cmd = DeleteChatMemberCommand {
         current_user_id: user1.id,
         chat_id: dm_chat.id,
@@ -93,23 +77,15 @@ async fn test_delete_chat_member_dm_not_supported() {
 
 #[tokio::test]
 async fn test_delete_chat_member_no_permission() {
-    let ctx = TestContext::new("test_delete_member_no_permission").await;
-    let handler = DeleteChatMemberCommandHandler::new(&ctx.app_state);
+    let ctx = TestContext::new("test_delete_chat_member_no_permission").await;
 
     let owner = ctx.create_test_user("owner", "owner@test.com").await;
     let member = ctx.create_test_user("member", "member@test.com").await;
+    let chat = ctx
+        .create_group_chat(owner.id, "Test Group", vec![member.id], None)
+        .await;
 
-    let chat_handler = CreateChatCommandHandler::new(&ctx.app_state);
-    let chat = chat_handler
-        .handle(CreateChatCommand {
-            current_user_id: owner.id,
-            name: "Test Group".to_string(),
-            members: vec![member.id],
-            permissions: None,
-        })
-        .await
-        .expect("Failed to create chat");
-
+    let handler = DeleteChatMemberCommandHandler::new(&ctx.app_state);
     let cmd = DeleteChatMemberCommand {
         current_user_id: member.id,
         chat_id: chat.id,
@@ -126,27 +102,19 @@ async fn test_delete_chat_member_no_permission() {
 
 #[tokio::test]
 async fn test_delete_chat_member_target_not_found() {
-    let ctx = TestContext::new("test_delete_target_not_found").await;
-    let handler = DeleteChatMemberCommandHandler::new(&ctx.app_state);
+    let ctx = TestContext::new("test_delete_chat_member_target_not_found").await;
 
     let owner = ctx.create_test_user("owner", "owner@test.com").await;
     let member = ctx.create_test_user("member", "member@test.com").await;
+    let chat = ctx
+        .create_group_chat(owner.id, "Test Group", vec![member.id], None)
+        .await;
 
-    let chat_handler = CreateChatCommandHandler::new(&ctx.app_state);
-    let chat = chat_handler
-        .handle(CreateChatCommand {
-            current_user_id: owner.id,
-            name: "Test Group".to_string(),
-            members: vec![member.id],
-            permissions: None,
-        })
-        .await
-        .expect("Failed to create chat");
-
+    let handler = DeleteChatMemberCommandHandler::new(&ctx.app_state);
     let cmd = DeleteChatMemberCommand {
         current_user_id: owner.id,
         chat_id: chat.id,
-        user_id: member.id + 99999,
+        user_id: 99999,
     };
 
     let err = handler
@@ -159,14 +127,14 @@ async fn test_delete_chat_member_target_not_found() {
 
 #[tokio::test]
 async fn test_delete_chat_member_chat_not_found() {
-    let ctx = TestContext::new("test_delete_chat_not_found").await;
-    let handler = DeleteChatMemberCommandHandler::new(&ctx.app_state);
+    let ctx = TestContext::new("test_delete_chat_member_chat_not_found").await;
 
     let owner = ctx.create_test_user("owner", "owner@test.com").await;
 
+    let handler = DeleteChatMemberCommandHandler::new(&ctx.app_state);
     let cmd = DeleteChatMemberCommand {
         current_user_id: owner.id,
-        chat_id: 99999i64,
+        chat_id: 99999,
         user_id: owner.id,
     };
 

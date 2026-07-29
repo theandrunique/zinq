@@ -1,0 +1,7 @@
+mod add_chat_member_command_tests;
+mod create_chat_command_tests;
+mod delete_chat_member_command_tests;
+mod get_attachments_query_tests;
+mod get_chat_query_tests;
+mod get_dm_chat_command_tests;
+mod get_user_chats_query_tests;
